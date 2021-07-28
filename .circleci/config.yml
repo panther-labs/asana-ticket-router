@@ -1,0 +1,47 @@
+version: 2.1
+
+orbs:
+  # The python orb contains a set of prepackaged CircleCI configuration you can use repeatedly in your configuration files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
+  python: circleci/python@1.2
+
+
+executors:
+  circleci-python-3-8:
+    docker:
+      - image: cimg/python:3.8
+
+
+workflows:
+  pipeline:
+    jobs:
+      - setup
+      - lint:
+          requires:
+            - setup
+      - test:
+          requires:
+            - setup
+
+
+jobs:
+  setup:
+    executor: circleci-python-3-8
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+          # pip-dependency-file: top-level-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
+          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
+  lint:
+    executor: circleci-python-3-8
+    steps:
+      - checkout
+      - run: echo "lint job running!"
+  test:
+    executor: circleci-python-3-8
+    steps:
+      - checkout
+      - run: echo "test job running!"
