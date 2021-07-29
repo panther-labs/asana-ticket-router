@@ -1,4 +1,10 @@
+# CI
 bandit
 mypy
 pylint
 yapf
+
+# sentry-asana-integration
+asana
+boto3
+requests

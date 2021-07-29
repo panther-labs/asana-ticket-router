@@ -1,0 +1,9 @@
+# gitignoring pipfiles since this is not our chosen tool for package management right now
+Pipfile
+Pipfile.lock
+
+# IDE
+.vscode
+
+# Linting
+.mypy_cache
