@@ -1,3 +1,4 @@
+# Dev Related
 # gitignoring pipfiles since this is not our chosen tool for package management right now
 Pipfile
 Pipfile.lock
@@ -7,3 +8,6 @@ Pipfile.lock
 
 # Linting
 .mypy_cache
+
+# Python
+**/__pycache__

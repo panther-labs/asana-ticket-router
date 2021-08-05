@@ -19,6 +19,7 @@ workflows:
     jobs:
       - lint-and-test
 
+# TODO: cache pip-installed packages
 jobs:
   lint-and-test:
     executor: circleci-python-3-8
@@ -26,8 +27,5 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          # pip-dependency-file: top-level-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
-          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
-      - run: bandit projects --recursive
-      - run: pylint projects
-      - run: mypy projects
+      - run: ./scripts/python_lint.sh
+      - run: ./scripts/python_unit_test.sh
