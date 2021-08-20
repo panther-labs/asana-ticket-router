@@ -18,33 +18,10 @@ class TestAsanaService(TestCase):
     _env_vars = {
         'DEV_ASANA_SENTRY_PROJECT': 'dev-project'
     }
-    def test_get_team_lead_id_with_dev_env(self) -> None:
-        # Arrange
-        mock_client = MagicMock()
-        asana_service = AsanaService(mock_client, False)
-        expected_result = '1200567447162380'
-
-        # Act
-        result = asana_service._get_team_lead_id(AsanaTeam.LOG_PROCESSING, 'dev')
-
-        # Assert
-        self.assertEqual(result, expected_result)
-
-    def test_get_team_lead_id_with_non_dev_env(self) -> None:
-        # Arrange
-        mock_client = MagicMock()
-        service = AsanaService(mock_client, False)
-        expected_result = '1199946235851409'
-
-        # Act
-        result = service._get_team_lead_id(AsanaTeam.CORE_INFRA, 'Prod')
-
-        # Assert
-        self.assertEqual(result, expected_result)
 
     def test_get_owning_team_with_exact_match_server_name(self) -> None:
         # Arrange
-        expected_result = AsanaTeam.ANALYTICS
+        expected_result = AsanaTeam.INVESTIGATIONS
 
         # Act
         result = AsanaService._get_owning_team('panther-log-router')
@@ -54,7 +31,7 @@ class TestAsanaService(TestCase):
 
     def test_get_owning_team_with_fnmatch_server_name(self) -> None:
         # Arrange
-        expected_result = AsanaTeam.CLOUD_SECURITY
+        expected_result = AsanaTeam.DETECTIONS
 
         # Act
         result = AsanaService._get_owning_team('panther-remediation-api')
@@ -64,7 +41,7 @@ class TestAsanaService(TestCase):
 
     def test_get_owning_team_with_fnmatch_server_name_2(self) -> None:
         # Arrange
-        expected_result = AsanaTeam.LOG_PROCESSING
+        expected_result = AsanaTeam.INGESTION
 
         # Act
         result = AsanaService._get_owning_team('panther-log-alpha')
@@ -74,7 +51,7 @@ class TestAsanaService(TestCase):
 
     def test_get_owning_team_with_no_match_server_name(self) -> None:
         # Arrange
-        expected_result = AsanaTeam.PANTHER_LABS
+        expected_result = AsanaTeam.CORE_PLATFORM
 
         # Act
         result = AsanaService._get_owning_team('alpha-beta')
@@ -83,15 +60,12 @@ class TestAsanaService(TestCase):
         self.assertEqual(result, expected_result)
 
     @patch.object(AsanaService, '_get_owning_team')
-    @patch.object(AsanaService, '_get_team_lead_id')
     def test_create_asana_task_from_sentry_event(
             self,
-            mock_get_team_lead_id: Any,
             mock_get_owning_team: Any
         ) -> None:
         # Arrange
-        mock_get_owning_team.return_value = AsanaTeam.PANTHER_LABS
-        mock_get_team_lead_id.return_value = 'stub-id'
+        mock_get_owning_team.return_value = AsanaTeam.CORE_PLATFORM
         sentry_event = {
             "datetime":"2021-07-14T00:10:08.299179Z",
             "environment":"prod",
@@ -107,9 +81,9 @@ class TestAsanaService(TestCase):
             ],
             "timestamp":1626221408.299179,
             "title":"some-title",
-            "url":"https://url.com/a",
-            "web_url":"https://url.com/b",
-            "issue_url":"https://url.com/c",
+            "url":"https://url.com/a/",
+            "web_url":"https://url.com/b/",
+            "issue_url":"https://url.com/c/",
         }
         mock_asana_client = MagicMock()
         mock_asana_client.tasks.create_task.return_value = {
@@ -122,10 +96,10 @@ class TestAsanaService(TestCase):
         asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
         asana_service._backlog_project_id = 'backlog_project_id'
         expected_result = {
-            'assignee': 'stub-id',
             'name': "some-title",
             'projects': ['current-eng-sprint-id'],
-            'notes': 'Sentry Issue URL: https://url.com/a\nEvent Timestamp: 1626221408.299179\nCustomer Impacted: alpha'
+            'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n'
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\nCustomer Impacted: alpha')
         }
 
         # Act

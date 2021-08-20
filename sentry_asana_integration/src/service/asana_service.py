@@ -17,13 +17,13 @@ from ..util.logger import get_logger
 
 
 class AsanaTeam(Enum):
-    """Enum that defines Panther Labs teams in Asana"""
-    ANALYTICS = 'analytics'
-    CLOUD_SECURITY = 'cloud-security'
-    CORE_INFRA = 'core-infra'
-    LOG_PROCESSING = 'log_processing'
-    PANTHER_LABS = 'panther-labs'
-    WEB = 'web'
+    """Enum that represents possible enum values for the 'Team' field in an Asana task."""
+    INGESTION = '1199906290951709'
+    DETECTIONS = '1199906290951721'
+    INVESTIGATIONS = '1199906290951706'
+    CORE_PLATFORM = '1199906290951724'
+    SECURITY_IT_COMPLIANCE = '1200813282274945'
+    PRODUCT = '1199919023483385'
 
 class AsanaService:
     """Service class that interacts with Asana API/entities.
@@ -32,7 +32,6 @@ class AsanaService:
         _asana_client: A Client object from the Asana package, a wrapper class used to make
           API calls to Asana.
         _logger: A reference to a Logger object.
-        _team_leads: A dict that maps the Asana teams to the Asana IDs of their team leads.
         _current_eng_sprint_project_id: The Asana ID of the Asana project representing the current
           eng sprint.
         _current_dogfooding_project_id: The Asana ID of the Asana project representing the current
@@ -43,14 +42,6 @@ class AsanaService:
     def __init__(self, asana_client: AsanaClient, load_asana_projects: bool=True) -> None:
         self._asana_client = asana_client
         self._logger = get_logger()
-        self._team_leads = {
-            AsanaTeam.ANALYTICS: '1199948190610665',        # Russell
-            AsanaTeam.CLOUD_SECURITY: '1199953549887297',   # Hakmiller
-            AsanaTeam.CORE_INFRA: '1199946235851409',       # Angelou
-            AsanaTeam.LOG_PROCESSING: '1159526576521903',   # Kostas
-            AsanaTeam.PANTHER_LABS: '1199946235851409',     # Angelou (??)
-            AsanaTeam.WEB: '1199946339122360'               # Aggelos
-        }
         self._current_eng_sprint_project_id: Optional[str] = None
         self._current_dogfooding_project_id: Optional[str] = None
         self._backlog_project_id: Optional[str] = None
@@ -177,26 +168,23 @@ class AsanaService:
         Returns:
             A string representing the ID (gid in Asana parlance) of the newly created Asana task
         """
-        url = sentry_event['url']
-        timestamp = sentry_event['timestamp']
+        issue_url = sentry_event['issue_url']
+        if issue_url[-1] == '/':
+            issue_url = issue_url[:len(issue_url) - 1]
+        issue_id = issue_url.split('/')[-1]
+        url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
         title = sentry_event['title']
         environment = sentry_event['environment'].lower()
-        tags = sentry_event['tags']
         customer = 'Unknown'
-        server_name = 'Unknown'
+        tags = sentry_event['tags']
         for tag in tags:
             if tag[0] == 'customer_name':
                 customer = tag[1]
-            elif tag[0] == 'server_name':
-                server_name = tag[1]
-        assigned_team = AsanaService._get_owning_team(server_name)
-        assignee = self._get_team_lead_id(assigned_team, environment)
         project_gids = self._get_project_ids(environment)
         task_creation_details = {
-            'assignee': assignee,
             'name': title,
             'projects': project_gids,
-            'notes': f'Sentry Issue URL: {url}\nEvent Timestamp: {timestamp}\nCustomer Impacted: {customer}'
+            'notes': f'Sentry Issue URL: {url}\nEvent Datetime: {sentry_event["datetime"]}\nCustomer Impacted: {customer}'
         }
         self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
@@ -205,79 +193,70 @@ class AsanaService:
             raise KeyError('Unable to verify that Asana task was created correctly')
         return task_creation_result['gid']
 
-    def _get_team_lead_id(self, team: AsanaTeam, environment: Optional[str]=None) -> str:
-        """Given an Asana team, returns the Asana ID of its team lead.
-
-        Args:
-            team: An AsanaTeam (enum) value representing a single Asana team.
-            environment: Optional; If supplied and the value is 'dev', the designated dev team lead ID will
-              be returned.
-
-        Returns:
-            A string representing the ID of the team lead for the AsanaTeam in question
-        """
-        if environment and environment.lower() == 'dev':
-            return os.environ.get('DEV_TEAM_LEAD_ID', '1200567447162380') # Current backup value is Yusuf's ID
-        return self._team_leads[team]
-
     # This function is used to avoid making the extra API call to Asana (GET request to the 'issue_url' in the sentry event)
     # to fetch the details of the assigned team
     @staticmethod
-    def _get_owning_team(server_name: str) -> AsanaTeam:
-        """Given a server name, returns the Asana team that owns it.
+    def _get_owning_team(server_name: str, event_type: Optional[str] = None) -> AsanaTeam:
+        """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
-        based on its 'server_name' - a tag found in the tags section of each Sentry event. The mappings of
-        server_name to Asana team below is based on the Confluence document on 'Service Owners' found here:
-        https://panther-labs.atlassian.net/wiki/spaces/OPS/pages/1250492812/Service+Owners.
+        based on its 'server_name' and if present, 'type';
+        both params are key/values found in the tags section of each Sentry event.
+        The mappings of server_name to Asana team below is based on the assigning logic formerly in Sentry, seen here:
+        https://sentry.io/settings/panther-labs/projects/panther-enterprise/ownership/
 
         Args:
-            server_name: A string representing the 'server_name' value found in the originating Sentry event.
+            server_name: A string representing the 'server_name' key/value in the tags of the originating Sentry event.
+            event_type: A string representing the 'type' key/value in the tags of the originating Sentry event.
 
         Returns:
             An AsanaTeam (enum) value representing the team that takes responsibility for the entity with
             the given 'server_name'.
         """
+        if event_type and event_type.lower() == 'web':
+            return AsanaTeam.CORE_PLATFORM
+
         server_name_to_team_map = {
-            'panther-log-router': AsanaTeam.ANALYTICS,
-            'panther-alert-processor': AsanaTeam.CLOUD_SECURITY,
-            'panther-alert-forwarder': AsanaTeam.CLOUD_SECURITY,
-            'panther-aws-event-processor': AsanaTeam.CLOUD_SECURITY,
-            'panther-compliance-api': AsanaTeam.CLOUD_SECURITY,
-            'panther-layer-manager': AsanaTeam.CLOUD_SECURITY,
-            'panther-policy-engine': AsanaTeam.CLOUD_SECURITY,
-            'panther-resource-processor': AsanaTeam.CLOUD_SECURITY,
-            'panther-resources-api': AsanaTeam.CLOUD_SECURITY,
-            'panther-alert-delivery-api': AsanaTeam.CORE_INFRA,
-            'panther-analysis-api': AsanaTeam.CORE_INFRA,
-            'panther-cfn-custom-resources': AsanaTeam.CORE_INFRA,
-            'panther-graph-api': AsanaTeam.CORE_INFRA,
-            'panther-metrics-api': AsanaTeam.CORE_INFRA,
-            'panther-organization-api': AsanaTeam.CORE_INFRA,
-            'panther-outputs-api': AsanaTeam.CORE_INFRA,
-            'panther-users-api': AsanaTeam.CORE_INFRA,
-            'panther-alerts-api': AsanaTeam.LOG_PROCESSING,
-            'panther-message-forwarder': AsanaTeam.LOG_PROCESSING,
-            'panther-rules-engine': AsanaTeam.LOG_PROCESSING,
-            'panther-source-api': AsanaTeam.LOG_PROCESSING,
-            'panther-system-status': AsanaTeam.LOG_PROCESSING
+            'panther-token-authorizer': AsanaTeam.CORE_PLATFORM, # former 'Web' team responsibilities fall to Core-Platform
+            'panther-log-router': AsanaTeam.INVESTIGATIONS,
+            'panther-alert-processor': AsanaTeam.DETECTIONS,
+            'panther-alert-forwarder': AsanaTeam.DETECTIONS,
+            'panther-aws-event-processor': AsanaTeam.DETECTIONS,
+            'panther-compliance-api': AsanaTeam.DETECTIONS,
+            'panther-layer-manager': AsanaTeam.DETECTIONS,
+            'panther-policy-engine': AsanaTeam.DETECTIONS,
+            'panther-resource-processor': AsanaTeam.DETECTIONS,
+            'panther-resources-api': AsanaTeam.DETECTIONS,
+            'panther-alert-delivery-api': AsanaTeam.CORE_PLATFORM,
+            'panther-analysis-api': AsanaTeam.CORE_PLATFORM,
+            'panther-cfn-custom-resources': AsanaTeam.CORE_PLATFORM,
+            'panther-graph-api': AsanaTeam.CORE_PLATFORM,
+            'panther-metrics-api': AsanaTeam.CORE_PLATFORM,
+            'panther-organization-api': AsanaTeam.CORE_PLATFORM,
+            'panther-outputs-api': AsanaTeam.CORE_PLATFORM,
+            'panther-users-api': AsanaTeam.CORE_PLATFORM,
+            'panther-alerts-api': AsanaTeam.INGESTION,
+            'panther-message-forwarder': AsanaTeam.INGESTION,
+            'panther-rules-engine': AsanaTeam.INGESTION,
+            'panther-source-api': AsanaTeam.INGESTION,
+            'panther-system-status': AsanaTeam.INGESTION
         }
         if server_name in server_name_to_team_map:
             return server_name_to_team_map[server_name]
 
         generic_server_name_to_team_lookup = [
-            ('panther-athena*', AsanaTeam.ANALYTICS),
-            ('panther-datacatalog*', AsanaTeam.ANALYTICS),
-            ('panther-snowflake*', AsanaTeam.ANALYTICS),
-            ('panther-cloudsecurity*', AsanaTeam.CLOUD_SECURITY),
-            ('panther*remediation*', AsanaTeam.CLOUD_SECURITY),
-            ('panther-snapshot*', AsanaTeam.CLOUD_SECURITY),
-            ('panther-cn-*', AsanaTeam.CORE_INFRA),
-            ('panther-log*', AsanaTeam.LOG_PROCESSING),
+            ('panther-athena*', AsanaTeam.INVESTIGATIONS),
+            ('panther-datacatalog*', AsanaTeam.INVESTIGATIONS),
+            ('panther-snowflake*', AsanaTeam.INVESTIGATIONS),
+            ('panther-cloudsecurity*', AsanaTeam.DETECTIONS),
+            ('panther*remediation*', AsanaTeam.DETECTIONS),
+            ('panther-snapshot*', AsanaTeam.DETECTIONS),
+            ('panther-cn-*', AsanaTeam.CORE_PLATFORM),
+            ('panther-log*', AsanaTeam.INGESTION),
         ]
 
         for pattern, team in generic_server_name_to_team_lookup:
             if fnmatch.fnmatch(server_name, pattern):
                 return team
 
-        return AsanaTeam.PANTHER_LABS
+        return AsanaTeam.CORE_PLATFORM
