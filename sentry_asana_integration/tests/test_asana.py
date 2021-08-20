@@ -10,7 +10,7 @@ from typing import Any, Dict
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from ..src.asana import AsanaService, AsanaTeam
+from ..src.service.asana_service import AsanaService, AsanaTeam
 
 
 class TestAsanaService(TestCase):
@@ -112,6 +112,11 @@ class TestAsanaService(TestCase):
             "issue_url":"https://url.com/c",
         }
         mock_asana_client = MagicMock()
+        mock_asana_client.tasks.create_task.return_value = {
+            "gid": "12345",
+            "resource_type": "project",
+            "name": "new project"
+        }
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
         asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'

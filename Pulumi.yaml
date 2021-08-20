@@ -1,0 +1,4 @@
+name: sentry-asana-integration
+runtime:
+  name: python
+description: A service that creates Asana tasks from Sentry alerts

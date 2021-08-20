@@ -3,8 +3,13 @@ bandit
 mypy
 pylint
 yapf
+pulumi>=3.0.0,<4.0.0
+pulumi-aws>=4.0.0,<5.0.0
 
 # sentry-asana-integration
-asana
-boto3
-requests
+# TODO: install the per-projct dependencies in CircleCI by finding & using
+# the per-project requirement.txts and leaving this top level requirements.txt strictly for CI/CD
+# related dependencies
+asana==0.10.3
+boto3==1.18.18
+requests==2.26.0

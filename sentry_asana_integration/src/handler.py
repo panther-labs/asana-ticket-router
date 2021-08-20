@@ -5,20 +5,44 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 
+import hmac
 import json
+from hashlib import sha256
 from typing import Dict
 
+import asana
+import boto3
 
-def hello(event: Dict, _: Dict) -> Dict:
-    """A hello world function for proving a deployment worked"""
-    body = {
-        "message": "Go Serverless v1.0! Your function executed successfully!",
-        "input": event
-    }
+from .service.asana_service import AsanaService
+from .service.secrets_service import SecretKey, SecretsService
+from .util.logger import get_logger
+
+log = get_logger()
+secrets_manager_client = boto3.client('secretsmanager')
+secrets_service = SecretsService(secrets_manager_client)
+asana_client = asana.Client.access_token(secrets_service.get_secret_value(SecretKey.ASANA_PAT))
+asana_service = AsanaService(asana_client, True)
+
+def handler(event: Dict, _: Dict) -> Dict:
+    """The handler function that is run when the Lambda function executes."""
+    body = event['body']
+    client_secret = secrets_service.get_secret_value(SecretKey.SENTRY_CLIENT_SEC)
+    expected = hmac.new(
+        key=client_secret.encode('utf-8'),
+        msg=body.encode('utf-8'),
+        digestmod=sha256,
+    ).hexdigest()
+    if expected != event['headers']['sentry-hook-signature']:
+        raise ValueError(
+            f"Invalid signature received. Expected signature: {expected} - Received signature: {event['headers']['sentry-hook-signature']}"
+        )
+
+    json_body = json.loads(body)
+    new_task_gid = asana_service.create_asana_task_from_sentry_event(json_body['data']['event'])
 
     response = {
         "statusCode": 200,
-        "body": json.dumps(body)
+        "body": json.dumps({"AsanaTaskGid": new_task_gid})
     }
 
     return response

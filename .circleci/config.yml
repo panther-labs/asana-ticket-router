@@ -27,10 +27,14 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-      # Lint
+      # Lint Main Pulumi File
+      - run: pylint ./__main__.py --disable duplicate-code,fixme,missing-module-docstring,too-few-public-methods
+      - run: bandit ./__main__.py
+      - run: mypy ./__main__.py --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --no-error-summary
+      # Lint sentry_asana_integration Project
       - run: pylint sentry_asana_integration --ignore src --disable duplicate-code,fixme,missing-module-docstring,too-few-public-methods,missing-class-docstring,missing-function-docstring,no-self-use,protected-access
       - run: pylint sentry_asana_integration --ignore tests --disable duplicate-code,fixme,missing-module-docstring,too-few-public-methods
-      - run: bandit sentry_asana_integration/src --recursive
+      - run: bandit sentry_asana_integration --recursive --exclude tests
       - run: mypy sentry_asana_integration --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --no-error-summary
-      # Unit Tests
+      # Unit Test
       - run: python3 -m unittest discover

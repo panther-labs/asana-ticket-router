@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 
 from asana import Client as AsanaClient
 
-from .logging import get_logger
+from ..util.logger import get_logger
 
 
 class AsanaTeam(Enum):
@@ -70,6 +70,8 @@ class AsanaService:
             'team': os.environ.get('ASANA_ENGINEERING_TEAM_ID'),
             'archived': False
         })
+        self._logger.info('get_projects_response: %s', get_projects_response)
+
         eng_sprint_projects = []
         backlog_projects = []
         dogfooding_projects = []
@@ -81,9 +83,17 @@ class AsanaService:
             elif 'dogfood' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 dogfooding_projects.append(proj)
 
+        self._logger.info('The following projects are eng-sprint related: %s', eng_sprint_projects)
+        self._logger.info('The following projects are dogfooding related: %s', dogfooding_projects)
+        self._logger.info('The following projects are backlog related: %s', backlog_projects)
+
         self._current_eng_sprint_project_id = self._get_newest_created_project_id(eng_sprint_projects)
         self._current_dogfooding_project_id = self._get_newest_created_project_id(dogfooding_projects)
         self._backlog_project_id = self._get_newest_created_project_id(backlog_projects)
+
+        self._logger.info('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
+        self._logger.info('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
+        self._logger.info('backlog project ID: %s', self._backlog_project_id)
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -114,6 +124,7 @@ class AsanaService:
         if len(projects) > 1:
             for proj in projects:
                 proj_details = self._asana_client.projects.get_project(proj['gid'])
+                self._logger.info('get_project(%s) response: %s', proj['gid'], proj_details)
                 created_date = None
                 if proj_details and 'data' in proj_details:
                     created_date = datetime.strptime(proj_details['data']['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -149,7 +160,7 @@ class AsanaService:
                 project_ids.append(self._backlog_project_id)
         return project_ids
 
-    def create_asana_task_from_sentry_event(self, sentry_event: Dict[str, Any]) -> None:
+    def create_asana_task_from_sentry_event(self, sentry_event: Dict[str, Any]) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task using the Asana client.
 
         This method receives the Sentry event information and proceeds to make the relevant calls
@@ -164,7 +175,7 @@ class AsanaService:
               for an example of the deserialized body.
 
         Returns:
-            None
+            A string representing the ID (gid in Asana parlance) of the newly created Asana task
         """
         url = sentry_event['url']
         timestamp = sentry_event['timestamp']
@@ -187,7 +198,12 @@ class AsanaService:
             'projects': project_gids,
             'notes': f'Sentry Issue URL: {url}\nEvent Timestamp: {timestamp}\nCustomer Impacted: {customer}'
         }
-        self._asana_client.tasks.create_task(task_creation_details)
+        self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
+        task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
+        self._logger.info('Task creation result: %s', task_creation_result)
+        if 'gid' not in task_creation_result:
+            raise KeyError('Unable to verify that Asana task was created correctly')
+        return task_creation_result['gid']
 
     def _get_team_lead_id(self, team: AsanaTeam, environment: Optional[str]=None) -> str:
         """Given an Asana team, returns the Asana ID of its team lead.
