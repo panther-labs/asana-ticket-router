@@ -67,14 +67,14 @@ class AsanaService:
         backlog_projects = []
         dogfooding_projects = []
         for proj in get_projects_response:
-            if 'eng sprint' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
+            if 'sprint' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 eng_sprint_projects.append(proj)
             elif 'backlog' in proj['name'].lower():
                 backlog_projects.append(proj)
             elif 'dogfood' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 dogfooding_projects.append(proj)
 
-        self._logger.info('The following projects are eng-sprint related: %s', eng_sprint_projects)
+        self._logger.info('The following projects are sprint related: %s', eng_sprint_projects)
         self._logger.info('The following projects are dogfooding related: %s', dogfooding_projects)
         self._logger.info('The following projects are backlog related: %s', backlog_projects)
 
@@ -173,18 +173,29 @@ class AsanaService:
             issue_url = issue_url[:len(issue_url) - 1]
         issue_id = issue_url.split('/')[-1]
         url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
-        title = sentry_event['title']
-        environment = sentry_event['environment'].lower()
         customer = 'Unknown'
-        tags = sentry_event['tags']
-        for tag in tags:
+        server_name = 'Unknown'
+        event_type = None
+        for tag in sentry_event['tags']:
             if tag[0] == 'customer_name':
                 customer = tag[1]
-        project_gids = self._get_project_ids(environment)
+            elif tag[0] == 'server_name':
+                server_name = tag[1]
+            elif tag[0] == 'type':
+                event_type = tag[1]
+        assigned_team = AsanaService._get_owning_team(server_name, event_type)
+        project_gids = self._get_project_ids(sentry_event['environment'].lower())
         task_creation_details = {
-            'name': title,
+            'name': sentry_event['title'],
             'projects': project_gids,
-            'notes': f'Sentry Issue URL: {url}\nEvent Datetime: {sentry_event["datetime"]}\nCustomer Impacted: {customer}'
+            'custom_fields': {
+                '1159524604627932': '1159524604627933', # Priority: High (Enum)
+                '1199912337121892': '1200218109698442', # Task Type: Investigate (Enum)
+                '1199944595440874': 0.1,                # Estimate (d): <number>
+                '1200165681182165': '1200198568911550', # Reporter: Sentry.io
+                '1199906290951705': assigned_team.value # Eng Team: <eng_team_enum_gid: str> (Enum)
+            },
+            'notes': f'Sentry Issue URL: {url}\n\nEvent Datetime: {sentry_event["datetime"]}\n\nCustomer Impacted: {customer}'
         }
         self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)

@@ -98,8 +98,15 @@ class TestAsanaService(TestCase):
         expected_result = {
             'name': "some-title",
             'projects': ['current-eng-sprint-id'],
-            'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n'
-                        'Event Datetime: 2021-07-14T00:10:08.299179Z\nCustomer Impacted: alpha')
+            'custom_fields': {
+                '1159524604627932': '1159524604627933',
+                '1199912337121892': '1200218109698442',
+                '1199944595440874': 0.1,
+                '1200165681182165': '1200198568911550',
+                '1199906290951705': '1199906290951724'
+            },
+            'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\nCustomer Impacted: alpha')
         }
 
         # Act
@@ -114,7 +121,7 @@ class TestAsanaService(TestCase):
         mock_asana_client.projects.get_projects.return_value = [
             {
                 "gid": "1199906291903396",
-                "name": "Template: Eng Sprint",
+                "name": "Template: Sprint",
                 "resource_type": "project"
             },
             {
@@ -134,7 +141,7 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1200693863324520",
-                "name": "Eng Sprint 08/02 - 08/20",
+                "name": "Sprint 08/02 - 08/20",
                 "resource_type": "project"
             },
             {
