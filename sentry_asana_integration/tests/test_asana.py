@@ -103,7 +103,8 @@ class TestAsanaService(TestCase):
                 '1199912337121892': '1200218109698442',
                 '1199944595440874': 0.1,
                 '1200165681182165': '1200198568911550',
-                '1199906290951705': '1199906290951724'
+                '1199906290951705': '1199906290951724',
+                '1200216708142306': '1200822942218893'
             },
             'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
                         'Event Datetime: 2021-07-14T00:10:08.299179Z\n\nCustomer Impacted: alpha')

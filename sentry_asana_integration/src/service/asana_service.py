@@ -192,8 +192,9 @@ class AsanaService:
                 '1159524604627932': '1159524604627933', # Priority: High (Enum)
                 '1199912337121892': '1200218109698442', # Task Type: Investigate (Enum)
                 '1199944595440874': 0.1,                # Estimate (d): <number>
-                '1200165681182165': '1200198568911550', # Reporter: Sentry.io
-                '1199906290951705': assigned_team.value # Eng Team: <eng_team_enum_gid: str> (Enum)
+                '1200165681182165': '1200198568911550', # Reporter: Sentry.io (Enum)
+                '1199906290951705': assigned_team.value,# Team: <relevant team enum gid>: str> (Enum)
+                '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
             },
             'notes': f'Sentry Issue URL: {url}\n\nEvent Datetime: {sentry_event["datetime"]}\n\nCustomer Impacted: {customer}'
         }
