@@ -1,4 +1,6 @@
 name: sentry-asana-integration
 runtime:
   name: python
+  options:
+    virtualenv: venv
 description: A service that creates Asana tasks from Sentry alerts

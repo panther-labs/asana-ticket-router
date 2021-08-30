@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Template for Sentry Asana Codebuild Project
+
+Parameters:
+  # Pulumi configuration
+  DockerSecretArn:
+    Type: String
+    # https://docs.docker.com/docker-hub/download-rate-limit/
+    Description: ARN for the Dockerhub 'username' and 'password' (access token) stored in secrets manager. These credentials may be required to avoid rate-limiting when pulling the Pulumi image.
+    Default: ''
+    AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+)?$'
+  PulumiOrgName:
+    Type: String
+    Description: Pulumi organization for stack metadata management
+    AllowedValues:
+      - panther
+      - panther-dev
+    Default: panther
+  PulumiSecretArn:
+    Type: String
+    Description: ARN for the PULUMI_ACCESS_TOKEN stored in secrets manager
+    AllowedPattern: '^arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+$'
+  # PulumiSecretKeyArn:
+  #   Type: String
+  #   Description: ARN for the KMS key that encrypts the PulumiSecretArn (required to grant cross-account access)
+  #   Default: ''
+  #   AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):kms:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:key/[0-9a-f-]{36})?$'
+
+Conditions:
+  DockerCredentials: !Not [!Equals [!Ref DockerSecretArn, '']]
+  # PulumiKmsKeyGiven: !Not [!Equals [!Ref PulumiSecretKeyArn, '']]
+
+
+Resources:
+  SentryAsanaPulumiCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: NO_ARTIFACTS
+      ConcurrentBuildLimit: 1
+      Description: Create Sentry Asana Integration Service with Pulumi
+      Environment:
+        ComputeType: BUILD_GENERAL1_LARGE
+        EnvironmentVariables:
+          - Name: STACK_NAME
+            # Value: !Sub ${PulumiOrgName}/${AWS::AccountId}-${AWS::Region}
+            Value: !Sub panther-dev/${AWS::AccountId}-${AWS::Region}
+          - Name: PULUMI_ACCESS_TOKEN
+            Type: SECRETS_MANAGER
+            Value: !Sub ${PulumiSecretArn}:PULUMI_ACCESS_TOKEN
+        Image: pulumi/pulumi-python
+        ImagePullCredentialsType: !If [DockerCredentials, SERVICE_ROLE, CODEBUILD]
+        RegistryCredential: !If
+          - DockerCredentials
+          - Credential: !Ref DockerSecretArn
+            CredentialProvider: SECRETS_MANAGER
+          - !Ref AWS::NoValue
+        Type: LINUX_CONTAINER
+      Name: panther-pulumi
+      ServiceRole: !Ref PulumiCodeBuildRole
+      Source:
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              commands:
+                - python3 -m venv venv
+                - venv/bin/pip3 install pulumi pulumi-aws
+                - sed -i 's/..\/..\/.setup\/venv/venv/g' Pulumi.yaml
+            pre_build:
+              commands:
+                - pulumi version
+                - pulumi whoami
+                - pulumi stack init --stack $STACK_NAME || echo "stack already exists"
+            build:
+              commands:
+                - pulumi up --skip-preview --yes --stack $STACK_NAME
+        Location: sentry-asana-test-deployment-bucket/
+        Type: S3
+      TimeoutInMinutes: 30
+
+  PulumiCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub PantherPulumiCodeBuild-${AWS::Region} # Use a fixed role name for org SCP
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildBase
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/panther-pulumi
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/panther-pulumi:*
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler:log-stream:*
+              - Effect: Allow
+                Action:
+                  - s3:Get*
+                  - s3:List*
+                  - s3:PutObject
+                Resource: "*"
+                  # - arn:aws:s3:::sentry-asana-test-deployment-bucket/*
+              # (cross-account) secrets manager and KMS for decrypting docker/pulumi credentials
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !If [DockerCredentials, !Ref DockerSecretArn, !Ref AWS::NoValue]
+                  - !Ref PulumiSecretArn
+                  - !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:integration/sentry-asana-*
+              # - !If
+              #   - PulumiKmsKeyGiven
+              #   - Effect: Allow
+              #     Action: kms:Decrypt
+              #     Resource: !Ref PulumiSecretKeyArn
+              #   - !Ref AWS::NoValue
