@@ -41,11 +41,13 @@ def create_lambda_deployment_packages() -> None:
         shell=False
     )
 
-pulumi.log.info('Attempting to create the Lambda deployment packages')
+pulumi.log.info('Attempting to create the Lambda deployment packages..')
 create_lambda_deployment_packages()
+pulumi.log.info('Attempting to create the SentryAsanaIntegration Component..')
 sentry_asana_integration = SentryAsanaIntegration(
     'sentry-asana',
     f'./{LAMBDA_DEPLOYMENT_PACKAGE_DIR}/sentry_asana_integration'
 )
+pulumi.log.info('Created the SentryAsanaIntegration Component')
 
 pulumi.export('sentry-asana-apigw-endpoint', sentry_asana_integration.apigw_endpoint)

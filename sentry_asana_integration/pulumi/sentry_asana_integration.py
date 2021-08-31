@@ -16,6 +16,8 @@ import pulumi
 class SentryAsanaIntegration(pulumi.ComponentResource):
     """A Pulumi Component Resource that represents a Lambda Fn & API Gateway that enable Sentry -> Asana integration."""
     def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None):
+        pulumi.log.info(f'Beginning execution of constructor for SentryAsanaIntegration Component with name {name}..')
+        pulumi.log.info('Caling super constructor..')
         super().__init__('panther:internal:integration', name, None, opts)
         handler_lambda_name = f'{name}-handler'
         region = aws.config.region # type: ignore
@@ -57,7 +59,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
                 })
             )
         )
-
+        pulumi.log.info('Creating the Lambda role..')
         # Create the role for the Lambda to assume
         lambda_role = aws.iam.Role(
             f'{name}-lambda-role',
@@ -76,6 +78,11 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         )
 
         # Create the lambda to execute
+        # try:
+
+        # except Exception as ex:
+        #     pulumi.log.error('Encountered the following error while creating the handler: %e', ex)
+        pulumi.log.info('Creating the Handler function..')
         lambda_function = aws.lambda_.Function(
             f'{name}-handler-function',
             code=pulumi.AssetArchive({
@@ -100,6 +107,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         )
 
         # Give API Gateway permissions to invoke the Lambda
+        pulumi.log.info('Giving API Gateway permission to invoke the lambda function..')
         aws.lambda_.Permission(
             f'{name}-apigw-lambda-invoke-permission',
             action='lambda:InvokeFunction',
@@ -108,6 +116,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
 
+        pulumi.log.info('Creating the API Gateway..')
         apigw = aws.apigatewayv2.Api(
             f'{name}-api',
             protocol_type='HTTP',
@@ -116,6 +125,8 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
         self.apigw_endpoint = apigw.api_endpoint
+
+        pulumi.log.info('Registering the Component Outputs..')
         self.register_outputs({
             'apigw_endpoint': self.apigw_endpoint
         })

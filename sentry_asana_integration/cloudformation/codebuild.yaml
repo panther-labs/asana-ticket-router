@@ -1,35 +1,46 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Template for Sentry Asana Codebuild Project
 
-Parameters:
-  # Pulumi configuration
-  DockerSecretArn:
-    Type: String
-    # https://docs.docker.com/docker-hub/download-rate-limit/
-    Description: ARN for the Dockerhub 'username' and 'password' (access token) stored in secrets manager. These credentials may be required to avoid rate-limiting when pulling the Pulumi image.
-    Default: ''
-    AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+)?$'
-  PulumiOrgName:
-    Type: String
-    Description: Pulumi organization for stack metadata management
-    AllowedValues:
-      - panther
-      - panther-dev
-    Default: panther
-  PulumiSecretArn:
-    Type: String
-    Description: ARN for the PULUMI_ACCESS_TOKEN stored in secrets manager
-    AllowedPattern: '^arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+$'
+# Parameters:
+#   # Pulumi configuration
+#   DockerSecretArn:
+#     Type: String
+#     # https://docs.docker.com/docker-hub/download-rate-limit/
+#     Description: ARN for the Dockerhub 'username' and 'password' (access token) stored in secrets manager. These credentials may be required to avoid rate-limiting when pulling the Pulumi image.
+#     Default: ''
+#     AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+)?$'
+  # PulumiOrgName:
+  #   Type: String
+  #   Description: Pulumi organization for stack metadata management
+  #   AllowedValues:
+  #     - panther
+  #     - panther-dev
+  #   Default: panther
+  # PulumiSecretArn:
+  #   Type: String
+  #   Description: ARN for the PULUMI_ACCESS_TOKEN stored in secrets manager
+  #   AllowedPattern: '^arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+$'
   # PulumiSecretKeyArn:
   #   Type: String
   #   Description: ARN for the KMS key that encrypts the PulumiSecretArn (required to grant cross-account access)
   #   Default: ''
   #   AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):kms:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:key/[0-9a-f-]{36})?$'
 
-Conditions:
-  DockerCredentials: !Not [!Equals [!Ref DockerSecretArn, '']]
+# Conditions:
+#   DockerCredentials: !Not [!Equals [!Ref DockerSecretArn, '']]
   # PulumiKmsKeyGiven: !Not [!Equals [!Ref PulumiSecretKeyArn, '']]
 
+Mappings:
+  Secrets:
+    Codebuild:
+      DockerSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Dockerhub-HRMWZ7
+    Pulumi:
+      PulumiSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Pulumi_Access_Token-B9pE0o
+    SentryAsana:
+      SentryAsanaSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:integration/sentry-asana-r8Xg3w
+  Params:
+    Pulumi:
+      PulumiOrgName: panther-dev
 
 Resources:
   SentryAsanaPulumiCodeBuildProject:
@@ -43,18 +54,19 @@ Resources:
         ComputeType: BUILD_GENERAL1_LARGE
         EnvironmentVariables:
           - Name: STACK_NAME
-            # Value: !Sub ${PulumiOrgName}/${AWS::AccountId}-${AWS::Region}
-            Value: !Sub panther-dev/${AWS::AccountId}-${AWS::Region}
+            Value: !Sub
+              - ${PulumiOrgName}/${AWS::AccountId}-${AWS::Region}
+              - PulumiOrgName: !FindInMap [Params, Pulumi, PulumiOrgName]
           - Name: PULUMI_ACCESS_TOKEN
             Type: SECRETS_MANAGER
-            Value: !Sub ${PulumiSecretArn}:PULUMI_ACCESS_TOKEN
+            Value: !Sub
+              - ${PulumiSecretArn}:PULUMI_ACCESS_TOKEN
+              - PulumiSecretArn: !FindInMap [Secrets, Pulumi, PulumiSecretArn]
         Image: pulumi/pulumi-python
-        ImagePullCredentialsType: !If [DockerCredentials, SERVICE_ROLE, CODEBUILD]
-        RegistryCredential: !If
-          - DockerCredentials
-          - Credential: !Ref DockerSecretArn
-            CredentialProvider: SECRETS_MANAGER
-          - !Ref AWS::NoValue
+        ImagePullCredentialsType: SERVICE_ROLE
+        RegistryCredential:
+          Credential: !FindInMap [Secrets, Codebuild, DockerSecretArn]
+          CredentialProvider: SECRETS_MANAGER
         Type: LINUX_CONTAINER
       Name: panther-pulumi
       ServiceRole: !Ref PulumiCodeBuildRole
@@ -106,6 +118,30 @@ Resources:
                   - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler
                   - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler:log-stream:*
               - Effect: Allow
+                Action: iam:*
+                  # - iam:CreateRole
+                  # - iam:PutRolePolicy
+                  # - iam:GetRolePolicy
+                  # - iam:GetRole
+                  # - iam:ListRolePolicies
+                  # - iam:ListAttachedRolePolicies
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/sentry-asana-lambda-role-*
+              - Effect: Allow
+                Action: lambda:*
+                  # - lambda:CreateAlias
+                  # - lambda:CreateFunction
+                  # - lambda:DeleteAlias
+                  # - lambda:DeleteFunction
+                  # - lambda:PublishVersion
+                  # - lambda:UpdateFunctionCode
+                  # - lambda:UpdateFunctionConfiguration
+                  # - lambda:UpdateAlias
+                Resource:
+                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:sentry-asana-handler
+              - Effect: Allow
+                Action: apigateway:*
+                Resource: "*"
+              - Effect: Allow
                 Action:
                   - s3:Get*
                   - s3:List*
@@ -116,12 +152,6 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource:
-                  - !If [DockerCredentials, !Ref DockerSecretArn, !Ref AWS::NoValue]
-                  - !Ref PulumiSecretArn
-                  - !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:integration/sentry-asana-*
-              # - !If
-              #   - PulumiKmsKeyGiven
-              #   - Effect: Allow
-              #     Action: kms:Decrypt
-              #     Resource: !Ref PulumiSecretKeyArn
-              #   - !Ref AWS::NoValue
+                  - !FindInMap [Secrets, Codebuild, DockerSecretArn]
+                  - !FindInMap [Secrets, Pulumi, PulumiSecretArn]
+                  - !FindInMap [Secrets, SentryAsana, SentryAsanaSecretArn]
