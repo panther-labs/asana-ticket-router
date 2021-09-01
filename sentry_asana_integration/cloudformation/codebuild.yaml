@@ -119,35 +119,23 @@ Resources:
                   - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler:log-stream:*
               - Effect: Allow
                 Action: iam:*
-                  # - iam:CreateRole
-                  # - iam:PutRolePolicy
-                  # - iam:GetRolePolicy
-                  # - iam:GetRole
-                  # - iam:ListRolePolicies
-                  # - iam:ListAttachedRolePolicies
                 Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/sentry-asana-lambda-role-*
               - Effect: Allow
                 Action: lambda:*
-                  # - lambda:CreateAlias
-                  # - lambda:CreateFunction
-                  # - lambda:DeleteAlias
-                  # - lambda:DeleteFunction
-                  # - lambda:PublishVersion
-                  # - lambda:UpdateFunctionCode
-                  # - lambda:UpdateFunctionConfiguration
-                  # - lambda:UpdateAlias
-                Resource:
-                  - !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:sentry-asana-handler
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:sentry-asana-handler
               - Effect: Allow
-                Action: apigateway:*
+                Action:
+                  - apigateway:POST
+                  - apigateway:GET
                 Resource: "*"
               - Effect: Allow
                 Action:
                   - s3:Get*
                   - s3:List*
                   - s3:PutObject
-                Resource: "*"
-                  # - arn:aws:s3:::sentry-asana-test-deployment-bucket/*
+                Resource:
+                  - arn:aws:s3:::sentry-asana-test-deployment-bucket/*
+                  - arn:aws:s3:::sentry-asana-test-deployment-bucket
               # (cross-account) secrets manager and KMS for decrypting docker/pulumi credentials
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
