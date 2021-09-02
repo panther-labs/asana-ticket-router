@@ -2,6 +2,7 @@
 # gitignoring pipfiles since this is not our chosen tool for package management right now
 Pipfile
 Pipfile.lock
+venv
 
 # IDE
 .vscode
