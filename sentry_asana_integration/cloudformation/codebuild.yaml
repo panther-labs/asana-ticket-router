@@ -1,35 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Template for Sentry Asana Codebuild Project
 
-# Parameters:
-#   # Pulumi configuration
-#   DockerSecretArn:
-#     Type: String
-#     # https://docs.docker.com/docker-hub/download-rate-limit/
-#     Description: ARN for the Dockerhub 'username' and 'password' (access token) stored in secrets manager. These credentials may be required to avoid rate-limiting when pulling the Pulumi image.
-#     Default: ''
-#     AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+)?$'
-  # PulumiOrgName:
-  #   Type: String
-  #   Description: Pulumi organization for stack metadata management
-  #   AllowedValues:
-  #     - panther
-  #     - panther-dev
-  #   Default: panther
-  # PulumiSecretArn:
-  #   Type: String
-  #   Description: ARN for the PULUMI_ACCESS_TOKEN stored in secrets manager
-  #   AllowedPattern: '^arn:(aws|aws-cn|aws-us-gov):secretsmanager:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:secret:\S+$'
-  # PulumiSecretKeyArn:
-  #   Type: String
-  #   Description: ARN for the KMS key that encrypts the PulumiSecretArn (required to grant cross-account access)
-  #   Default: ''
-  #   AllowedPattern: '^(arn:(aws|aws-cn|aws-us-gov):kms:[a-z]{2}-[a-z]{4,9}-[1-9]:[0-9]{12}:key/[0-9a-f-]{36})?$'
-
-# Conditions:
-#   DockerCredentials: !Not [!Equals [!Ref DockerSecretArn, '']]
-  # PulumiKmsKeyGiven: !Not [!Equals [!Ref PulumiSecretKeyArn, '']]
-
 Mappings:
   Secrets:
     Codebuild:
@@ -38,13 +9,23 @@ Mappings:
       PulumiSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Pulumi_Access_Token-B9pE0o
     SentryAsana:
       SentryAsanaSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:integration/sentry-asana-r8Xg3w
+    Github:
+      GithubSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Panther_Bot_Github_Access_Token-TIuxHZ
   Params:
     Pulumi:
       PulumiOrgName: panther-dev
 
 Resources:
+  GithubToken:
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      Token: '{{resolve:secretsmanager:arn:aws:secretsmanager:us-west-2:812141001309:secret:Panther_Bot_Github_Access_Token-TIuxHZ:SecretString:GITHUB_ACCESS_TOKEN}}'
+      ServerType: GITHUB
+      AuthType: PERSONAL_ACCESS_TOKEN
+
   SentryAsanaPulumiCodeBuildProject:
     Type: AWS::CodeBuild::Project
+    DependsOn: GithubToken
     Properties:
       Artifacts:
         Type: NO_ARTIFACTS
@@ -63,10 +44,11 @@ Resources:
               - ${PulumiSecretArn}:PULUMI_ACCESS_TOKEN
               - PulumiSecretArn: !FindInMap [Secrets, Pulumi, PulumiSecretArn]
         Image: pulumi/pulumi-python
-        ImagePullCredentialsType: SERVICE_ROLE
-        RegistryCredential:
-          Credential: !FindInMap [Secrets, Codebuild, DockerSecretArn]
-          CredentialProvider: SECRETS_MANAGER
+        ImagePullCredentialsType: CODEBUILD
+        # ImagePullCredentialsType: SERVICE_ROLE
+        # RegistryCredential:
+        #   Credential: !FindInMap [Secrets, Codebuild, DockerSecretArn]
+        #   CredentialProvider: SECRETS_MANAGER
         Type: LINUX_CONTAINER
       Name: panther-pulumi
       ServiceRole: !Ref PulumiCodeBuildRole
@@ -87,8 +69,16 @@ Resources:
             build:
               commands:
                 - pulumi up --skip-preview --yes --stack $STACK_NAME
-        Location: sentry-asana-test-deployment-bucket/
-        Type: S3
+        GitCloneDepth: 1
+        Location: https://github.com/panther-labs/hosted-ops.git
+        Type: GITHUB
+      # Triggers:
+      #   Webhook: true
+      #   FilterGroups:
+      #     - - Type: EVENT
+      #         Pattern: PULL_REQUEST_MERGED
+      #         ExcludeMatchedPattern: false
+
       TimeoutInMinutes: 30
 
   PulumiCodeBuildRole:
