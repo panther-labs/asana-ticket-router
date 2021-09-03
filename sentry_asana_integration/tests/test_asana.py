@@ -16,7 +16,8 @@ from ..src.service.asana_service import AsanaService, AsanaTeam
 class TestAsanaService(TestCase):
     """Unit Testing Class for AsanaService"""
     _env_vars = {
-        'DEV_ASANA_SENTRY_PROJECT': 'dev-project'
+        'DEV_ASANA_SENTRY_PROJECT': 'dev-project',
+        'CORE_PLATFORM_BACKLOG_PROJECT': 'core-platform-backlog-project'
     }
 
     def test_get_owning_team_with_exact_match_server_name(self) -> None:
@@ -116,6 +117,7 @@ class TestAsanaService(TestCase):
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
 
+    @patch.dict(os.environ, _env_vars)
     def test_load_asana_projects(self) -> None:
         # Arrange
         mock_asana_client = MagicMock()
@@ -137,7 +139,7 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1199906407795548",
-                "name": "Eng Backlog",
+                "name": "Backlog: Ingestion",
                 "resource_type": "project"
             },
             {
@@ -209,7 +211,7 @@ class TestAsanaService(TestCase):
         # Assert
         self.assertEqual(asana_service._current_eng_sprint_project_id, '1200693863324520')
         self.assertEqual(asana_service._current_dogfooding_project_id, '1200319127186571')
-        self.assertEqual(asana_service._backlog_project_id, '1199906407795548')
+        self.assertEqual(asana_service._backlog_project_id, 'core-platform-backlog-project')
 
     @patch.dict(os.environ, _env_vars)
     def test_get_project_ids_dev(self) -> None:

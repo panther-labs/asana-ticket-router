@@ -44,7 +44,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         ]
 
         # This secret is not created dynamically; it needs to be manually created in the deployment account
-        secret_arn = f'arn:aws:secretsmanager:{region}:{account}:secret:integration/sentry-asana-*'
+        secret_arn = f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
         inline_policies.append(
             aws.iam.RoleInlinePolicyArgs(name=f'{name}-GetSecret', policy=json.dumps({
                     'Statement': [
@@ -88,7 +88,8 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
                     'ASANA_ENGINEERING_TEAM_ID': '1199906122285402',
                     'ASANA_PANTHER_LABS_WORKSPACE_ID': '1159526352574257',
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920', # Asana ID for 'Test Project (Sentry-Asana integration work)'
-                    'DEV_TEAM_LEAD_ID': '1200567447162380' # Asana ID for Yusuf Akhtar
+                    'DEV_TEAM_LEAD_ID': '1200567447162380', # Asana ID for Yusuf Akhtar
+                    'CORE_PLATFORM_BACKLOG_PROJECT': '1200908948600042' # Asana ID for 'Backlog: Core Platform'
                 }
             },
             runtime='python3.7',
