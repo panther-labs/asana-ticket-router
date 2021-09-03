@@ -108,7 +108,9 @@ class TestAsanaService(TestCase):
                 '1200216708142306': '1200822942218893'
             },
             'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
-                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\nCustomer Impacted: alpha')
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
+                        'Customer Impacted: alpha\n\n'
+                        'Environment: prod')
         }
 
         # Act
@@ -154,12 +156,12 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1200319127186571",
-                "name": "Current Dogfooding",
+                "name": "Dogfooding: 08/23 - 09/01",
                 "resource_type": "project"
             },
             {
                 "gid": "1200319127186570",
-                "name": "Old Dogfooding",
+                "name": "E2E Testing for Dogfooding",
                 "resource_type": "project"
             },
         ]
@@ -183,18 +185,10 @@ class TestAsanaService(TestCase):
                 },
                 '1200319127186571': {
                     "data": {
-                        "gid": "1200319127186571", # Current Dogfooding
+                        "gid": "1200319127186571", # Dogfooding: 08/23 - 09/01
                         "archived": False,
                         "color": "dark-orange",
                         "created_at": "2021-08-01T10:30:30.159Z"
-                    }
-                },
-                '1200319127186570': {
-                    "data": {
-                        "gid": "1200319127186570", # Old Dogfooding
-                        "archived": False,
-                        "color": "dark-orange",
-                        "created_at": "2021-07-19T09:30:30.159Z"
                     }
                 }
             }

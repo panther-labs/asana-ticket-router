@@ -68,7 +68,7 @@ class AsanaService:
         for proj in get_projects_response:
             if 'sprint' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 eng_sprint_projects.append(proj)
-            elif 'dogfood' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
+            elif 'dogfooding:' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 dogfooding_projects.append(proj)
 
         self._logger.info('The following projects are sprint related: %s', eng_sprint_projects)
@@ -191,7 +191,10 @@ class AsanaService:
                 '1199906290951705': assigned_team.value,# Team: <relevant team enum gid>: str> (Enum)
                 '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
             },
-            'notes': f'Sentry Issue URL: {url}\n\nEvent Datetime: {sentry_event["datetime"]}\n\nCustomer Impacted: {customer}'
+            'notes': (f'Sentry Issue URL: {url}\n\n'
+                        f'Event Datetime: {sentry_event["datetime"]}\n\n'
+                        f'Customer Impacted: {customer}\n\n'
+                        f'Environment: {sentry_event["environment"].lower()}')
         }
         self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
