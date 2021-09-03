@@ -3,17 +3,17 @@ Description: Template for Sentry Asana Codebuild Project
 
 Mappings:
   Secrets:
-    Codebuild:
-      DockerSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Dockerhub-HRMWZ7
+    Dockerhub:
+      SecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Dockerhub-HRMWZ7
     Pulumi:
-      PulumiSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Pulumi_Access_Token-B9pE0o
+      SecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Yusuf_Akhtar_Pulumi_Access_Token-B9pE0o
     SentryAsana:
-      SentryAsanaSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:integration/sentry-asana-r8Xg3w
+      SecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:integration/sentry-asana-r8Xg3w
     Github:
-      GithubSecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Panther_Bot_Github_Access_Token-TIuxHZ
+      SecretArn: arn:aws:secretsmanager:us-west-2:812141001309:secret:Panther_Bot_Github_Access_Token-TIuxHZ
   Params:
     Pulumi:
-      PulumiOrgName: panther-dev
+      OrgName: panther-dev
 
 Resources:
   GithubToken:
@@ -36,22 +36,22 @@ Resources:
         EnvironmentVariables:
           - Name: STACK_NAME
             Value: !Sub
-              - ${PulumiOrgName}/${AWS::AccountId}-${AWS::Region}
-              - PulumiOrgName: !FindInMap [Params, Pulumi, PulumiOrgName]
+              - ${PulumiOrgName}/sentry-asana
+              - PulumiOrgName: !FindInMap [Params, Pulumi, OrgName]
           - Name: PULUMI_ACCESS_TOKEN
             Type: SECRETS_MANAGER
             Value: !Sub
               - ${PulumiSecretArn}:PULUMI_ACCESS_TOKEN
-              - PulumiSecretArn: !FindInMap [Secrets, Pulumi, PulumiSecretArn]
+              - PulumiSecretArn: !FindInMap [Secrets, Pulumi, SecretArn]
         Image: pulumi/pulumi-python
-        ImagePullCredentialsType: CODEBUILD
-        # ImagePullCredentialsType: SERVICE_ROLE
-        # RegistryCredential:
-        #   Credential: !FindInMap [Secrets, Codebuild, DockerSecretArn]
-        #   CredentialProvider: SECRETS_MANAGER
+        # ImagePullCredentialsType: CODEBUILD
+        ImagePullCredentialsType: SERVICE_ROLE
+        RegistryCredential:
+          Credential: !FindInMap [Secrets, Dockerhub, SecretArn]
+          CredentialProvider: SECRETS_MANAGER
         Type: LINUX_CONTAINER
-      Name: panther-pulumi
-      ServiceRole: !Ref PulumiCodeBuildRole
+      Name: sentry-asana
+      ServiceRole: !Ref SentryAsanaPulumiCodeBuildRole
       Source:
         BuildSpec: |
           version: 0.2
@@ -60,7 +60,6 @@ Resources:
               commands:
                 - python3 -m venv venv
                 - venv/bin/pip3 install pulumi pulumi-aws
-                - sed -i 's/..\/..\/.setup\/venv/venv/g' Pulumi.yaml
             pre_build:
               commands:
                 - pulumi version
@@ -72,19 +71,12 @@ Resources:
         GitCloneDepth: 1
         Location: https://github.com/panther-labs/hosted-ops.git
         Type: GITHUB
-      # Triggers:
-      #   Webhook: true
-      #   FilterGroups:
-      #     - - Type: EVENT
-      #         Pattern: PULL_REQUEST_MERGED
-      #         ExcludeMatchedPattern: false
-
       TimeoutInMinutes: 30
 
-  PulumiCodeBuildRole:
+  SentryAsanaPulumiCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub PantherPulumiCodeBuild-${AWS::Region} # Use a fixed role name for org SCP
+      RoleName: !Sub SentryAsanaPulumiCodeBuild-${AWS::Region} # Use a fixed role name for org SCP
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -103,10 +95,8 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/panther-pulumi
-                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/panther-pulumi:*
-                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler
-                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/sentry-asana-handler:log-stream:*
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/sentry-asana
+                  - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/sentry-asana:*
               - Effect: Allow
                 Action: iam:*
                 Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/sentry-asana-lambda-role-*
@@ -118,18 +108,11 @@ Resources:
                   - apigateway:POST
                   - apigateway:GET
                 Resource: "*"
-              - Effect: Allow
-                Action:
-                  - s3:Get*
-                  - s3:List*
-                  - s3:PutObject
-                Resource:
-                  - arn:aws:s3:::sentry-asana-test-deployment-bucket/*
-                  - arn:aws:s3:::sentry-asana-test-deployment-bucket
               # (cross-account) secrets manager and KMS for decrypting docker/pulumi credentials
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource:
-                  - !FindInMap [Secrets, Codebuild, DockerSecretArn]
-                  - !FindInMap [Secrets, Pulumi, PulumiSecretArn]
-                  - !FindInMap [Secrets, SentryAsana, SentryAsanaSecretArn]
+                  - !FindInMap [Secrets, Pulumi, SecretArn]
+                  - !FindInMap [Secrets, SentryAsana, SecretArn]
+                  - !FindInMap [Secrets, Github, SecretArn]
+                  - !FindInMap [Secrets, Dockerhub, SecretArn]
