@@ -84,7 +84,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             name=handler_lambda_name,
             environment={
                 'variables': {
-                    'SECRET_NAME': 'integration/sentry-asana',
+                    'SECRET_NAME': 'Sentry_Asana_Secrets',
                     'ASANA_ENGINEERING_TEAM_ID': '1199906122285402',
                     'ASANA_PANTHER_LABS_WORKSPACE_ID': '1159526352574257',
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920', # Asana ID for 'Test Project (Sentry-Asana integration work)'
