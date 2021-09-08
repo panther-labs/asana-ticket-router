@@ -71,6 +71,8 @@ Resources:
         GitCloneDepth: 1
         Location: https://github.com/panther-labs/hosted-ops.git
         Type: GITHUB
+        # Location: sentry-asana-test-deployment-bucket/
+        # Type: S3
       TimeoutInMinutes: 30
 
   SentryAsanaPulumiCodeBuildRole:
@@ -109,6 +111,11 @@ Resources:
                   - apigateway:GET
                 Resource: "*"
               # (cross-account) secrets manager and KMS for decrypting docker/pulumi credentials
+              # - Effect: Allow
+              #   Action: s3:*
+              #   Resource:
+              #     - arn:aws:s3:::sentry-asana-test-deployment-bucket
+              #     - arn:aws:s3:::sentry-asana-test-deployment-bucket/*
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource:

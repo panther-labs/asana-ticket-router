@@ -1,0 +1,3 @@
+config:
+  sentry-asana-integration:deploymentParams:
+    metricAlarmArn: arn:aws:sns:us-west-2:812141001309:Default_CloudWatch_Alarms_Topic
