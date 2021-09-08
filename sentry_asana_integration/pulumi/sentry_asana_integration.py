@@ -15,16 +15,20 @@ import pulumi
 
 class SentryAsanaIntegration(pulumi.ComponentResource):
     """A Pulumi Component Resource that represents a Lambda Fn & API Gateway that enable Sentry -> Asana integration."""
-    def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None):
+    def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None): #pylint: disable=R0914
         super().__init__('panther:internal:integration', name, None, opts)
-        handler_lambda_name = f'{name}-handler'
         region = aws.config.region # type: ignore
         account = aws.get_caller_identity().account_id
+        config = pulumi.Config()
+        stack_name = pulumi.get_stack()
+        handler_lambda_name = f'{stack_name}-handler'
+        deployment_params = config.get_object('deploymentParams')
+
 
         log_group_arn = f'arn:aws:logs:{region}:{account}:log-group:/aws/lambda/{handler_lambda_name}'
         inline_policies: List[aws.iam.RoleInlinePolicyArgs] = [
             # like the AWSLambdaBasicExecutionRole managed policy, but restricted to just our log group
-            aws.iam.RoleInlinePolicyArgs(name=f'{name}-WriteLogs', policy=json.dumps({
+            aws.iam.RoleInlinePolicyArgs(name=f'{stack_name}-WriteLogs', policy=json.dumps({
                     'Statement': [
                         {
                             'Effect': 'Allow',
@@ -46,7 +50,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         # This secret is not created dynamically; it needs to be manually created in the deployment account
         secret_arn = f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
         inline_policies.append(
-            aws.iam.RoleInlinePolicyArgs(name=f'{name}-GetSecret', policy=json.dumps({
+            aws.iam.RoleInlinePolicyArgs(name=f'{stack_name}-GetSecret', policy=json.dumps({
                     'Statement': [
                         {
                             'Effect': 'Allow',
@@ -60,7 +64,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
 
         # Create the role for the Lambda to assume
         lambda_role = aws.iam.Role(
-            f'{name}-lambda-role',
+            f'{stack_name}-lambda-role',
             assume_role_policy=json.dumps({
                 'Version': '2012-10-17',
                 'Statement': [{
@@ -77,7 +81,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
 
         # Create the lambda to execute
         lambda_function = aws.lambda_.Function(
-            f'{name}-handler-function',
+            f'{stack_name}-handler-function',
             code=pulumi.AssetArchive({
                 '.': pulumi.FileArchive(lambda_deployment_pkg_dir),
             }),
@@ -100,9 +104,29 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
 
+        if deployment_params and deployment_params.get('metricAlarmArn'):
+            aws.cloudwatch.MetricAlarm(
+                f'{stack_name}-lambda-error-metric-alarm',
+                comparison_operator='GreaterThanOrEqualToThreshold',
+                evaluation_periods=1,
+                datapoints_to_alarm=1,
+                actions_enabled=True,
+                metric_name='Errors',
+                namespace='AWS/Lambda',
+                period=60,
+                statistic='Minimum',
+                threshold=1,
+                treat_missing_data='missing',
+                alarm_description=f'This alarm monitors errors for the {handler_lambda_name} Lambda function',
+                alarm_actions=[deployment_params.get('metricAlarmArn')],
+                dimensions={
+                    'FunctionName': handler_lambda_name
+                }
+            )
+
         # Give API Gateway permissions to invoke the Lambda
         aws.lambda_.Permission(
-            f'{name}-apigw-lambda-invoke-permission',
+            f'{stack_name}-apigw-lambda-invoke-permission',
             action='lambda:InvokeFunction',
             function=lambda_function.name,
             principal='apigateway.amazonaws.com',
@@ -110,7 +134,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         )
 
         apigw = aws.apigatewayv2.Api(
-            f'{name}-api',
+            f'{stack_name}-api',
             protocol_type='HTTP',
             route_key='POST /',
             target=lambda_function.invoke_arn,
