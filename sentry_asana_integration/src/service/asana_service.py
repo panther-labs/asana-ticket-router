@@ -44,7 +44,7 @@ class AsanaService:
         self._logger = get_logger()
         self._current_eng_sprint_project_id: Optional[str] = None
         self._current_dogfooding_project_id: Optional[str] = None
-        self._backlog_project_id: Optional[str] = None
+        self._backlog_project_id: Optional[str] = os.environ.get('CORE_PLATFORM_BACKLOG_PROJECT')
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
@@ -64,23 +64,18 @@ class AsanaService:
         self._logger.info('get_projects_response: %s', get_projects_response)
 
         eng_sprint_projects = []
-        backlog_projects = []
         dogfooding_projects = []
         for proj in get_projects_response:
             if 'sprint' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 eng_sprint_projects.append(proj)
-            elif 'backlog' in proj['name'].lower():
-                backlog_projects.append(proj)
-            elif 'dogfood' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
+            elif 'dogfooding:' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 dogfooding_projects.append(proj)
 
         self._logger.info('The following projects are sprint related: %s', eng_sprint_projects)
         self._logger.info('The following projects are dogfooding related: %s', dogfooding_projects)
-        self._logger.info('The following projects are backlog related: %s', backlog_projects)
 
         self._current_eng_sprint_project_id = self._get_newest_created_project_id(eng_sprint_projects)
         self._current_dogfooding_project_id = self._get_newest_created_project_id(dogfooding_projects)
-        self._backlog_project_id = self._get_newest_created_project_id(backlog_projects)
 
         self._logger.info('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
         self._logger.info('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
@@ -196,7 +191,10 @@ class AsanaService:
                 '1199906290951705': assigned_team.value,# Team: <relevant team enum gid>: str> (Enum)
                 '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
             },
-            'notes': f'Sentry Issue URL: {url}\n\nEvent Datetime: {sentry_event["datetime"]}\n\nCustomer Impacted: {customer}'
+            'notes': (f'Sentry Issue URL: {url}\n\n'
+                        f'Event Datetime: {sentry_event["datetime"]}\n\n'
+                        f'Customer Impacted: {customer}\n\n'
+                        f'Environment: {sentry_event["environment"].lower()}')
         }
         self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)

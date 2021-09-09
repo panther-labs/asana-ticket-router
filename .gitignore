@@ -15,3 +15,6 @@ venv
 
 # Pulumi Lambda Deployment Artifacts
 .lambda-deployment
+
+# Dev Pulumi Deployment Configs
+Pulumi.dev*.yaml

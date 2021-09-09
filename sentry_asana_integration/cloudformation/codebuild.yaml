@@ -67,7 +67,7 @@ Resources:
                 - pulumi stack init --stack $STACK_NAME || echo "stack already exists"
             build:
               commands:
-                - pulumi up --skip-preview --yes --stack $STACK_NAME
+                - pulumi up --skip-preview --yes --stack $STACK_NAME --config-file Pulumi.sentry-asana.yaml
         GitCloneDepth: 1
         Location: https://github.com/panther-labs/hosted-ops.git
         Type: GITHUB
@@ -105,6 +105,9 @@ Resources:
               - Effect: Allow
                 Action: lambda:*
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:sentry-asana-handler
+              - Effect: Allow
+                Action: cloudwatch:*
+                Resource: !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:sentry-asana-lambda-error-metric-alarm-*
               - Effect: Allow
                 Action:
                   - apigateway:POST

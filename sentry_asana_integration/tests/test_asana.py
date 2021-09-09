@@ -16,7 +16,8 @@ from ..src.service.asana_service import AsanaService, AsanaTeam
 class TestAsanaService(TestCase):
     """Unit Testing Class for AsanaService"""
     _env_vars = {
-        'DEV_ASANA_SENTRY_PROJECT': 'dev-project'
+        'DEV_ASANA_SENTRY_PROJECT': 'dev-project',
+        'CORE_PLATFORM_BACKLOG_PROJECT': 'core-platform-backlog-project'
     }
 
     def test_get_owning_team_with_exact_match_server_name(self) -> None:
@@ -107,7 +108,9 @@ class TestAsanaService(TestCase):
                 '1200216708142306': '1200822942218893'
             },
             'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
-                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\nCustomer Impacted: alpha')
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
+                        'Customer Impacted: alpha\n\n'
+                        'Environment: prod')
         }
 
         # Act
@@ -116,6 +119,7 @@ class TestAsanaService(TestCase):
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
 
+    @patch.dict(os.environ, _env_vars)
     def test_load_asana_projects(self) -> None:
         # Arrange
         mock_asana_client = MagicMock()
@@ -137,7 +141,7 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1199906407795548",
-                "name": "Eng Backlog",
+                "name": "Backlog: Ingestion",
                 "resource_type": "project"
             },
             {
@@ -152,12 +156,12 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1200319127186571",
-                "name": "Current Dogfooding",
+                "name": "Dogfooding: 08/23 - 09/01",
                 "resource_type": "project"
             },
             {
                 "gid": "1200319127186570",
-                "name": "Old Dogfooding",
+                "name": "E2E Testing for Dogfooding",
                 "resource_type": "project"
             },
         ]
@@ -181,18 +185,10 @@ class TestAsanaService(TestCase):
                 },
                 '1200319127186571': {
                     "data": {
-                        "gid": "1200319127186571", # Current Dogfooding
+                        "gid": "1200319127186571", # Dogfooding: 08/23 - 09/01
                         "archived": False,
                         "color": "dark-orange",
                         "created_at": "2021-08-01T10:30:30.159Z"
-                    }
-                },
-                '1200319127186570': {
-                    "data": {
-                        "gid": "1200319127186570", # Old Dogfooding
-                        "archived": False,
-                        "color": "dark-orange",
-                        "created_at": "2021-07-19T09:30:30.159Z"
                     }
                 }
             }
@@ -209,7 +205,7 @@ class TestAsanaService(TestCase):
         # Assert
         self.assertEqual(asana_service._current_eng_sprint_project_id, '1200693863324520')
         self.assertEqual(asana_service._current_dogfooding_project_id, '1200319127186571')
-        self.assertEqual(asana_service._backlog_project_id, '1199906407795548')
+        self.assertEqual(asana_service._backlog_project_id, 'core-platform-backlog-project')
 
     @patch.dict(os.environ, _env_vars)
     def test_get_project_ids_dev(self) -> None:
