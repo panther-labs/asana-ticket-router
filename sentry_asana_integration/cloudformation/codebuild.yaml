@@ -109,6 +109,9 @@ Resources:
                 Action: cloudwatch:*
                 Resource: !Sub arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:sentry-asana-lambda-error-metric-alarm-*
               - Effect: Allow
+                Action: sns:*
+                Resource: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:sentry-asana-default-sns-topic*
+              - Effect: Allow
                 Action:
                   - apigateway:POST
                   - apigateway:GET
