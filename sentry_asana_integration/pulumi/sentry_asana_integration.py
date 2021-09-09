@@ -15,7 +15,7 @@ import pulumi
 
 class SentryAsanaIntegration(pulumi.ComponentResource):
     """A Pulumi Component Resource that represents a Lambda Fn & API Gateway that enable Sentry -> Asana integration."""
-    def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None): #pylint: disable=R0914
+    def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None):
         super().__init__('panther:internal:integration', name, None, opts)
         region = aws.config.region # type: ignore
         account = aws.get_caller_identity().account_id
@@ -104,25 +104,54 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
 
-        if deployment_params and deployment_params.get('metricAlarmArn'):
-            aws.cloudwatch.MetricAlarm(
-                f'{stack_name}-lambda-error-metric-alarm',
-                comparison_operator='GreaterThanOrEqualToThreshold',
-                evaluation_periods=1,
-                datapoints_to_alarm=1,
-                actions_enabled=True,
-                metric_name='Errors',
-                namespace='AWS/Lambda',
-                period=60,
-                statistic='Minimum',
-                threshold=1,
-                treat_missing_data='missing',
-                alarm_description=f'This alarm monitors errors for the {handler_lambda_name} Lambda function',
-                alarm_actions=[deployment_params.get('metricAlarmArn')],
-                dimensions={
-                    'FunctionName': handler_lambda_name
-                }
+        default_sns_topic = aws.sns.Topic(
+            f'{stack_name}-default-sns-topic',
+            name=f'{stack_name}-default-sns-topic',
+            display_name=f'{stack_name}-default-sns-topic',
+            opts=pulumi.ResourceOptions(parent=self),
+        )
+        topic_arns = [default_sns_topic.arn]
+        if deployment_params and deployment_params.get('metricAlarmActionsArns'):
+            topic_arns.extend(list(deployment_params.get('metricAlarmActionsArns')))
+
+
+        if deployment_params and deployment_params.get('snsTopicSubscriptionEmailAddresses'):
+            for itr, email_address in enumerate(list(deployment_params.get('snsTopicSubscriptionEmailAddresses'))):
+                aws.sns.TopicSubscription(
+                    f'{stack_name}-sns-topic-{itr + 1}-subscription',
+                    endpoint=email_address,
+                    protocol='email',
+                    topic=default_sns_topic.arn,
+                    opts=pulumi.ResourceOptions(parent=default_sns_topic),
+                )
+        else:
+            aws.sns.TopicSubscription(
+                f'{stack_name}-sns-topic-fallback-subscription',
+                endpoint='eng-core-infra@runpanther.io',
+                protocol='email',
+                topic=default_sns_topic.arn,
+                opts=pulumi.ResourceOptions(parent=default_sns_topic),
             )
+
+        aws.cloudwatch.MetricAlarm(
+            f'{stack_name}-lambda-error-metric-alarm',
+            comparison_operator='GreaterThanOrEqualToThreshold',
+            evaluation_periods=1,
+            datapoints_to_alarm=1,
+            actions_enabled=True,
+            metric_name='Errors',
+            namespace='AWS/Lambda',
+            period=60,
+            statistic='Maximum',
+            threshold=1,
+            treat_missing_data='missing',
+            alarm_description=f'Sentry Asana Automation Error - {handler_lambda_name} Lambda function encountered an error',
+            alarm_actions=topic_arns,
+            dimensions={
+                'FunctionName': handler_lambda_name
+            },
+            opts=pulumi.ResourceOptions(parent=self),
+        )
 
         # Give API Gateway permissions to invoke the Lambda
         aws.lambda_.Permission(

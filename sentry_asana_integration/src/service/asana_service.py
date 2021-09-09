@@ -196,10 +196,11 @@ class AsanaService:
                         f'Customer Impacted: {customer}\n\n'
                         f'Environment: {sentry_event["environment"].lower()}')
         }
-        self._logger.info('Creating Asana task with the following details: %s', task_creation_details)
+        self._logger.info('Attempting to create Asana task with the following details: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
         self._logger.info('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
+            self._logger.error('Unable to verify that Asana task was created correctly')
             raise KeyError('Unable to verify that Asana task was created correctly')
         return task_creation_result['gid']
 
