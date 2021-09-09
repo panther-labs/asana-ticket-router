@@ -33,16 +33,18 @@ def handler(event: Dict, _: Dict) -> Dict:
         digestmod=sha256,
     ).hexdigest()
     if expected != event['headers']['sentry-hook-signature']:
+        log.error('Unable to match received signature %s with expected signature %s', event['headers']['sentry-hook-signature'], expected)
         raise ValueError(
-            f"Invalid signature received. Expected signature: {expected} - Received signature: {event['headers']['sentry-hook-signature']}"
+            f'Invalid signature received. Expected signature: {expected} - Received signature: {event["headers"]["sentry-hook-signature"]}'
         )
 
+    log.info('Verified signature, now attempting to triage Sentry issue..')
     json_body = json.loads(body)
     new_task_gid = asana_service.create_asana_task_from_sentry_event(json_body['data']['event'])
 
     response = {
-        "statusCode": 200,
-        "body": json.dumps({"AsanaTaskGid": new_task_gid})
+        'statusCode': 200,
+        'body': json.dumps({'AsanaTaskGid': new_task_gid})
     }
 
     return response
