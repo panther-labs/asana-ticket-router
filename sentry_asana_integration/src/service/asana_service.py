@@ -12,6 +12,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from asana import Client as AsanaClient
+from asana import error as AsanaError
 
 from ..util.logger import get_logger
 
@@ -44,7 +45,8 @@ class AsanaService:
         self._logger = get_logger()
         self._current_eng_sprint_project_id: Optional[str] = None
         self._current_dogfooding_project_id: Optional[str] = None
-        self._backlog_project_id: Optional[str] = os.environ.get('CORE_PLATFORM_BACKLOG_PROJECT')
+        # Providing a default value to satisfy mypy; essentially, Optional[str] != str
+        self._backlog_project_id = os.environ.get('CORE_PLATFORM_BACKLOG_PROJECT', '1200908948600042')
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
@@ -134,16 +136,14 @@ class AsanaService:
             A list containing the ids (string) of each relevant project
         """
         project_ids: List[str] = []
-        # the backup value is the project ID for 'Test Project (Sentry-Asana integration work)'
         if environment.lower() == 'dev':
+            # Providing a default value to satisfy mypy; essentially, Optional[str] != str
+            # Default value given is the Asana ID for 'Test Project (Sentry-Asana integration work)'
             return [os.environ.get('DEV_ASANA_SENTRY_PROJECT', '1200611106362920')]
         if self._current_eng_sprint_project_id:
             project_ids.append(self._current_eng_sprint_project_id)
         if environment.lower() == 'staging' and self._current_dogfooding_project_id:
             project_ids.append(self._current_dogfooding_project_id)
-        if len(project_ids) < 1:
-            if self._backlog_project_id:
-                project_ids.append(self._backlog_project_id)
         return project_ids
 
     def create_asana_task_from_sentry_event(self, sentry_event: Dict[str, Any]) -> str:
@@ -179,7 +179,16 @@ class AsanaService:
             elif tag[0] == 'type':
                 event_type = tag[1]
         assigned_team = AsanaService._get_owning_team(server_name, event_type)
+        task_note = (f'Sentry Issue URL: {url}\n\n'
+                        f'Event Datetime: {sentry_event["datetime"]}\n\n'
+                        f'Customer Impacted: {customer}\n\n'
+                        f'Environment: {sentry_event["environment"].lower()}\n\n')
+
         project_gids = self._get_project_ids(sentry_event['environment'].lower())
+        if len(project_gids) == 0 or (sentry_event['environment'].lower() == 'staging' and len(project_gids) <= 1):
+            project_gids.append(self._backlog_project_id)
+            task_note += 'Unable to find the sprint project; assigning to core-platform backlog.\n\n'
+
         task_creation_details = {
             'name': sentry_event['title'],
             'projects': project_gids,
@@ -191,17 +200,32 @@ class AsanaService:
                 '1199906290951705': assigned_team.value,# Team: <relevant team enum gid>: str> (Enum)
                 '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
             },
-            'notes': (f'Sentry Issue URL: {url}\n\n'
-                        f'Event Datetime: {sentry_event["datetime"]}\n\n'
-                        f'Customer Impacted: {customer}\n\n'
-                        f'Environment: {sentry_event["environment"].lower()}')
+            'notes': task_note
         }
-        self._logger.info('Attempting to create Asana task with the following details: %s', task_creation_details)
+        self._logger.info('Attempting to create Asana task with the following fields: %s', task_creation_details)
+        try:
+            task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
+            self._logger.info('Task creation result: %s', task_creation_result)
+            if 'gid' not in task_creation_result:
+                self._logger.error('Unable to verify that Asana task was created correctly')
+                raise KeyError('Unable to verify that Asana task was created correctly')
+            return task_creation_result['gid']
+        except AsanaError.InvalidRequestError as ex:
+            self._logger.error('Unable to create the Asana task with custom fields: %s', str(ex))
+
+        task_note += ('Unable to create this task with all custom fields filled out due to an error with one of the fields values.\n'
+                        'Please alert a team member from core-platform about this message.')
+        task_creation_details = {
+            'name': sentry_event['title'],
+            'projects': project_gids,
+            'notes': task_note
+        }
+        self._logger.info('Attempting to retry Asana task creation with the following minimal set of fields: %s', task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
         self._logger.info('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
-            self._logger.error('Unable to verify that Asana task was created correctly')
-            raise KeyError('Unable to verify that Asana task was created correctly')
+            self._logger.error('Unable to verify that the second attempt to create the Asana task succeeded')
+            raise KeyError('Unable to verify that the second attempt to create the Asana task succeeded')
         return task_creation_result['gid']
 
     # This function is used to avoid making the extra API call to Asana (GET request to the 'issue_url' in the sentry event)

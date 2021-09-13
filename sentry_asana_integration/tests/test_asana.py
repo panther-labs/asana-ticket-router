@@ -6,9 +6,11 @@
 # falls under the Panther Commercial License to the extent it is permitted.
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+
+from asana import error as AsanaError
 
 from ..src.service.asana_service import AsanaService, AsanaTeam
 
@@ -93,12 +95,12 @@ class TestAsanaService(TestCase):
             "name": "new project"
         }
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
+        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
         asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
         asana_service._backlog_project_id = 'backlog_project_id'
         expected_result = {
             'name': "some-title",
-            'projects': ['current-eng-sprint-id'],
+            'projects': ['current_eng_sprint_id'],
             'custom_fields': {
                 '1159524604627932': '1159524604627933',
                 '1199912337121892': '1200218109698442',
@@ -110,7 +112,125 @@ class TestAsanaService(TestCase):
             'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
                         'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
                         'Customer Impacted: alpha\n\n'
-                        'Environment: prod')
+                        'Environment: prod\n\n')
+        }
+
+        # Act
+        asana_service.create_asana_task_from_sentry_event(sentry_event)
+
+        # Assert
+        mock_asana_client.tasks.create_task.assert_called_with(expected_result)
+
+    @patch.object(AsanaService, '_get_owning_team')
+    def test_create_asana_task_from_sentry_event_no_sprint_project(
+            self,
+            mock_get_owning_team: Any
+        ) -> None:
+        # Arrange
+        mock_get_owning_team.return_value = AsanaTeam.DETECTIONS
+        sentry_event = {
+            "datetime":"2021-07-14T00:10:08.299179Z",
+            "environment":"staging",
+            "tags":[
+                [
+                    "customer_name",
+                    "alpha"
+                ],
+                [
+                    "server_name",
+                    "panther-snapshot-pollers"
+                ]
+            ],
+            "timestamp":1626221408.299179,
+            "title":"some-title",
+            "url":"https://url.com/a/",
+            "web_url":"https://url.com/b/",
+            "issue_url":"https://url.com/c/",
+        }
+        mock_asana_client = MagicMock()
+        mock_asana_client.tasks.create_task.return_value = {
+            "gid": "12345",
+            "resource_type": "project",
+            "name": "new project"
+        }
+        asana_service = AsanaService(mock_asana_client, False)
+        asana_service._current_eng_sprint_project_id = None
+        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._backlog_project_id = 'core_platform_backlog_project_id'
+        expected_result = {
+            'name': "some-title",
+            'projects': ['current_dogfooding_project_id', 'core_platform_backlog_project_id'],
+            'custom_fields': {
+                '1159524604627932': '1159524604627933',
+                '1199912337121892': '1200218109698442',
+                '1199944595440874': 0.1,
+                '1200165681182165': '1200198568911550',
+                '1199906290951705': '1199906290951721', # Detections
+                '1200216708142306': '1200822942218893'
+            },
+            'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
+                        'Customer Impacted: alpha\n\n'
+                        'Environment: staging\n\n'
+                        'Unable to find the sprint project; assigning to core-platform backlog.\n\n')
+        }
+
+        # Act
+        asana_service.create_asana_task_from_sentry_event(sentry_event)
+
+        # Assert
+        mock_asana_client.tasks.create_task.assert_called_with(expected_result)
+
+    @patch.object(AsanaService, '_get_owning_team')
+    def test_create_asana_task_from_sentry_event_retry_task_creation(
+            self,
+            mock_get_owning_team: Any
+        ) -> None:
+        # Arrange
+        mock_get_owning_team.return_value = AsanaTeam.DETECTIONS
+        sentry_event = {
+            "datetime":"2021-07-14T00:10:08.299179Z",
+            "environment":"staging",
+            "tags":[
+                [
+                    "customer_name",
+                    "alpha"
+                ],
+                [
+                    "server_name",
+                    "panther-snapshot-pollers"
+                ]
+            ],
+            "timestamp":1626221408.299179,
+            "title":"some-title",
+            "url":"https://url.com/a/",
+            "web_url":"https://url.com/b/",
+            "issue_url":"https://url.com/c/",
+        }
+        mock_asana_client = MagicMock()
+        mock_asana_client.tasks.create_task.side_effect = [
+            AsanaError.InvalidRequestError(
+                'Invalid Request: enum_value: Not a recognized ID: some_id'
+            ),
+            {
+                "gid": "12345",
+                "resource_type": "project",
+                "name": "new project"
+            }
+        ]
+        asana_service = AsanaService(mock_asana_client, False)
+        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
+        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._backlog_project_id = 'core_platform_backlog_project_id'
+        expected_result = {
+            'name': "some-title",
+            'projects': ['current_eng_sprint_id', 'current_dogfooding_project_id'],
+            'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
+                        'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
+                        'Customer Impacted: alpha\n\n'
+                        'Environment: staging\n\n'
+                        'Unable to create this task with all custom fields filled out due to an error with one of the fields values.\n'
+                        'Please alert a team member from core-platform about this message.')
         }
 
         # Act
@@ -242,7 +362,7 @@ class TestAsanaService(TestCase):
         asana_service._current_eng_sprint_project_id = None
         asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
         asana_service._backlog_project_id = 'backlog_project_id'
-        expected_result = ['backlog_project_id']
+        expected_result: List[str] = []
 
         # Act
         result = asana_service._get_project_ids('prod')
