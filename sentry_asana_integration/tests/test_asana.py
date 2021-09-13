@@ -24,7 +24,7 @@ class TestAsanaService(TestCase):
 
     def test_get_owning_team_with_exact_match_server_name(self) -> None:
         # Arrange
-        expected_result = AsanaTeam.INVESTIGATIONS
+        expected_result = AsanaTeam.INGESTION
 
         # Act
         result = AsanaService._get_owning_team('panther-log-router')

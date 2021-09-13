@@ -253,7 +253,7 @@ class AsanaService:
 
         server_name_to_team_map = {
             'panther-token-authorizer': AsanaTeam.CORE_PLATFORM, # former 'Web' team responsibilities fall to Core-Platform
-            'panther-log-router': AsanaTeam.INVESTIGATIONS,
+            'panther-log-router': AsanaTeam.INGESTION,
             'panther-alert-processor': AsanaTeam.DETECTIONS,
             'panther-alert-forwarder': AsanaTeam.DETECTIONS,
             'panther-aws-event-processor': AsanaTeam.DETECTIONS,
