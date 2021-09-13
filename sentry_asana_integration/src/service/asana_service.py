@@ -239,7 +239,7 @@ class AsanaService:
             'panther-resource-processor': AsanaTeam.DETECTIONS,
             'panther-resources-api': AsanaTeam.DETECTIONS,
             'panther-alert-delivery-api': AsanaTeam.CORE_PLATFORM,
-            'panther-analysis-api': AsanaTeam.CORE_PLATFORM,
+            'panther-analysis-api': AsanaTeam.DETECTIONS,
             'panther-cfn-custom-resources': AsanaTeam.CORE_PLATFORM,
             'panther-graph-api': AsanaTeam.CORE_PLATFORM,
             'panther-metrics-api': AsanaTeam.CORE_PLATFORM,
@@ -250,7 +250,7 @@ class AsanaService:
             'panther-message-forwarder': AsanaTeam.INGESTION,
             'panther-rules-engine': AsanaTeam.INGESTION,
             'panther-source-api': AsanaTeam.INGESTION,
-            'panther-system-status': AsanaTeam.INGESTION
+            'panther-system-status': AsanaTeam.INVESTIGATIONS
         }
         if server_name in server_name_to_team_map:
             return server_name_to_team_map[server_name]
