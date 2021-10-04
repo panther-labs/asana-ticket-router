@@ -292,28 +292,22 @@ class TestAsanaService(TestCase):
         def get_project_side_effect(gid: str) -> Dict[str, Any]:
             project_info_map = {
                 '1200693863324520': {
-                    "data": {
-                        "gid": "1200693863324520", # Eng Sprint 08/02 - 08/20
-                        "archived": False,
-                        "color": "dark-orange",
-                        "created_at": "2021-08-01T20:30:30.159Z"
-                    }
+                    "gid": "1200693863324520", # Eng Sprint 08/02 - 08/20
+                    "archived": False,
+                    "color": "dark-orange",
+                    "created_at": "2021-08-01T20:30:30.159Z"
                 },
                 '1200693863324521': {
-                    "data": {
-                        "gid": "1200693863324521", # Eng Sprint 07/20 - 07/26 (old)
-                        "archived": False,
-                        "color": "dark-orange",
-                        "created_at": "2021-07-19T20:30:30.159Z"
-                    }
+                    "gid": "1200693863324521", # Eng Sprint 07/20 - 07/26 (old)
+                    "archived": False,
+                    "color": "dark-orange",
+                    "created_at": "2021-07-19T20:30:30.159Z"
                 },
                 '1200319127186571': {
-                    "data": {
-                        "gid": "1200319127186571", # Dogfooding: 08/23 - 09/01
-                        "archived": False,
-                        "color": "dark-orange",
-                        "created_at": "2021-08-01T10:30:30.159Z"
-                    }
+                    "gid": "1200319127186571", # Dogfooding: 08/23 - 09/01
+                    "archived": False,
+                    "color": "dark-orange",
+                    "created_at": "2021-08-01T10:30:30.159Z"
                 }
             }
             if gid in project_info_map:
@@ -385,6 +379,83 @@ class TestAsanaService(TestCase):
 
         # Act
         result = asana_service._get_project_ids('prod', 'warning', AsanaTeam.INGESTION)
+
+        # Assert
+        self.assertEqual(result, expected_result)
+
+    def test_get_newest_created_project_id(self) -> None:
+        # Arrange
+        projects = [
+            {
+                "gid": "123",
+                "name": "Mock Eng Sprint 09/13 - 10/01",
+                "resource_type": "project"
+            },
+            {
+                "gid": "124",
+                "name": "Mock Eng Sprint 10/04 - 10/22",
+                "resource_type": "project"
+            }
+        ]
+        mock_asana_client = MagicMock()
+        def get_project_side_effect(gid: str) -> Dict[str, Any]:
+            if gid == '123':
+                return {
+                    "gid":"123",
+                    "archived":False,
+                    "created_at":"2021-09-12T21:59:08.371Z",
+                    "current_status":None,
+                    "due_on":"2021-10-01",
+                    "modified_at":"2021-10-01T19:41:45.407Z",
+                    "name":"Mock Eng Sprint 09/13 - 10/01",
+                    "owner":{
+                        "gid":"1199946235762137",
+                        "resource_type":"user"
+                    },
+                    "public":True,
+                    "resource_type":"project",
+                    "start_on":None,
+                    "team":{
+                        "gid":"1199906122285402",
+                        "resource_type":"team"
+                    },
+                    "workspace":{
+                        "gid":"1159526352574257",
+                        "resource_type":"workspace"
+                    }
+                }
+            if gid == '124':
+                return {
+                    "gid":"124",
+                    "archived":False,
+                    "created_at":"2021-10-01T02:33:09.337Z",
+                    "current_status":None,
+                    "due_on":None,
+                    "modified_at":"2021-10-01T17:01:42.395Z",
+                    "name":"Mock Eng Sprint 10/04 - 10/22",
+                    "owner":{
+                        "gid":"1199946235851409",
+                        "resource_type":"user"
+                    },
+                    "public":True,
+                    "resource_type":"project",
+                    "start_on":None,
+                    "team":{
+                        "gid":"1199906122285402",
+                        "resource_type":"team"
+                    },
+                    "workspace":{
+                        "gid":"1159526352574257",
+                        "resource_type":"workspace"
+                    }
+                }
+            return {}
+        mock_asana_client.projects.get_project.side_effect = get_project_side_effect
+        asana_service = AsanaService(mock_asana_client, False)
+        expected_result = '124'
+
+        # Act
+        result = asana_service._get_newest_created_project_id(projects)
 
         # Assert
         self.assertEqual(result, expected_result)

@@ -104,8 +104,8 @@ class AsanaService:
                 proj_details = self._asana_client.projects.get_project(proj['gid'])
                 self._logger.info('get_project(%s) response: %s', proj['gid'], proj_details)
                 created_date = None
-                if proj_details and 'data' in proj_details:
-                    created_date = datetime.strptime(proj_details['data']['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                if proj_details:
+                    created_date = datetime.strptime(proj_details['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
                 if (created_date) and (not newest_proj or not newest_proj_date or newest_proj_date < created_date):
                     newest_proj_date = created_date
                     newest_proj = proj
