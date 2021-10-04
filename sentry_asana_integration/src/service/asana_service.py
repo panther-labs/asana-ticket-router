@@ -8,23 +8,13 @@
 import fnmatch
 import os
 from datetime import datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from asana import Client as AsanaClient
 from asana import error as AsanaError
 
+from ..enum.asana_enum import AsanaPriority, AsanaTeam, AsanaTeamBacklogProject
 from ..util.logger import get_logger
-
-
-class AsanaTeam(Enum):
-    """Enum that represents possible enum values for the 'Team' field in an Asana task."""
-    INGESTION = '1199906290951709'
-    DETECTIONS = '1199906290951721'
-    INVESTIGATIONS = '1199906290951706'
-    CORE_PLATFORM = '1199906290951724'
-    SECURITY_IT_COMPLIANCE = '1200813282274945'
-    PRODUCT = '1199919023483385'
 
 class AsanaService:
     """Service class that interacts with Asana API/entities.
@@ -46,7 +36,7 @@ class AsanaService:
         self._current_eng_sprint_project_id: Optional[str] = None
         self._current_dogfooding_project_id: Optional[str] = None
         # Providing a default value to satisfy mypy; essentially, Optional[str] != str
-        self._backlog_project_id = os.environ.get('CORE_PLATFORM_BACKLOG_PROJECT', '1200908948600042')
+        self._core_platform_backlog_project_id = AsanaTeamBacklogProject.CORE_PLATFORM.value
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
@@ -81,7 +71,7 @@ class AsanaService:
 
         self._logger.info('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
         self._logger.info('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
-        self._logger.info('backlog project ID: %s', self._backlog_project_id)
+        self._logger.info('backlog project ID: %s', self._core_platform_backlog_project_id)
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -121,7 +111,7 @@ class AsanaService:
                     newest_proj = proj
         return newest_proj['gid']
 
-    def _get_project_ids(self, environment: str) -> List[str]:
+    def _get_project_ids(self, environment: str, level: str, owning_team: AsanaTeam) -> List[str]:
         """Retrieves the list of relevant projects for use in creating an Asana task.
 
         Based on the provided environment parameter, the function returns a list of project ids
@@ -131,6 +121,10 @@ class AsanaService:
         Args:
             environment: A string representing the deployment environment of the entity from which the
               Sentry event originated (i.e. dev, staging, prod).
+            level: A string representing the level of the Sentry event. A distinction is made between
+              'warning' vs everything else (assumed to be of greater urgency than warning).
+            owning_team: An AsanaTeam Enum that represents the team that has been deemed responsible for
+              triaging this event.
 
         Returns:
             A list containing the ids (string) of each relevant project
@@ -140,10 +134,18 @@ class AsanaService:
             # Providing a default value to satisfy mypy; essentially, Optional[str] != str
             # Default value given is the Asana ID for 'Test Project (Sentry-Asana integration work)'
             return [os.environ.get('DEV_ASANA_SENTRY_PROJECT', '1200611106362920')]
+        if environment.lower() == 'staging':
+            if self._current_eng_sprint_project_id:
+                project_ids.append(self._current_eng_sprint_project_id)
+            if self._current_dogfooding_project_id:
+                project_ids.append(self._current_dogfooding_project_id)
+            return project_ids
+        # at this point, environment == prod
+        if level == 'warning':
+            project_ids.append(AsanaService._get_team_backlog_project(owning_team).value)
+            return project_ids
         if self._current_eng_sprint_project_id:
             project_ids.append(self._current_eng_sprint_project_id)
-        if environment.lower() == 'staging' and self._current_dogfooding_project_id:
-            project_ids.append(self._current_dogfooding_project_id)
         return project_ids
 
     def create_asana_task_from_sentry_event(self, sentry_event: Dict[str, Any]) -> str:
@@ -184,16 +186,16 @@ class AsanaService:
                         f'Customer Impacted: {customer}\n\n'
                         f'Environment: {sentry_event["environment"].lower()}\n\n')
 
-        project_gids = self._get_project_ids(sentry_event['environment'].lower())
+        project_gids = self._get_project_ids(sentry_event['environment'].lower(), sentry_event['level'].lower(), assigned_team)
         if len(project_gids) == 0 or (sentry_event['environment'].lower() == 'staging' and len(project_gids) <= 1):
-            project_gids.append(self._backlog_project_id)
+            project_gids.append(self._core_platform_backlog_project_id)
             task_note += 'Unable to find the sprint project; assigning to core-platform backlog.\n\n'
 
         task_creation_details = {
             'name': sentry_event['title'],
             'projects': project_gids,
             'custom_fields': {
-                '1159524604627932': '1159524604627933', # Priority: High (Enum)
+                '1159524604627932': AsanaService._get_task_priority(sentry_event['level'].lower()).value,
                 '1199912337121892': '1200218109698442', # Task Type: Investigate (Enum)
                 '1199944595440874': 0.1,                # Estimate (d): <number>
                 '1200165681182165': '1200198568911550', # Reporter: Sentry.io (Enum)
@@ -227,6 +229,42 @@ class AsanaService:
             self._logger.error('Unable to verify that the second attempt to create the Asana task succeeded')
             raise KeyError('Unable to verify that the second attempt to create the Asana task succeeded')
         return task_creation_result['gid']
+
+    @staticmethod
+    def _get_task_priority(level: str) -> AsanaPriority:
+        """Returns an AsanaPriority Enum based on the Sentry event level provided.
+
+        Args:
+            level: A string representing the level of the Sentry event. A distinction is made between
+              'warning' vs everything else (assumed to be of greater urgency than warning).
+
+        Returns:
+            An AsanaPriority Enum representing the correct enum value for the 'Priority' field in
+              the Asana task to be created.
+        """
+        return AsanaPriority.MEDIUM if level == 'warning' else AsanaPriority.HIGH
+
+    @staticmethod
+    def _get_team_backlog_project(team: AsanaTeam) -> AsanaTeamBacklogProject:
+        """Returns the backlog project ID based on the AsanaTeam provided.
+
+        Args:
+            team: An AsanaTeam Enum representing the team for which the corresponding backlog
+              ID is sought.
+
+        Returns:
+            An AsanaTeamBacklogProject Enum representing the team backlog ID corresponding to
+              the AsanaTeam provided.
+        """
+        if team == AsanaTeam.INGESTION:
+            return AsanaTeamBacklogProject.INGESTION
+        if team == AsanaTeam.INVESTIGATIONS:
+            return AsanaTeamBacklogProject.INVESTIGATIONS
+        if team == AsanaTeam.DETECTIONS:
+            return AsanaTeamBacklogProject.DETECTIONS
+        if team == AsanaTeam.SECURITY_IT_COMPLIANCE:
+            return AsanaTeamBacklogProject.SECURITY_IT_COMPLIANCE
+        return AsanaTeamBacklogProject.CORE_PLATFORM
 
     # This function is used to avoid making the extra API call to Asana (GET request to the 'issue_url' in the sentry event)
     # to fetch the details of the assigned team
