@@ -16,6 +16,7 @@ class SecretKey(Enum):
     """Enum that defines the secret keys within the SecretsManager secret."""
     ASANA_PAT = 'ASANA_PAT'
     SENTRY_CLIENT_SEC = 'SENTRY_CLIENT_SECRET'
+    SENTRY_PAT = 'SENTRY_PAT'
 
     @staticmethod
     def list_all_secret_keys() -> List[str]:

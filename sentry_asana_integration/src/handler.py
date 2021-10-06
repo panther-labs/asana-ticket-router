@@ -15,6 +15,7 @@ import boto3
 
 from .service.asana_service import AsanaService
 from .service.secrets_service import SecretKey, SecretsService
+from .service.sentry_service import SentryService
 from .util.logger import get_logger
 
 log = get_logger()
@@ -22,10 +23,12 @@ secrets_manager_client = boto3.client('secretsmanager')
 secrets_service = SecretsService(secrets_manager_client)
 asana_client = asana.Client.access_token(secrets_service.get_secret_value(SecretKey.ASANA_PAT))
 asana_service = AsanaService(asana_client, True)
+sentry_service = SentryService(secrets_service)
 
 def handler(event: Dict, _: Dict) -> Dict:
     """The handler function that is run when the Lambda function executes."""
     body = event['body']
+    log.info(body)
     client_secret = secrets_service.get_secret_value(SecretKey.SENTRY_CLIENT_SEC)
     expected = hmac.new(
         key=client_secret.encode('utf-8'),
@@ -41,6 +44,10 @@ def handler(event: Dict, _: Dict) -> Dict:
     log.info('Verified signature, now attempting to triage Sentry issue..')
     json_body = json.loads(body)
     new_task_gid = asana_service.create_asana_task_from_sentry_event(json_body['data']['event'])
+    log.info('Successfully created Asana task with gid %s', new_task_gid)
+    log.info('Attempting to link Sentry issue with Asana task..')
+    if sentry_service.link_issue_to_asana_task(json_body['data']['event'], new_task_gid):
+        log.info('Linking successful!')
 
     response = {
         'statusCode': 200,

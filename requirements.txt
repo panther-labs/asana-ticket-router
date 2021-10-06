@@ -5,6 +5,7 @@ pylint
 yapf
 pulumi>=3.0.0,<4.0.0
 pulumi-aws>=4.0.0,<5.0.0
+types-requests
 
 # sentry-asana-integration
 # TODO: install the per-projct dependencies in CircleCI by finding & using
