@@ -5,12 +5,13 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 
+import json
 from typing import Any, Dict
+
 import requests
 
-from .secrets_service import SecretKey, SecretsService
 from ..util.logger import get_logger
-
+from .secrets_service import SecretKey, SecretsService
 
 
 class SentryService:
@@ -49,12 +50,12 @@ class SentryService:
                 'Authorization': f'Bearer {self._secrets_service.get_secret_value(SecretKey.SENTRY_PAT)}',
                 'Content-Type': 'application/json'
             },
-            data={
+            data=json.dumps({
                 'issue_id': asana_task_id,
                 'comment': 'Linked by the Sentry-Asana automation'
-            }
+            })
         )
         if response.status_code != 200:
-            self._logger.warning('Linking failed. Non-200 response returned: %s', response)
+            self._logger.warning('Linking failed. Non-200 response returned: %s', response.text)
             return False
         return True
