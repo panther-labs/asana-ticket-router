@@ -1,0 +1,64 @@
+name: Airplane
+
+on:
+  push:
+    branches:
+      - master
+
+defaults:
+  run:
+    working-directory: airplane
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Install airplane cli
+        run: |
+          export AIRPLANE_INSTALL=${PWD}
+          # Version downgrade - https://github.com/airplanedev/cli/issues/302
+          curl -L https://github.com/airplanedev/cli/releases/latest/download/install.sh | sh -s -- v0.1.42
+
+          ./bin/airplane version
+          
+      # Manually created by a user, running airplane login. Output is in ~/.airplane/config by default. Currently the cli demands browser auth access to redirect back to the cli for token creation.. Tokens are valid for 6 months.
+      - name: Setup credentials
+        run: |-
+          mkdir -p ~/.airplane
+          cat <<EOF > ~/.airplane/config
+          {
+              "tokens": {
+                  "api.airplane.dev": "${{ secrets.AIRPLANE_JWT }}"
+              },
+              "enableTelemetry": false
+          }
+          EOF
+
+      - name: Validate credentials
+        run: |
+          ./bin/airplane auth info
+
+      - name: Upload Airplane Tasks
+        run: |
+          for PROJECT in $(cat projects); do
+            ./bin/airplane deploy --local ${PROJECT}
+          done
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm ~/.airplane/config
+
+
+
+
