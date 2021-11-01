@@ -17,3 +17,12 @@ To deploy in **dev**, the steps are as follows:
 
 #### Prod ####
 To deploy in **prod** (i.e. panther-hosted-ops account), trigger the codebuild project through the console to deploy what is on `Main`.
+
+
+### Updating the Team IDs
+
+```
+curl -H "Authorization: Bearer ***)" \
+  https://app.asana.com/api/1.0/projects/1201030803218059/custom_field_settings | \
+  jq '.data | map(select(.custom_field.gid == "1199906290951705"))' 
+```

@@ -54,7 +54,8 @@ class LoggingSetup:
             aws_datetime_format = aws_handler.formatter.datefmt  # type: ignore
             formatter = LambdaFormatter(fmt=LOG_FORMAT, datefmt=aws_datetime_format)
             if isinstance(aws_handler, logging.StreamHandler):
-                raise RuntimeError(f"expected custom handler class (likely LambdaLoggerHandler), " f"found {type(aws_handler)} instead")
+                raise RuntimeError(f"expected custom handler class (likely LambdaLoggerHandler), "
+                                   f"found {type(aws_handler)} instead")
             aws_handler.setFormatter(formatter)
 
         # Verify that the logger works on startup

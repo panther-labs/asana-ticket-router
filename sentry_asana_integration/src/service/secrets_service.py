@@ -43,7 +43,7 @@ class SecretsService:
         if not set(expected_secret_keys).issubset(set(self._secrets.keys())):
             raise KeyError(
                 (f"List of expected secrets {expected_secret_keys} is not a subset "
-                f"of list of keys within retrieved secret {list(self._secrets.keys())}")
+                 f"of list of keys within retrieved secret {list(self._secrets.keys())}")
             )
 
     def get_secrets_from_secrets_manager(self) -> Dict[str, str]:
@@ -52,7 +52,6 @@ class SecretsService:
         Returns:
             A dict containing all relevant secret key/values.
         """
-        secret = {}
         get_secret_value_response = self._secrets_client.get_secret_value(
             SecretId=os.environ.get('SECRET_NAME')
         )

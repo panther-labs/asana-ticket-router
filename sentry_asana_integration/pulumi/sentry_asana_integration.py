@@ -92,8 +92,6 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
                     'ASANA_ENGINEERING_TEAM_ID': '1199906122285402',
                     'ASANA_PANTHER_LABS_WORKSPACE_ID': '1159526352574257',
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920', # Asana ID for 'Test Project (Sentry-Asana integration work)'
-                    'DEV_TEAM_LEAD_ID': '1200567447162380', # Asana ID for Yusuf Akhtar
-                    'CORE_PLATFORM_BACKLOG_PROJECT': '1200908948600042' # Asana ID for 'Backlog: Core Platform'
                 }
             },
             runtime='python3.7',

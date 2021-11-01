@@ -13,8 +13,10 @@ from typing import Any, Dict, List, Optional
 from asana import Client as AsanaClient
 from asana import error as AsanaError
 
-from ..enum.asana_enum import AsanaPriority, AsanaTeam, AsanaTeamBacklogProject
+from ..enum import teams
+from ..enum.priority import AsanaPriority
 from ..util.logger import get_logger
+
 
 class AsanaService:
     """Service class that interacts with Asana API/entities.
@@ -27,16 +29,13 @@ class AsanaService:
           eng sprint.
         _current_dogfooding_project_id: The Asana ID of the Asana project representing the current
           dogfooding sprint.
-        _backlog_project_id: The Asana ID of the Asana project representing the backlog.
     """
 
-    def __init__(self, asana_client: AsanaClient, load_asana_projects: bool=True) -> None:
+    def __init__(self, asana_client: AsanaClient, load_asana_projects: bool = True) -> None:
         self._asana_client = asana_client
         self._logger = get_logger()
         self._current_eng_sprint_project_id: Optional[str] = None
         self._current_dogfooding_project_id: Optional[str] = None
-        # Providing a default value to satisfy mypy; essentially, Optional[str] != str
-        self._core_platform_backlog_project_id = AsanaTeamBacklogProject.CORE_PLATFORM.value
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
@@ -71,7 +70,6 @@ class AsanaService:
 
         self._logger.info('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
         self._logger.info('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
-        self._logger.info('backlog project ID: %s', self._core_platform_backlog_project_id)
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -106,12 +104,12 @@ class AsanaService:
                 created_date = None
                 if proj_details:
                     created_date = datetime.strptime(proj_details['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
-                if (created_date) and (not newest_proj or not newest_proj_date or newest_proj_date < created_date):
+                if created_date and (not newest_proj or not newest_proj_date or newest_proj_date < created_date):
                     newest_proj_date = created_date
                     newest_proj = proj
         return newest_proj['gid']
 
-    def _get_project_ids(self, environment: str, level: str, owning_team: AsanaTeam) -> List[str]:
+    def _get_project_ids(self, environment: str, level: str, owning_team: teams.EngTeam) -> List[str]:
         """Retrieves the list of relevant projects for use in creating an Asana task.
 
         Based on the provided environment parameter, the function returns a list of project ids
@@ -123,8 +121,7 @@ class AsanaService:
               Sentry event originated (i.e. dev, staging, prod).
             level: A string representing the level of the Sentry event. A distinction is made between
               'warning' vs everything else (assumed to be of greater urgency than warning).
-            owning_team: An AsanaTeam Enum that represents the team that has been deemed responsible for
-              triaging this event.
+            owning_team: The team responsible for triaging this event.
 
         Returns:
             A list containing the ids (string) of each relevant project
@@ -142,7 +139,7 @@ class AsanaService:
             return project_ids
         # at this point, environment == prod
         if level == 'warning':
-            project_ids.append(AsanaService._get_team_backlog_project(owning_team).value)
+            project_ids.append(owning_team.backlog_id)
             return project_ids
         if self._current_eng_sprint_project_id:
             project_ids.append(self._current_eng_sprint_project_id)
@@ -158,9 +155,9 @@ class AsanaService:
         Asana API to create the task.
 
         Args:
-            sentry_event: A dict representing the sentry event; this event can be found from the deserialized body in the
-              originating event through the following keys: data -> event. See 'tests/test_data/sentry_event_body.json'
-              for an example of the deserialized body.
+            sentry_event: A dict representing the sentry event; this event can be found from the deserialized body in
+              the originating event through the following keys: data -> event.
+              See 'tests/test_data/sentry_event_body.json' for an example of the deserialized body.
 
         Returns:
             A string representing the ID (gid in Asana parlance) of the newly created Asana task
@@ -182,25 +179,25 @@ class AsanaService:
                 event_type = tag[1]
         assigned_team = AsanaService._get_owning_team(server_name, event_type)
         task_note = (f'Sentry Issue URL: {url}\n\n'
-                        f'Event Datetime: {sentry_event["datetime"]}\n\n'
-                        f'Customer Impacted: {customer}\n\n'
-                        f'Environment: {sentry_event["environment"].lower()}\n\n')
+                     f'Event Datetime: {sentry_event["datetime"]}\n\n'
+                     f'Customer Impacted: {customer}\n\n'
+                     f'Environment: {sentry_event["environment"].lower()}\n\n')
 
         project_gids = self._get_project_ids(sentry_event['environment'].lower(), sentry_event['level'].lower(), assigned_team)
         if len(project_gids) == 0 or (sentry_event['environment'].lower() == 'staging' and len(project_gids) <= 1):
-            project_gids.append(self._core_platform_backlog_project_id)
-            task_note += 'Unable to find the sprint project; assigning to core-platform backlog.\n\n'
+            project_gids.append(teams.CORE_PRODUCT.backlog_id)
+            task_note += 'Unable to find the sprint project; assigning to core product backlog.\n\n'
 
         task_creation_details = {
             'name': sentry_event['title'],
             'projects': project_gids,
             'custom_fields': {
                 '1159524604627932': AsanaService._get_task_priority(sentry_event['level'].lower()).value,
-                '1199912337121892': '1200218109698442', # Task Type: Investigate (Enum)
-                '1199944595440874': 0.1,                # Estimate (d): <number>
-                '1200165681182165': '1200198568911550', # Reporter: Sentry.io (Enum)
-                '1199906290951705': assigned_team.value,# Team: <relevant team enum gid>: str> (Enum)
-                '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
+                '1199912337121892': '1200218109698442',     # Task Type: Investigate (Enum)
+                '1199944595440874': 0.1,                    # Estimate (d): <number>
+                '1200165681182165': '1200198568911550',     # Reporter: Sentry.io (Enum)
+                '1199906290951705': assigned_team.team_id,  # Team: <relevant team enum gid>: str> (Enum)
+                '1200216708142306': '1200822942218893'      # Impacted: One Customer (Enum)
             },
             'notes': task_note
         }
@@ -215,14 +212,15 @@ class AsanaService:
         except AsanaError.InvalidRequestError as ex:
             self._logger.error('Unable to create the Asana task with custom fields: %s', str(ex))
 
-        task_note += ('Unable to create this task with all custom fields filled out due to an error with one of the fields values.\n'
-                        'Please alert a team member from core-platform about this message.')
+        task_note += ('Unable to create this task with all custom fields filled out.'
+                      ' Please alert a team member from observability about this message.')
         task_creation_details = {
             'name': sentry_event['title'],
             'projects': project_gids,
             'notes': task_note
         }
-        self._logger.info('Attempting to retry Asana task creation with the following minimal set of fields: %s', task_creation_details)
+        self._logger.info('Attempting to retry Asana task creation with the following minimal set of fields: %s',\
+                          task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
         self._logger.info('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
@@ -244,32 +242,11 @@ class AsanaService:
         """
         return AsanaPriority.MEDIUM if level == 'warning' else AsanaPriority.HIGH
 
+    # Fetch details of the assigned team.
+    #
+    # There is a service ownership mapping in Asana as well, but we want to avoid the extra API call to look that up.
     @staticmethod
-    def _get_team_backlog_project(team: AsanaTeam) -> AsanaTeamBacklogProject:
-        """Returns the backlog project ID based on the AsanaTeam provided.
-
-        Args:
-            team: An AsanaTeam Enum representing the team for which the corresponding backlog
-              ID is sought.
-
-        Returns:
-            An AsanaTeamBacklogProject Enum representing the team backlog ID corresponding to
-              the AsanaTeam provided.
-        """
-        if team == AsanaTeam.INGESTION:
-            return AsanaTeamBacklogProject.INGESTION
-        if team == AsanaTeam.INVESTIGATIONS:
-            return AsanaTeamBacklogProject.INVESTIGATIONS
-        if team == AsanaTeam.DETECTIONS:
-            return AsanaTeamBacklogProject.DETECTIONS
-        if team == AsanaTeam.SECURITY_IT_COMPLIANCE:
-            return AsanaTeamBacklogProject.SECURITY_IT_COMPLIANCE
-        return AsanaTeamBacklogProject.CORE_PLATFORM
-
-    # This function is used to avoid making the extra API call to Asana (GET request to the 'issue_url' in the sentry event)
-    # to fetch the details of the assigned team
-    @staticmethod
-    def _get_owning_team(server_name: str, event_type: Optional[str] = None) -> AsanaTeam:
+    def _get_owning_team(server_name: str, event_type: Optional[str] = None) -> teams.EngTeam:
         """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
@@ -283,53 +260,55 @@ class AsanaService:
             event_type: A string representing the 'type' key/value in the tags of the originating Sentry event.
 
         Returns:
-            An AsanaTeam (enum) value representing the team that takes responsibility for the entity with
-            the given 'server_name'.
+            Team that takes responsibility for the entity with the given 'server_name'.
         """
         if event_type and event_type.lower() == 'web':
-            return AsanaTeam.CORE_PLATFORM
+            # TODO: team-level routing based on URL: https://app.asana.com/0/1201267919523642/1201079771956134/f
+            return teams.CORE_PRODUCT
 
         server_name_to_team_map = {
-            'panther-token-authorizer': AsanaTeam.CORE_PLATFORM, # former 'Web' team responsibilities fall to Core-Platform
-            'panther-log-router': AsanaTeam.INGESTION,
-            'panther-alert-processor': AsanaTeam.DETECTIONS,
-            'panther-alert-forwarder': AsanaTeam.DETECTIONS,
-            'panther-aws-event-processor': AsanaTeam.DETECTIONS,
-            'panther-compliance-api': AsanaTeam.DETECTIONS,
-            'panther-layer-manager': AsanaTeam.DETECTIONS,
-            'panther-policy-engine': AsanaTeam.DETECTIONS,
-            'panther-resource-processor': AsanaTeam.DETECTIONS,
-            'panther-resources-api': AsanaTeam.DETECTIONS,
-            'panther-alert-delivery-api': AsanaTeam.CORE_PLATFORM,
-            'panther-analysis-api': AsanaTeam.DETECTIONS,
-            'panther-cfn-custom-resources': AsanaTeam.CORE_PLATFORM,
-            'panther-graph-api': AsanaTeam.CORE_PLATFORM,
-            'panther-metrics-api': AsanaTeam.CORE_PLATFORM,
-            'panther-organization-api': AsanaTeam.CORE_PLATFORM,
-            'panther-outputs-api': AsanaTeam.CORE_PLATFORM,
-            'panther-users-api': AsanaTeam.CORE_PLATFORM,
-            'panther-alerts-api': AsanaTeam.INGESTION,
-            'panther-message-forwarder': AsanaTeam.INGESTION,
-            'panther-rules-engine': AsanaTeam.INGESTION,
-            'panther-source-api': AsanaTeam.INGESTION,
-            'panther-system-status': AsanaTeam.INGESTION
+            'panther-token-authorizer': teams.CORE_PRODUCT,
+            'panther-log-router': teams.INGESTION,
+            'panther-alert-processor': teams.DETECTIONS,
+            'panther-alert-forwarder': teams.DETECTIONS,
+            'panther-aws-event-processor': teams.DETECTIONS,
+            'panther-compliance-api': teams.DETECTIONS,
+            'panther-layer-manager': teams.DETECTIONS,
+            'panther-policy-engine': teams.DETECTIONS,
+            'panther-resource-processor': teams.DETECTIONS,
+            'panther-resources-api': teams.DETECTIONS,
+            'panther-alert-delivery-api': teams.CORE_PRODUCT,
+            'panther-analysis-api': teams.DETECTIONS,
+            'panther-cfn-custom-resources': teams.PRODUCTIVITY,
+            'panther-graph-api': teams.CORE_PRODUCT,
+            'panther-metrics-api': teams.CORE_PRODUCT,
+            'panther-organization-api': teams.CORE_PRODUCT,
+            'panther-outputs-api': teams.CORE_PRODUCT,
+            'panther-users-api': teams.CORE_PRODUCT,
+            'panther-alerts-api': teams.INGESTION,
+            'panther-message-forwarder': teams.INGESTION,
+            'panther-rules-engine': teams.INGESTION,
+            'panther-source-api': teams.INGESTION,
+            'panther-system-status': teams.INGESTION
         }
         if server_name in server_name_to_team_map:
             return server_name_to_team_map[server_name]
 
         generic_server_name_to_team_lookup = [
-            ('panther-athena*', AsanaTeam.INVESTIGATIONS),
-            ('panther-datacatalog*', AsanaTeam.INVESTIGATIONS),
-            ('panther-snowflake*', AsanaTeam.INVESTIGATIONS),
-            ('panther-cloudsecurity*', AsanaTeam.DETECTIONS),
-            ('panther*remediation*', AsanaTeam.DETECTIONS),
-            ('panther-snapshot*', AsanaTeam.DETECTIONS),
-            ('panther-cn-*', AsanaTeam.CORE_PLATFORM),
-            ('panther-log*', AsanaTeam.INGESTION),
+            # TODO: switch some of these services to new data platform team
+            ('panther-athena*', teams.INVESTIGATIONS),
+            ('panther-datacatalog*', teams.INVESTIGATIONS),
+            ('panther-snowflake*', teams.INVESTIGATIONS),
+
+            ('panther-cloudsecurity*', teams.DETECTIONS),
+            ('panther*remediation*', teams.DETECTIONS),
+            ('panther-snapshot*', teams.DETECTIONS),
+            ('panther-cn-*', teams.CORE_PRODUCT),
+            ('panther-log*', teams.INGESTION),
         ]
 
         for pattern, team in generic_server_name_to_team_lookup:
             if fnmatch.fnmatch(server_name, pattern):
                 return team
 
-        return AsanaTeam.CORE_PLATFORM
+        return teams.CORE_PRODUCT
