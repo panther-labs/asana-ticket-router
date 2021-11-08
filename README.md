@@ -2,7 +2,8 @@
 
 Internal ops services running in the hosted environment
 
-## Sentry-asana
+The full list of services contained within this repo is as follows:
+ - Sentry-Asana Integration Service
+ - Airplane
 
-
-## Airplane
+Each service's source code is contained in its own subfolder. The `README.md` file within each subfolder contains detailed instructions on deployment, testing, etc. 
