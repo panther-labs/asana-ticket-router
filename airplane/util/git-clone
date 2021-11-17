@@ -1,0 +1,5 @@
+#!/bin/sh -eu
+
+: "${REPOSITORY:?Must specify a repository to clone}"
+
+git clone git@github.com:panther-labs/${REPOSITORY}

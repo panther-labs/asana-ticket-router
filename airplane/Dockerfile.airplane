@@ -3,3 +3,5 @@ RUN apt-get -y update
 RUN apt-get -y install git
 
 RUN rm -rf ~/.ssh && mkdir -p ~/.ssh && ssh-keyscan github.com > ~/.ssh/known_hosts
+
+COPY ./util /usr/local/bin
