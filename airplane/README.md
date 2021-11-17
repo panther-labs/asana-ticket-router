@@ -1,5 +1,10 @@
 # Airplane tasks
 
+## Projects
+
+Each project should live in its own directory. `airplane deploy` will package the working directory of the task code.
+
+
 
 ## Usage
 
@@ -22,7 +27,6 @@ airplane init --slug-echo
 # Deployment
 airplane deploy echo.sh
 ```
-
 
 ## CI / Deployment
 

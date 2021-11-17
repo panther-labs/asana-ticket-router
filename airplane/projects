@@ -1,2 +1,2 @@
-echo.sh
-python_test.py
+echo/echo.sh
+python_test/python_test.py
