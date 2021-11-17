@@ -1,2 +1,5 @@
 echo/echo.sh
 python_test/python_test.py
+load-hosted-customer-configuration/main.sh
+pip-libraries/main.sh
+
