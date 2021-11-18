@@ -5,12 +5,7 @@
 : "${PARAM_CUSTOMERID:?Expected CUSTOMERID param}"
 : "${PARAM_PIPLIBRARIES:?Expected PIPLIBRARIES param}"
 
-echo "Setup"
-eval `ssh-agent -s`
-setup-github
 REPOSITORY=hosted-deployments git-clone
-
-echo "================================"
 
 echo "Customer: ${PARAM_CUSTOMERID}"
 

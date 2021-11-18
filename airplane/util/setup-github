@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/sh -eux
 
 : ${DEPLOY_KEY_BASE64:?"DEPLOY_KEY_BASE64 required to setup-github"}
 
@@ -8,6 +8,10 @@ echo ${DEPLOY_KEY_BASE64} | base64 -d > ~/.ssh/id_github
 
 chmod 600 ~/.ssh/id_github
 
-ssh-add ~/.ssh/id_github
+cat << EOF > ~/.ssh/config
+Host github.com
+ HostName github.com
+ IdentityFile ~/.ssh/id_github
+EOF
 
 ssh -T git@github.com || echo "ok"

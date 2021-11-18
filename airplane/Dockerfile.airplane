@@ -8,3 +8,9 @@ RUN wget https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_386.
 RUN rm -rf ~/.ssh && mkdir -p ~/.ssh && ssh-keyscan github.com > ~/.ssh/known_hosts
 
 COPY ./util /usr/local/bin
+
+ARG DEPLOY_KEY_BASE64
+
+RUN if test -n "${DEPLOY_KEY_BASE64}"; then /usr/local/bin/setup-github; fi
+
+
