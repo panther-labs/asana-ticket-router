@@ -1,4 +1,4 @@
-#!/bin/sh -eux
+#!/bin/sh -eu
 
 : ${DEPLOY_KEY_BASE64:?"DEPLOY_KEY_BASE64 required to setup-github"}
 
@@ -13,5 +13,7 @@ Host github.com
  HostName github.com
  IdentityFile ~/.ssh/id_github
 EOF
+
+git config --global user.name "Airplane"
 
 ssh -T git@github.com || echo "ok"
