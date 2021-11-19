@@ -28,9 +28,6 @@ git add .
 echo "Staged changes"
 git status
 
-git commit -m "Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane
-
-Author: ${AIRPLANE_RUNNER_EMAIL}
-"
+TITLE="Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane" git-commit
 
 git push

@@ -1,0 +1,11 @@
+#!/bin/sh -eu
+
+: "${TITLE:?Must specify a commit message title}"
+DESCRIPTION="${DESCRIPTION:-}"
+AUTHOR="Author: ${AIRPLANE_RUNNER_EMAIL}"
+
+if [ -z "$DESCRIPTION" ]; then
+  git commit -m "${TITLE}" -m "${AUTHOR}"
+else
+  git commit -m "${TITLE}" -m "${DESCRIPTION}" -m "${AUTHOR}"
+fi

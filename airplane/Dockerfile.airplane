@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 RUN apt-get -y update
-RUN apt-get -y install git jq wget
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install git jq python3 python3-pip wget
 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_386.tar.gz -O - |\
   tar xz && mv yq_linux_386 /usr/bin/yq
@@ -9,8 +9,14 @@ RUN rm -rf ~/.ssh && mkdir -p ~/.ssh && ssh-keyscan github.com > ~/.ssh/known_ho
 
 COPY ./util /usr/local/bin
 
+### Start custom environment creation per task
+
+# The private SSH Github key in order to setup Github access
 ARG DEPLOY_KEY_BASE64
+RUN if test -n "${DEPLOY_KEY_BASE64}"; then echo "OK"; /usr/local/bin/setup-github; fi
 
-RUN if test -n "${DEPLOY_KEY_BASE64}"; then /usr/local/bin/setup-github; fi
+# List of space-separated Ubuntu packages to include in environment
+ARG ENV_PACKAGES
+RUN if test -n "${ENV_PACKAGES}"; then echo OK; DEBIAN_FRONTEND=noninteractive apt-get install -y ${ENV_PACKAGES}; fi
 
-
+### End custom environment creation per task
