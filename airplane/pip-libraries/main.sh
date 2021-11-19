@@ -15,7 +15,7 @@ CONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
 
 yq e -i '.CloudFormationParameters.PipLibraries = strenv(PARAM_PIPLIBRARIES)' "${CONFIG_FILE}"
 
-if git status --porcelian; then
+if git status --porcelain; then
     echo "No changes made"
     exit 0
 fi
@@ -23,13 +23,14 @@ fi
 echo "Changes"
 git diff
 
-git config user.email "${AIRPLANE_RUNNER_EMAIL}"
-
 git add .
 
 echo "Staged changes"
 git status
 
-git commit -m "Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane"
+git commit -m "Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane
+
+Author: ${AIRPLANE_RUNNER_EMAIL}
+"
 
 git push
