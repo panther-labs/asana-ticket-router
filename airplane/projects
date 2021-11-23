@@ -3,4 +3,4 @@ python_test/python_test.py
 load-hosted-customer-configuration/main.sh
 pip-libraries/main.sh
 new-customer-deployments/create_new_customer.sh
-
+notion/new-saas-customer/main.sh
