@@ -10,7 +10,7 @@ echo " Backend	\"${PARAM_BACKEND}\""
 echo " Group	${PARAM_GROUP}"
 echo " PoC	${PARAM_POC}"
 echo " Support Role	${PARAM_SUPPORT_ROLE}"
-echo " @ Email	${PARAM_AT_EMAIL}"
+echo " @ Email	${PARAM_EMAIL}"
 
 DATABASE_ID="cc445b0819164efca9d281e8ea2efab7"
 
