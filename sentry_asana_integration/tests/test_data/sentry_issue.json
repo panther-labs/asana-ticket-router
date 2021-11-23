@@ -1,0 +1,874 @@
+{
+    "id": "2471853882",
+    "shareId": null,
+    "shortId": "PANTHER-ENTERPRISE-DEV-E7V",
+    "title": "log-puller: returned an error: *genericapi.LambdaError: failed to get source info for integration ID 96c60ea6-66a0-4a49-a908-360ccfc2209d: failed to fetc...",
+    "culprit": "github.com/panther-labs/panther/pkg/lambda in logErrorReturn",
+    "permalink": "https://sentry.io/organizations/panther-labs/issues/2471853882/",
+    "logger": null,
+    "level": "error",
+    "status": "unresolved",
+    "statusDetails": {},
+    "isPublic": false,
+    "platform": "go",
+    "project": {
+        "id": "5743495",
+        "name": "panther-enterprise-dev",
+        "slug": "panther-enterprise-dev",
+        "platform": "go"
+    },
+    "type": "error",
+    "metadata": {
+        "value": "failed to get source info for integration ID 96c60ea6-66a0-4a49-a908-360ccfc2209d: failed to fetch available integrations: lambda error returned: panther-source-api: exactly one route must be specified: found none",
+        "type": "log-puller: returned an error: *genericapi.LambdaError",
+        "filename": "/home/ec2-user/worktrees/bugfix-gsuite-sliding-window/pkg/lambda/handler.go",
+        "function": "logErrorReturn",
+        "display_title_with_tree_label": false
+    },
+    "numComments": 0,
+    "assignedTo": {
+        "type": "team",
+        "id": "770744",
+        "name": "ingestion"
+    },
+    "isBookmarked": false,
+    "isSubscribed": true,
+    "subscriptionDetails": {
+        "reason": "changed_status"
+    },
+    "hasSeen": false,
+    "annotations": [
+        "<a href=\"https://app.asana.com/0/0/1201413554245508\">Asana Issue</a>"
+    ],
+    "isUnhandled": false,
+    "count": "103818",
+    "userCount": 0,
+    "firstSeen": "2021-06-23T09:10:58.527485Z",
+    "lastSeen": "2021-11-23T13:30:08Z",
+    "firstRelease": null,
+    "lastRelease": null,
+    "activity": [
+        {
+            "id": "1227319392",
+            "user": {
+                "id": "1618715",
+                "name": "Nick Angelou",
+                "username": "a6094234142f4ce0a95ab2e0c52ebd4e",
+                "email": "nick.angelou@panther.io",
+                "avatarUrl": "https://secure.gravatar.com/avatar/72ad1c6de089f1563df0176e83dbd777?s=32&d=mm",
+                "isActive": true,
+                "hasPasswordAuth": false,
+                "isManaged": false,
+                "dateJoined": "2021-11-07T19:00:49.030187Z",
+                "lastLogin": "2021-11-23T15:42:23.001290Z",
+                "has2fa": false,
+                "lastActive": "2021-11-23T15:42:07.409803Z",
+                "isSuperuser": false,
+                "isStaff": false,
+                "experiments": {},
+                "options": {
+                    "theme": "light",
+                    "language": "en",
+                    "stacktraceOrder": -1,
+                    "timezone": "UTC",
+                    "clock24Hours": false
+                },
+                "flags": {
+                    "newsletter_consent_prompt": false
+                },
+                "avatar": {
+                    "avatarType": "letter_avatar",
+                    "avatarUuid": null
+                },
+                "identities": [
+                    {
+                        "id": "284876",
+                        "name": "00u3cuxguCWnqSMe0696",
+                        "organization": {
+                            "slug": "panther-labs",
+                            "name": "Panther Labs"
+                        },
+                        "provider": {
+                            "id": "okta",
+                            "name": "Okta"
+                        },
+                        "dateSynced": "2021-11-23T17:43:07.871819Z",
+                        "dateVerified": "2021-11-23T17:43:07.871819Z"
+                    }
+                ],
+                "emails": [
+                    {
+                        "id": "1753696",
+                        "email": "nick.angelou@panther.io",
+                        "is_verified": true
+                    }
+                ]
+            },
+            "type": "create_issue",
+            "data": {
+                "title": "log-puller: returned an error: *genericapi.LambdaError: failed to get source info for integration ID 2f282bf4-dd69-4823-8894-171c21dcf8bb: failed to fetc...",
+                "provider": "Asana",
+                "location": "https://app.asana.com/0/0/1201413554245508",
+                "label": "Asana Issue"
+            },
+            "dateCreated": "2021-11-23T02:32:14.492961Z"
+        },
+        {
+            "id": "1227319298",
+            "user": null,
+            "type": "set_regression",
+            "data": {
+                "version": ""
+            },
+            "dateCreated": "2021-11-23T02:31:52.452502Z"
+        },
+        {
+            "id": "1227319248",
+            "user": {
+                "id": "1618715",
+                "name": "Nick Angelou",
+                "username": "a6094234142f4ce0a95ab2e0c52ebd4e",
+                "email": "nick.angelou@panther.io",
+                "avatarUrl": "https://secure.gravatar.com/avatar/72ad1c6de089f1563df0176e83dbd777?s=32&d=mm",
+                "isActive": true,
+                "hasPasswordAuth": false,
+                "isManaged": false,
+                "dateJoined": "2021-11-07T19:00:49.030187Z",
+                "lastLogin": "2021-11-23T15:42:23.001290Z",
+                "has2fa": false,
+                "lastActive": "2021-11-23T15:42:07.409803Z",
+                "isSuperuser": false,
+                "isStaff": false,
+                "experiments": {},
+                "options": {
+                    "theme": "light",
+                    "language": "en",
+                    "stacktraceOrder": -1,
+                    "timezone": "UTC",
+                    "clock24Hours": false
+                },
+                "flags": {
+                    "newsletter_consent_prompt": false
+                },
+                "avatar": {
+                    "avatarType": "letter_avatar",
+                    "avatarUuid": null
+                },
+                "identities": [
+                    {
+                        "id": "284876",
+                        "name": "00u3cuxguCWnqSMe0696",
+                        "organization": {
+                            "slug": "panther-labs",
+                            "name": "Panther Labs"
+                        },
+                        "provider": {
+                            "id": "okta",
+                            "name": "Okta"
+                        },
+                        "dateSynced": "2021-11-23T17:43:07.871819Z",
+                        "dateVerified": "2021-11-23T17:43:07.871819Z"
+                    }
+                ],
+                "emails": [
+                    {
+                        "id": "1753696",
+                        "email": "nick.angelou@panther.io",
+                        "is_verified": true
+                    }
+                ]
+            },
+            "type": "set_resolved",
+            "data": {},
+            "dateCreated": "2021-11-23T02:31:36.542332Z"
+        },
+        {
+            "id": "1206662110",
+            "user": {
+                "id": "989761",
+                "name": "Joren McReynolds",
+                "username": "joren.mcreynolds@runpanther.io",
+                "email": "joren.mcreynolds@runpanther.io",
+                "avatarUrl": "https://secure.gravatar.com/avatar/6ca45075fcb910b051832e779db652b6?s=32&d=mm",
+                "isActive": true,
+                "hasPasswordAuth": true,
+                "isManaged": false,
+                "dateJoined": "2021-04-07T22:29:07.808374Z",
+                "lastLogin": "2021-11-05T20:51:08.722100Z",
+                "has2fa": false,
+                "lastActive": "2021-11-05T20:51:08.767747Z",
+                "isSuperuser": false,
+                "isStaff": false,
+                "experiments": {},
+                "avatar": {
+                    "avatarType": "letter_avatar",
+                    "avatarUuid": null
+                },
+                "emails": [
+                    {
+                        "id": "1109341",
+                        "email": "joren.mcreynolds@runpanther.io",
+                        "is_verified": true
+                    }
+                ]
+            },
+            "type": "set_resolved",
+            "data": {},
+            "dateCreated": "2021-11-04T14:38:20.493593Z"
+        },
+        {
+            "id": "1090583084",
+            "user": null,
+            "type": "assigned",
+            "data": {
+                "assignee": "770744",
+                "assigneeEmail": null,
+                "assigneeType": "team"
+            },
+            "dateCreated": "2021-06-23T09:11:11.013544Z"
+        },
+        {
+            "id": "0",
+            "user": null,
+            "type": "first_seen",
+            "data": {},
+            "dateCreated": "2021-06-23T09:10:58.527485Z"
+        }
+    ],
+    "seenBy": [
+        {
+            "id": "1618715",
+            "name": "Nick Angelou",
+            "username": "a6094234142f4ce0a95ab2e0c52ebd4e",
+            "email": "nick.angelou@panther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/72ad1c6de089f1563df0176e83dbd777?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-11-07T19:00:49.030187Z",
+            "lastLogin": "2021-11-23T15:42:23.001290Z",
+            "has2fa": false,
+            "lastActive": "2021-11-23T15:42:07.409803Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "options": {
+                "theme": "light",
+                "language": "en",
+                "stacktraceOrder": -1,
+                "timezone": "UTC",
+                "clock24Hours": false
+            },
+            "flags": {
+                "newsletter_consent_prompt": false
+            },
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "identities": [
+                {
+                    "id": "284876",
+                    "name": "00u3cuxguCWnqSMe0696",
+                    "organization": {
+                        "slug": "panther-labs",
+                        "name": "Panther Labs"
+                    },
+                    "provider": {
+                        "id": "okta",
+                        "name": "Okta"
+                    },
+                    "dateSynced": "2021-11-23T17:43:07.871819Z",
+                    "dateVerified": "2021-11-23T17:43:07.871819Z"
+                }
+            ],
+            "emails": [
+                {
+                    "id": "1753696",
+                    "email": "nick.angelou@panther.io",
+                    "is_verified": true
+                }
+            ],
+            "lastSeen": "2021-11-23T02:31:34.839593Z"
+        }
+    ],
+    "participants": [
+        {
+            "id": "1618715",
+            "name": "Nick Angelou",
+            "username": "a6094234142f4ce0a95ab2e0c52ebd4e",
+            "email": "nick.angelou@panther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/72ad1c6de089f1563df0176e83dbd777?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-11-07T19:00:49.030187Z",
+            "lastLogin": "2021-11-23T15:42:23.001290Z",
+            "has2fa": false,
+            "lastActive": "2021-11-23T15:42:07.409803Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "options": {
+                "theme": "light",
+                "language": "en",
+                "stacktraceOrder": -1,
+                "timezone": "UTC",
+                "clock24Hours": false
+            },
+            "flags": {
+                "newsletter_consent_prompt": false
+            },
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "identities": [
+                {
+                    "id": "284876",
+                    "name": "00u3cuxguCWnqSMe0696",
+                    "organization": {
+                        "slug": "panther-labs",
+                        "name": "Panther Labs"
+                    },
+                    "provider": {
+                        "id": "okta",
+                        "name": "Okta"
+                    },
+                    "dateSynced": "2021-11-23T17:43:07.871819Z",
+                    "dateVerified": "2021-11-23T17:43:07.871819Z"
+                }
+            ],
+            "emails": [
+                {
+                    "id": "1753696",
+                    "email": "nick.angelou@panther.io",
+                    "is_verified": true
+                }
+            ]
+        },
+        {
+            "id": "989761",
+            "name": "Joren McReynolds",
+            "username": "joren.mcreynolds@runpanther.io",
+            "email": "joren.mcreynolds@runpanther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/6ca45075fcb910b051832e779db652b6?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": true,
+            "isManaged": false,
+            "dateJoined": "2021-04-07T22:29:07.808374Z",
+            "lastLogin": "2021-11-05T20:51:08.722100Z",
+            "has2fa": false,
+            "lastActive": "2021-11-05T20:51:08.767747Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "emails": [
+                {
+                    "id": "1109341",
+                    "email": "joren.mcreynolds@runpanther.io",
+                    "is_verified": true
+                }
+            ]
+        },
+        {
+            "id": "996046",
+            "name": "George Psarakis",
+            "username": "842acb713242457c8186af2e71a207aa",
+            "email": "george.psarakis@runpanther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/f840de1ef61bd0e395e4d609347b1da6?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-04-13T08:48:47.521031Z",
+            "lastLogin": "2021-11-05T14:59:03.484425Z",
+            "has2fa": false,
+            "lastActive": "2021-11-05T15:41:19.187774Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "emails": [
+                {
+                    "id": "1116113",
+                    "email": "george.psarakis@runpanther.io",
+                    "is_verified": true
+                }
+            ]
+        },
+        {
+            "id": "1001932",
+            "name": "Alex Sigalas",
+            "username": "339e9d0b624d4a3b93051e2e004c946f",
+            "email": "alex.sigalas@runpanther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/135864201beef329706e8b04e6f57e78?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-04-17T07:36:58.814372Z",
+            "lastLogin": "2021-08-17T08:55:53.841373Z",
+            "has2fa": false,
+            "lastActive": "2021-08-17T08:55:54.126648Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "emails": [
+                {
+                    "id": "1122423",
+                    "email": "alex.sigalas@runpanther.io",
+                    "is_verified": true
+                }
+            ]
+        },
+        {
+            "id": "997738",
+            "name": "Kostas Papageorgiou",
+            "username": "a03459c8ed204606b2d3c741e2d5b7e7",
+            "email": "kostas.papageorgiou@runpanther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/d34f2b6c94d7ca2aaba0b3ff4dca9bdf?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-04-14T08:40:57.903479Z",
+            "lastLogin": "2021-11-05T11:07:26.096757Z",
+            "has2fa": false,
+            "lastActive": "2021-11-05T15:55:11.975213Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "emails": [
+                {
+                    "id": "1117966",
+                    "email": "kostas.papageorgiou@runpanther.io",
+                    "is_verified": true
+                }
+            ]
+        },
+        {
+            "id": "996088",
+            "name": "George Papadrosou",
+            "username": "531a71dc3b0946718dd2fac00f59483c",
+            "email": "george.papadrosou@runpanther.io",
+            "avatarUrl": "https://secure.gravatar.com/avatar/474810a557cab99f8d877fc55bc191ad?s=32&d=mm",
+            "isActive": true,
+            "hasPasswordAuth": false,
+            "isManaged": false,
+            "dateJoined": "2021-04-13T09:09:08.198707Z",
+            "lastLogin": "2021-11-08T21:26:03.522687Z",
+            "has2fa": false,
+            "lastActive": "2021-11-22T13:58:46.359684Z",
+            "isSuperuser": false,
+            "isStaff": false,
+            "experiments": {},
+            "avatar": {
+                "avatarType": "letter_avatar",
+                "avatarUuid": null
+            },
+            "emails": [
+                {
+                    "id": "1116161",
+                    "email": "george.papadrosou@runpanther.io",
+                    "is_verified": true
+                }
+            ]
+        }
+    ],
+    "pluginActions": [],
+    "pluginIssues": [
+        {
+            "slug": "asana",
+            "allowed_actions": [
+                "create",
+                "link",
+                "unlink"
+            ],
+            "title": "Asana",
+            "issue": {
+                "issue_id": "1201413554245508",
+                "url": "https://app.asana.com/0/0/1201413554245508",
+                "label": "Asana Issue"
+            },
+            "id": "asana",
+            "name": "Asana",
+            "shortName": "Asana",
+            "type": "issue-tracking",
+            "canDisable": true,
+            "isTestable": false,
+            "hasConfiguration": true,
+            "metadata": {},
+            "contexts": [],
+            "status": "unknown",
+            "assets": [],
+            "doc": "",
+            "firstPartyAlternative": null,
+            "deprecationDate": null,
+            "altIsSentryApp": null,
+            "enabled": true,
+            "version": "21.12.0.dev0",
+            "author": {
+                "name": "Sentry Team",
+                "url": "https://github.com/getsentry/sentry"
+            },
+            "isDeprecated": false,
+            "isHidden": false,
+            "description": "\nImprove your productivity by creating tasks in Asana directly\nfrom Sentry issues. This integration also allows you to link Sentry\nissues to existing tasks in Asana.\n",
+            "features": [
+                "issue-basic"
+            ],
+            "featureDescriptions": [
+                {
+                    "description": "Create and link Sentry issue groups directly to an Asana ticket in any of your\n            projects, providing a quick way to jump from a Sentry bug to tracked ticket!",
+                    "featureGate": "issue-basic"
+                },
+                {
+                    "description": "Link Sentry issues to existing Asana tickets.",
+                    "featureGate": "issue-basic"
+                }
+            ],
+            "resourceLinks": [
+                {
+                    "title": "Report Issue",
+                    "url": "https://github.com/getsentry/sentry/issues"
+                },
+                {
+                    "title": "View Source",
+                    "url": "https://github.com/getsentry/sentry/tree/master/src/sentry_plugins"
+                }
+            ]
+        }
+    ],
+    "pluginContexts": [],
+    "userReportCount": 0,
+    "tags": [
+        {
+            "key": "aws_account_alias",
+            "name": "Aws Account Alias",
+            "totalValues": 4
+        },
+        {
+            "key": "aws_account_id",
+            "name": "Aws Account Id",
+            "totalValues": 103457
+        },
+        {
+            "key": "aws_org_id",
+            "name": "Aws Org Id",
+            "totalValues": 103457
+        },
+        {
+            "key": "aws_partition",
+            "name": "Aws Partition",
+            "totalValues": 103457
+        },
+        {
+            "key": "aws_region",
+            "name": "Aws Region",
+            "totalValues": 103457
+        },
+        {
+            "key": "commit_sha",
+            "name": "Commit Sha",
+            "totalValues": 103457
+        },
+        {
+            "key": "data_lake",
+            "name": "Data Lake",
+            "totalValues": 103457
+        },
+        {
+            "key": "debug_enabled",
+            "name": "Debug Enabled",
+            "totalValues": 103457
+        },
+        {
+            "key": "environment",
+            "name": "Environment",
+            "totalValues": 103457
+        },
+        {
+            "key": "fips_enabled",
+            "name": "Fips Enabled",
+            "totalValues": 103457
+        },
+        {
+            "key": "lambda_memory_mb",
+            "name": "Lambda Memory Mb",
+            "totalValues": 103457
+        },
+        {
+            "key": "level",
+            "name": "Level",
+            "totalValues": 103457
+        },
+        {
+            "key": "os.name",
+            "name": "Os.Name",
+            "totalValues": 103457
+        },
+        {
+            "key": "runtime",
+            "name": "Runtime",
+            "totalValues": 103457
+        },
+        {
+            "key": "runtime.name",
+            "name": "Runtime.Name",
+            "totalValues": 103457
+        },
+        {
+            "key": "server_name",
+            "name": "Server",
+            "totalValues": 103457
+        },
+        {
+            "key": "url",
+            "name": "URL",
+            "totalValues": 103457
+        }
+    ],
+    "stats": {
+        "24h": [
+            [
+                1637600400,
+                180
+            ],
+            [
+                1637604000,
+                180
+            ],
+            [
+                1637607600,
+                180
+            ],
+            [
+                1637611200,
+                180
+            ],
+            [
+                1637614800,
+                177
+            ],
+            [
+                1637618400,
+                180
+            ],
+            [
+                1637622000,
+                180
+            ],
+            [
+                1637625600,
+                179
+            ],
+            [
+                1637629200,
+                181
+            ],
+            [
+                1637632800,
+                179
+            ],
+            [
+                1637636400,
+                180
+            ],
+            [
+                1637640000,
+                181
+            ],
+            [
+                1637643600,
+                180
+            ],
+            [
+                1637647200,
+                180
+            ],
+            [
+                1637650800,
+                180
+            ],
+            [
+                1637654400,
+                180
+            ],
+            [
+                1637658000,
+                180
+            ],
+            [
+                1637661600,
+                180
+            ],
+            [
+                1637665200,
+                54
+            ],
+            [
+                1637668800,
+                0
+            ],
+            [
+                1637672400,
+                15
+            ],
+            [
+                1637676000,
+                0
+            ],
+            [
+                1637679600,
+                0
+            ],
+            [
+                1637683200,
+                0
+            ],
+            [
+                1637686800,
+                0
+            ]
+        ],
+        "30d": [
+            [
+                1635033600,
+                0
+            ],
+            [
+                1635120000,
+                0
+            ],
+            [
+                1635206400,
+                0
+            ],
+            [
+                1635292800,
+                0
+            ],
+            [
+                1635379200,
+                0
+            ],
+            [
+                1635465600,
+                0
+            ],
+            [
+                1635552000,
+                0
+            ],
+            [
+                1635638400,
+                0
+            ],
+            [
+                1635724800,
+                0
+            ],
+            [
+                1635811200,
+                0
+            ],
+            [
+                1635897600,
+                716
+            ],
+            [
+                1635984000,
+                4320
+            ],
+            [
+                1636070400,
+                4320
+            ],
+            [
+                1636156800,
+                4320
+            ],
+            [
+                1636243200,
+                4320
+            ],
+            [
+                1636329600,
+                4319
+            ],
+            [
+                1636416000,
+                4321
+            ],
+            [
+                1636502400,
+                14018
+            ],
+            [
+                1636588800,
+                12699
+            ],
+            [
+                1636675200,
+                4312
+            ],
+            [
+                1636761600,
+                4321
+            ],
+            [
+                1636848000,
+                4316
+            ],
+            [
+                1636934400,
+                4321
+            ],
+            [
+                1637020800,
+                4320
+            ],
+            [
+                1637107200,
+                4320
+            ],
+            [
+                1637193600,
+                4320
+            ],
+            [
+                1637280000,
+                4320
+            ],
+            [
+                1637366400,
+                4320
+            ],
+            [
+                1637452800,
+                4320
+            ],
+            [
+                1637539200,
+                4317
+            ],
+            [
+                1637625600,
+                2049
+            ]
+        ]
+    }
+}

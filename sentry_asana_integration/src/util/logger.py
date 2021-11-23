@@ -59,7 +59,7 @@ class LoggingSetup:
             aws_handler.setFormatter(formatter)
 
         # Verify that the logger works on startup
-        logger.info(
+        logger.debug(
             "logger initialized successfully: total handlers=%d, first handler class: %s", len(logger.handlers),
             logger.handlers[0].__class__.__name__
         )

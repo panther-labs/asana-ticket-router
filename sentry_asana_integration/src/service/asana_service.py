@@ -7,6 +7,7 @@
 
 import fnmatch
 import os
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -52,7 +53,7 @@ class AsanaService:
             'team': os.environ.get('ASANA_ENGINEERING_TEAM_ID'),
             'archived': False
         })
-        self._logger.info('get_projects_response: %s', get_projects_response)
+        self._logger.debug('get_projects_response: %s', get_projects_response)
 
         eng_sprint_projects = []
         dogfooding_projects = []
@@ -62,14 +63,14 @@ class AsanaService:
             elif 'dogfooding:' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
                 dogfooding_projects.append(proj)
 
-        self._logger.info('The following projects are sprint related: %s', eng_sprint_projects)
-        self._logger.info('The following projects are dogfooding related: %s', dogfooding_projects)
+        self._logger.debug('The following projects are sprint related: %s', eng_sprint_projects)
+        self._logger.debug('The following projects are dogfooding related: %s', dogfooding_projects)
 
         self._current_eng_sprint_project_id = self._get_newest_created_project_id(eng_sprint_projects)
         self._current_dogfooding_project_id = self._get_newest_created_project_id(dogfooding_projects)
 
-        self._logger.info('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
-        self._logger.info('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
+        self._logger.debug('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
+        self._logger.debug('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -100,7 +101,7 @@ class AsanaService:
         if len(projects) > 1:
             for proj in projects:
                 proj_details = self._asana_client.projects.get_project(proj['gid'])
-                self._logger.info('get_project(%s) response: %s', proj['gid'], proj_details)
+                self._logger.debug('get_project(%s) response: %s', proj['gid'], proj_details)
                 created_date = None
                 if proj_details:
                     created_date = datetime.strptime(proj_details['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -145,7 +146,48 @@ class AsanaService:
             project_ids.append(self._current_eng_sprint_project_id)
         return project_ids
 
-    def create_asana_task_from_sentry_event(self, sentry_event: Dict[str, Any]) -> str:
+    def extract_root_asana_link(self, task_gid: str) -> Optional[str]:
+        """Extract the 'Root Asana Task: ...' link from the specified task (if it exists)
+
+        Args:
+            task: The asana task payload returned from the client
+
+        Returns:
+            The root asana task link
+        """
+        try:
+            task = self._asana_client.tasks.find_by_id(task_gid)
+            if not task:
+                self._logger.warning('Could not fetch task: %s', task_gid)
+                return None
+        except AsanaError.AsanaError as ex:
+            self._logger.error('Unknown asana error: %s', ex)
+            return None
+        else:
+            notes = task.get('notes', None)
+            if not notes:
+                self._logger.warning('Could not find notes in task: %s', task_gid)
+                return None
+
+            parser = re.compile(r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
+            match = parser.search(notes)
+            if not match:
+                self._logger.info('No root asana task link found')
+                return None
+
+            prev_link = match.group(2)
+            if not prev_link:
+                self._logger.warning('Malformed root asana task link')
+                return None
+
+            return prev_link
+
+    def create_asana_task_from_sentry_event(
+        self,
+        sentry_event: Dict[str, Any],
+        prev_asana_link: Optional[str],
+        root_asana_link: Optional[str]
+        ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task using the Asana client.
 
         This method receives the Sentry event information and proceeds to make the relevant calls
@@ -158,6 +200,8 @@ class AsanaService:
             sentry_event: A dict representing the sentry event; this event can be found from the deserialized body in
               the originating event through the following keys: data -> event.
               See 'tests/test_data/sentry_event_body.json' for an example of the deserialized body.
+            prev_asana_link: An optional link pointing to the previous asana task.
+            root_asana_link: An optional link pointing to the first (root) asana task created for the sentry issue.
 
         Returns:
             A string representing the ID (gid in Asana parlance) of the newly created Asana task
@@ -182,6 +226,12 @@ class AsanaService:
                      f'Event Datetime: {sentry_event["datetime"]}\n\n'
                      f'Customer Impacted: {customer}\n\n'
                      f'Environment: {sentry_event["environment"].lower()}\n\n')
+        # If we had a root task link, set it in the payload
+        if root_asana_link:
+            task_note = f'Root Asana Task: {root_asana_link}\n\n' + task_note
+        # If we had a previous task link, set it in the payload
+        if prev_asana_link:
+            task_note = f'Previous Asana Task: {prev_asana_link}\n\n' + task_note
 
         project_gids = self._get_project_ids(sentry_event['environment'].lower(), sentry_event['level'].lower(), assigned_team)
         if len(project_gids) == 0 or (sentry_event['environment'].lower() == 'staging' and len(project_gids) <= 1):
@@ -201,10 +251,10 @@ class AsanaService:
             },
             'notes': task_note
         }
-        self._logger.info('Attempting to create Asana task with the following fields: %s', task_creation_details)
+        self._logger.debug('Attempting to create Asana task with the following fields: %s', task_creation_details)
         try:
             task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
-            self._logger.info('Task creation result: %s', task_creation_result)
+            self._logger.debug('Task creation result: %s', task_creation_result)
             if 'gid' not in task_creation_result:
                 self._logger.error('Unable to verify that Asana task was created correctly')
                 raise KeyError('Unable to verify that Asana task was created correctly')
@@ -219,10 +269,10 @@ class AsanaService:
             'projects': project_gids,
             'notes': task_note
         }
-        self._logger.info('Attempting to retry Asana task creation with the following minimal set of fields: %s',\
+        self._logger.debug('Attempting to retry Asana task creation with the following minimal set of fields: %s',\
                           task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
-        self._logger.info('Task creation result: %s', task_creation_result)
+        self._logger.debug('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
             self._logger.error('Unable to verify that the second attempt to create the Asana task succeeded')
             raise KeyError('Unable to verify that the second attempt to create the Asana task succeeded')
