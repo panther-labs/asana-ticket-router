@@ -277,7 +277,7 @@ class TestAsanaService(TestCase):
         }
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
             'projects': ['current_eng_sprint_id'],
@@ -338,7 +338,7 @@ class TestAsanaService(TestCase):
         }
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
             'projects': ['current_eng_sprint_id'],
@@ -397,10 +397,10 @@ class TestAsanaService(TestCase):
         }
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = None
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
-            'projects': ['current_dogfooding_project_id', teams.CORE_PRODUCT.backlog_id],
+            'projects': ['current_release_testing_project_id', teams.CORE_PRODUCT.backlog_id],
             'custom_fields': {
                 '1159524604627932': AsanaPriority.MEDIUM.value,
                 '1199912337121892': '1200218109698442',
@@ -462,7 +462,7 @@ class TestAsanaService(TestCase):
         ]
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
             'projects': ['current_eng_sprint_id'],
@@ -492,7 +492,7 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1200031963805016",
-                "name": "Template: Dogfooding",
+                "name": "Template: Release Testing",
                 "resource_type": "project"
             },
             {
@@ -517,12 +517,12 @@ class TestAsanaService(TestCase):
             },
             {
                 "gid": "1200319127186571",
-                "name": "Dogfooding: 08/23 - 09/01",
+                "name": "Release Testing: 08/23 - 09/01",
                 "resource_type": "project"
             },
             {
                 "gid": "1200319127186570",
-                "name": "E2E Testing for Dogfooding",
+                "name": "E2E Testing for Release Testing",
                 "resource_type": "project"
             },
         ]
@@ -541,7 +541,7 @@ class TestAsanaService(TestCase):
                     "created_at": "2021-07-19T20:30:30.159Z"
                 },
                 '1200319127186571': {
-                    "gid": "1200319127186571", # Dogfooding: 08/23 - 09/01
+                    "gid": "1200319127186571", # Release Testing: 08/23 - 09/01
                     "archived": False,
                     "color": "dark-orange",
                     "created_at": "2021-08-01T10:30:30.159Z"
@@ -559,7 +559,7 @@ class TestAsanaService(TestCase):
 
         # Assert
         self.assertEqual(asana_service._current_eng_sprint_project_id, '1200693863324520')
-        self.assertEqual(asana_service._current_dogfooding_project_id, '1200319127186571')
+        self.assertEqual(asana_service._current_release_testing_project_id, '1200319127186571')
 
     @patch.dict(os.environ, _env_vars)
     def test_get_project_ids_dev(self) -> None:
@@ -579,8 +579,8 @@ class TestAsanaService(TestCase):
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
-        expected_result = ['current-eng-sprint-id', 'current_dogfooding_project_id']
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
+        expected_result = ['current-eng-sprint-id', 'current_release_testing_project_id']
 
         # Act
         result = asana_service._get_project_ids('staging', 'warning', teams.DETECTIONS)
@@ -593,7 +593,7 @@ class TestAsanaService(TestCase):
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result: List[str] = ['current-eng-sprint-id']
 
         # Act
@@ -607,7 +607,7 @@ class TestAsanaService(TestCase):
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
-        asana_service._current_dogfooding_project_id = 'current_dogfooding_project_id'
+        asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result: List[str] = [teams.INGESTION.backlog_id]
 
         # Act

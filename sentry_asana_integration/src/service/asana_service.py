@@ -28,21 +28,21 @@ class AsanaService:
         _logger: A reference to a Logger object.
         _current_eng_sprint_project_id: The Asana ID of the Asana project representing the current
           eng sprint.
-        _current_dogfooding_project_id: The Asana ID of the Asana project representing the current
-          dogfooding sprint.
+        _current_release_testing_project_id: The Asana ID of the Asana project representing the current
+          release testing sprint.
     """
 
     def __init__(self, asana_client: AsanaClient, load_asana_projects: bool = True) -> None:
         self._asana_client = asana_client
         self._logger = get_logger()
         self._current_eng_sprint_project_id: Optional[str] = None
-        self._current_dogfooding_project_id: Optional[str] = None
+        self._current_release_testing_project_id: Optional[str] = None
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
 
     def _load_asana_projects(self) -> None:
-        """Retrieves the current eng sprint, dogfooding, and backlog projects & stores them in class attributes.
+        """Retrieves the current eng sprint, release testing, and backlog projects & stores them in class attributes.
 
         This function is written as such (does not return anything, accesses protected class attributes) to allow
         the class' project_id attributes to be refreshed periodically while reducing the number of places these class
@@ -54,23 +54,24 @@ class AsanaService:
             'archived': False
         })
         self._logger.debug('get_projects_response: %s', get_projects_response)
-
         eng_sprint_projects = []
-        dogfooding_projects = []
+        release_testing_projects = []
         for proj in get_projects_response:
-            if 'sprint' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
+            project_name = proj['name'].lower()
+
+            if 'sprint' in project_name and 'template' not in project_name and 'closed' not in project_name:
                 eng_sprint_projects.append(proj)
-            elif 'dogfooding:' in proj['name'].lower() and 'template' not in proj['name'].lower() and 'closed' not in proj['name'].lower():
-                dogfooding_projects.append(proj)
+            elif 'release testing:' in project_name and 'template' not in project_name and 'closed' not in project_name:
+                release_testing_projects.append(proj)
 
         self._logger.debug('The following projects are sprint related: %s', eng_sprint_projects)
-        self._logger.debug('The following projects are dogfooding related: %s', dogfooding_projects)
+        self._logger.debug('The following projects are release testing related: %s', release_testing_projects)
 
         self._current_eng_sprint_project_id = self._get_newest_created_project_id(eng_sprint_projects)
-        self._current_dogfooding_project_id = self._get_newest_created_project_id(dogfooding_projects)
+        self._current_release_testing_project_id = self._get_newest_created_project_id(release_testing_projects)
 
         self._logger.debug('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
-        self._logger.debug('current dogfooding sprint project ID: %s', self._current_dogfooding_project_id)
+        self._logger.debug('current release testing sprint project ID: %s', self._current_release_testing_project_id)
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -128,15 +129,16 @@ class AsanaService:
             A list containing the ids (string) of each relevant project
         """
         project_ids: List[str] = []
-        if environment.lower() == 'dev':
+        environment = environment.lower()
+        if environment == 'dev':
             # Providing a default value to satisfy mypy; essentially, Optional[str] != str
             # Default value given is the Asana ID for 'Test Project (Sentry-Asana integration work)'
             return [os.environ.get('DEV_ASANA_SENTRY_PROJECT', '1200611106362920')]
-        if environment.lower() == 'staging':
+        if environment == 'staging':
             if self._current_eng_sprint_project_id:
                 project_ids.append(self._current_eng_sprint_project_id)
-            if self._current_dogfooding_project_id:
-                project_ids.append(self._current_dogfooding_project_id)
+            if self._current_release_testing_project_id:
+                project_ids.append(self._current_release_testing_project_id)
             return project_ids
         # at this point, environment == prod
         if level == 'warning':
@@ -158,7 +160,7 @@ class AsanaService:
         try:
             task = self._asana_client.tasks.find_by_id(task_gid)
             if not task:
-                self._logger.warning('Could not fetch task: %s', task_gid)
+                self._logger.error('Could not fetch task: %s', task_gid)
                 return None
         except AsanaError.AsanaError as ex:
             self._logger.error('Unknown asana error: %s', ex)
@@ -166,18 +168,18 @@ class AsanaService:
         else:
             notes = task.get('notes', None)
             if not notes:
-                self._logger.warning('Could not find notes in task: %s', task_gid)
+                self._logger.error('Could not find notes in task: %s', task_gid)
                 return None
 
             parser = re.compile(r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
             match = parser.search(notes)
             if not match:
-                self._logger.info('No root asana task link found')
+                self._logger.debug('No root asana task link found')
                 return None
 
             prev_link = match.group(2)
             if not prev_link:
-                self._logger.warning('Malformed root asana task link')
+                self._logger.error('Malformed root asana task link')
                 return None
 
             return prev_link
@@ -206,21 +208,21 @@ class AsanaService:
         Returns:
             A string representing the ID (gid in Asana parlance) of the newly created Asana task
         """
-        issue_url = sentry_event['issue_url']
-        if issue_url[-1] == '/':
-            issue_url = issue_url[:len(issue_url) - 1]
-        issue_id = issue_url.split('/')[-1]
+        issue_url = sentry_event.get('issue_url', '')
+        issue_id = issue_url.strip('/').split('/').pop()
         url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
         customer = 'Unknown'
         server_name = 'Unknown'
         event_type = None
         for tag in sentry_event['tags']:
-            if tag[0] == 'customer_name':
-                customer = tag[1]
-            elif tag[0] == 'server_name':
-                server_name = tag[1]
-            elif tag[0] == 'type':
-                event_type = tag[1]
+            key = tag[0]
+            value = tag[1]
+            if key == 'customer_name':
+                customer = value
+            elif key == 'server_name':
+                server_name = value
+            elif key == 'type':
+                event_type = value
         assigned_team = AsanaService._get_owning_team(server_name, event_type)
         task_note = (f'Sentry Issue URL: {url}\n\n'
                      f'Event Datetime: {sentry_event["datetime"]}\n\n'
@@ -318,7 +320,6 @@ class AsanaService:
 
         server_name_to_team_map = {
             'panther-token-authorizer': teams.CORE_PRODUCT,
-            'panther-log-router': teams.INGESTION,
             'panther-alert-processor': teams.DETECTIONS,
             'panther-alert-forwarder': teams.DETECTIONS,
             'panther-aws-event-processor': teams.DETECTIONS,
