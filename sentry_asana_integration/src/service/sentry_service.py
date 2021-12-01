@@ -109,12 +109,12 @@ class SentryService:
         # Extract the first asana plugin issue we find in the list
         asana_issue: Dict[str, Any] = next((issue for issue in plugin_issues if issue.get('id') == 'asana'), {})
         if not asana_issue:
-            self._logger.info('No asana plugin found for issue: %s', issue_id)
+            self._logger.error('No asana plugin found for issue: %s', issue_id)
             return None
 
         asana_link = asana_issue.get('issue', {}).get('url', None)
         if not asana_link:
-            self._logger.info('No asana link found for issue: %s', issue_id)
+            self._logger.warning('No asana link found for issue: %s', issue_id)
             return None
         return asana_link
 

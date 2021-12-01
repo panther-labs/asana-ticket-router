@@ -5,13 +5,13 @@ orbs:
   # Orb commands and jobs help you with common scripting around a language/tool
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
-  python: circleci/python@1.2
+  python: circleci/python@1.5
 
 
 executors:
-  circleci-python-3-8:
+  circleci-python-3-9:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.9
 
 
 workflows:
@@ -22,7 +22,7 @@ workflows:
 # TODO: cache pip-installed packages
 jobs:
   lint-and-test:
-    executor: circleci-python-3-8
+    executor: circleci-python-3-9
     steps:
       - checkout
       - python/install-packages:

@@ -12,5 +12,5 @@ types-requests
 # the per-project requirement.txts and leaving this top level requirements.txt strictly for CI/CD
 # related dependencies
 asana==0.10.3
-boto3==1.18.18
+boto3==1.18.55
 requests==2.26.0
