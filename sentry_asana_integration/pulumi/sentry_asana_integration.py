@@ -94,7 +94,8 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920', # Asana ID for 'Test Project (Sentry-Asana integration work)'
                 }
             },
-            runtime='python3.7',
+            runtime='python3.9',
+            architectures=['arm64'],
             role=lambda_role.arn,
             handler='src.handler.handler',
             description='The handler function for the Sentry-Asana integration service',
