@@ -19,3 +19,7 @@ printf "\n=== Finished generating customer files ===\n\n"
 git add deployment-metadata
 TITLE="Creating customer '${PARAM_CUSTOMER_NAME}'" git-commit
 git push
+
+
+FAIRYTALE_NAME=$(yq e '.CustomerId' deployments/deployment-metadata/deployment-targets/${PARAM_CUSTOMER_NAME}.yml)
+echo "airplane_output_set:fairytale_name ${FAIRYTALE_NAME}"
