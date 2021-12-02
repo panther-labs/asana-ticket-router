@@ -340,7 +340,9 @@ class AsanaService:
             'panther-message-forwarder': teams.INGESTION,
             'panther-rules-engine': teams.INGESTION,
             'panther-source-api': teams.INGESTION,
-            'panther-system-status': teams.INGESTION
+            'panther-system-status': teams.INGESTION,
+            'panther-holding-tank': teams.INGESTION,
+            'panther-data-archiver': teams.INGESTION,
         }
         if server_name in server_name_to_team_map:
             return server_name_to_team_map[server_name]

@@ -62,6 +62,7 @@ class TestAsanaService(TestCase):
 
         # Assert
         self.assertEqual(result, expected_result)
+
     def test_get_previous_asana_link_none(
         self,
     ) -> None:

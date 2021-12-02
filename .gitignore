@@ -6,6 +6,7 @@ venv
 
 # IDE
 .vscode
+.idea
 
 # Linting
 .mypy_cache
