@@ -99,7 +99,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             role=lambda_role.arn,
             handler='src.handler.handler',
             description='The handler function for the Sentry-Asana integration service',
-            timeout=30,
+            timeout=120,
             opts=pulumi.ResourceOptions(parent=self),
         )
 
