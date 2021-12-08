@@ -1,0 +1,16 @@
+#!/bin/sh -eu
+
+# Robust pushing to git to prevent merge conflicts
+MAX_ATTEMPTS=3
+attempts=1
+
+while ! git push; do
+  attempts=$((attempts+1))
+  if [ "${attempts}" -gt "${MAX_ATTEMPTS}" ]; then
+    echo "Could not push to Git repo! Exiting script..."
+    exit 1
+  fi
+
+  sleep 2
+  git pull --rebase
+done

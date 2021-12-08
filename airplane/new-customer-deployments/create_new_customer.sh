@@ -19,5 +19,5 @@ printf "\n=== Finished generating customer files ===\n\n"
 
 git add deployment-metadata
 TITLE="Creating customer '${PARAM_CUSTOMER_NAME}'" git-commit
-git push
+git-push
 

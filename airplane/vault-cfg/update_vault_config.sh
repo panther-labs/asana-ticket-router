@@ -18,4 +18,4 @@ aws-vault-config add-customer $(echo ${args})
 
 git add aws_vault_config/aws_config.yml
 TITLE="Add ${PARAM_CUSTOMER_NAME} profiles" git-commit
-git push
+git-push

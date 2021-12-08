@@ -30,4 +30,4 @@ git status
 
 TITLE="Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane" git-commit
 
-git push
+git-push
