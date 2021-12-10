@@ -6,6 +6,7 @@ from functools import reduce
 
 from boto3.dynamodb.conditions import Key
 
+DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
 POLL_FREQUENCY_SECS = int(os.environ.get("POLL_FREQUENCY_SECONDS", 60))
 POLL_TIMEOUT_SECS = int(os.environ.get("POLL_TIMEOUT_SECONDS", 900))
 
@@ -26,7 +27,8 @@ def raise_exception_after_query_fails(retry_state):
 class DynamoDbQuery:
     """Class to interact with AWS DynamoDB. Assumption is made that the proper role is assumed prior to running
     this script."""
-    def __init__(self, table_name, assumed_role_creds=None, region="us-west-2"):
+    def __init__(self, table_name, assumed_role_creds=None, region=None):
+        region = DYNAMO_REGION if region is None else region
         dynamo_db = boto3.resource(**self._get_boto3_resource_kwargs(assumed_role_creds, region))
         self.table = dynamo_db.Table(table_name)
 
