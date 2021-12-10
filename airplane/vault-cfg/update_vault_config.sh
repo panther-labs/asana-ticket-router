@@ -7,15 +7,15 @@ cd aws-vault-config
 
 pip install -e .
 
-args="--name ${PARAM_CUSTOMER_NAME} --account-id ${PARAM_ACCOUNT_ID} --region ${PARAM_AWS_REGION} \
-  --deployment-type ${PARAM_DEPLOYMENT}"
+args="--name ${PARAM_FAIRYTALE_NAME} --account-id ${PARAM_AWS_ACCOUNT_ID} --region ${PARAM_REGION} \
+  --deployment-type ${PARAM_SERVICE_TYPE}"
 
-if [ "${PARAM_DEPLOYMENT}" = "CPaaS" ]; then
+if [ "${PARAM_SERVICE_TYPE}" = "CPaaS" ]; then
   args="${args} --profile-types deployment support"
 fi
 
 aws-vault-config add-customer $(echo ${args})
 
 git add aws_vault_config/aws_config.yml
-TITLE="Add ${PARAM_CUSTOMER_NAME} profiles" git-commit
+TITLE="Add ${PARAM_FAIRYTALE_NAME} profiles" git-commit
 git-push
