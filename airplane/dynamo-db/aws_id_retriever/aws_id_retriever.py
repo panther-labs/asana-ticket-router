@@ -33,7 +33,7 @@ def main(params):
         query_result_keys=("AWSConfiguration", "AccountId")
     )
 
-    return {"aws_id": account_id}
+    return {"aws_account_id": account_id}
 
 
 if __name__ == "__main__":
