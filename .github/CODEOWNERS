@@ -1,3 +1,4 @@
 *   @panther-labs/observability-performance @panther-labs/productivity @panther-labs/quality
-/airplane/notion/se_automation/ @panther-labs/solution_engineering
+/airplane/solution-engineering/ @panther-labs/solution_engineering
+/airplane/productivity/ @panther-labs/productivity
 /airplane/security/ @panther-labs/security
