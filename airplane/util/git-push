@@ -1,16 +1,28 @@
 #!/bin/sh -eu
 
-# Robust pushing to git to prevent merge conflicts
-MAX_ATTEMPTS=3
-attempts=1
+DEFAULT_AIRPLANE_RUN_TYPE="{\"value\": \"production\"}"
+PARAM_AIRPLANE_RUN_TYPE="${PARAM_AIRPLANE_RUN_TYPE:-${DEFAULT_AIRPLANE_RUN_TYPE}}"
+PARAM_AIRPLANE_RUN_TYPE=$(echo "${PARAM_AIRPLANE_RUN_TYPE}" | jq '.value')
 
-while ! git push; do
-  attempts=$((attempts+1))
-  if [ "${attempts}" -gt "${MAX_ATTEMPTS}" ]; then
-    echo "Could not push to Git repo! Exiting script..."
-    exit 1
-  fi
+if [ "${PARAM_AIRPLANE_RUN_TYPE}" = "test" ]; then
+  printf "=== This is a test run! No files will be pushed to git. ===\n\n"
+  printf "=== git status ===\n\n"
+  git status
+  printf "\n\n=== git diff ===\n\n"
+  git --no-pager diff
+else
+  # Robust pushing to git to prevent merge conflicts
+  MAX_ATTEMPTS=3
+  attempts=1
 
-  sleep 2
-  git pull --rebase
-done
+  while ! git push; do
+    attempts=$((attempts+1))
+    if [ "${attempts}" -gt "${MAX_ATTEMPTS}" ]; then
+      echo "Could not push to Git repo! Exiting script..."
+      exit 1
+    fi
+
+    sleep 2
+    git pull --rebase
+  done
+fi
