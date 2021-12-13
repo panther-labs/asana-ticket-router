@@ -14,7 +14,7 @@ AccountsDatabase = connected_page(session=notion)
 
 class Task(AccountsDatabase, database="cc445b0819164efca9d281e8ea2efab7"):
     Fairytale_Name = Property("Fairytale Name", types.Title)
-    AWS_ID = Property("AWS ID", types.RichText)
+    AWS_Account_ID = Property("AWS Account ID", types.RichText)
     Backend = Property("Backend", types.SelectOne)
     Deploy_Group = Property("Deploy Group", types.SelectOne)
     Email = Property("Email", types.Email)
@@ -34,7 +34,7 @@ def main(params):
 
     task = Task.create(
         Fairytale_Name=params["fairytale_name"],
-        AWS_ID=params["aws_id"],
+        AWS_Account_ID=params["aws_account_id"],
         Backend=params["backend"],
         Deploy_Group="L",
         Email=params["email"],
