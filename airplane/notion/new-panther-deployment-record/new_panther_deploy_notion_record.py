@@ -32,20 +32,29 @@ class Task(AccountsDatabase, database="cc445b0819164efca9d281e8ea2efab7"):
 def main(params):
     print("parameters:", params)
 
+    customer = params["customer_name"]
+    fairytale = params["fairytale_name"]
+    email = f'panther-hosted+{fairytale}@runpanther.io'
+    region = params["region"]
+    aws_account_id = params["aws_account_id"]
+    support_role = params["support_role"]
+    support_link = f'https://{region}.signin.aws.amazon.com/switchrole?roleName={support_role}&account={aws_account_id}&displayName={customer}%20Support'
+    support_value = f'[{support_role}]({support_link})'
+
     task = Task.create(
-        Fairytale_Name=params["fairytale_name"],
-        AWS_Account_ID=params["aws_account_id"],
-        Backend=params["backend"],
-        Deploy_Group="L",
-        Email=params["email"],
-        Name=params["customer_name"],
-        PoC=params["poc"],
-        Region=params["region"],
-        Service_Type=params["service_type"],
-        Support_Role=params["support_role"],
-        Upgraded=datetime.datetime.now(pytz.timezone('US/Pacific')).date(),
-        Version=params["version"],
-        AWS_Organization="panther-hosted-root",
+        Fairytale_Name = fairytale,
+        AWS_Account_ID = params["aws_account_id"],
+        Backend = params["backend"],
+        Deploy_Group = params["deploy_group"],
+        Email = params["email"],
+        Name = params["customer_name"],
+        PoC = params["poc"],
+        Region = region,
+        Service_Type = params["service_type"],
+        Support_Role = support_value,
+        Upgraded = datetime.datetime.now(pytz.timezone('US/Pacific')).date(),
+        Version = params["version"],
+        AWS_Organization = "panther-hosted-root",
     )
 
     task.commit()
