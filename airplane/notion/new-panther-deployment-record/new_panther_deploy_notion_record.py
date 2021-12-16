@@ -42,19 +42,19 @@ def main(params):
     support_value = f'[{support_role}]({support_link})'
 
     task = Task.create(
-        Fairytale_Name = fairytale,
-        AWS_Account_ID = params["aws_account_id"],
-        Backend = params["backend"],
-        Deploy_Group = params["deploy_group"],
-        Email = params["email"],
-        Name = params["customer_name"],
-        PoC = params["poc"],
-        Region = region,
-        Service_Type = params["service_type"],
-        Support_Role = support_value,
-        Upgraded = datetime.datetime.now(pytz.timezone('US/Pacific')).date(),
-        Version = params["version"],
-        AWS_Organization = "panther-hosted-root",
+        Fairytale_Name=fairytale,
+        AWS_Account_ID=params["aws_account_id"],
+        Backend=params["backend"],
+        Deploy_Group="L",  # params["deploy_group"],
+        Email=params["email"],
+        Name=params["customer_name"],
+        PoC=params["poc"],
+        Region=region,
+        Service_Type=params["service_type"],
+        Support_Role=support_value,
+        Upgraded=datetime.datetime.now(pytz.timezone('US/Pacific')).date(),
+        Version=params["version"],
+        AWS_Organization="panther-hosted-root",
     )
 
     task.commit()
