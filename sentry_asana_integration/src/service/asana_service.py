@@ -5,7 +5,6 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 
-import fnmatch
 import os
 import re
 from datetime import datetime
@@ -31,6 +30,61 @@ class AsanaService:
         _current_release_testing_project_id: The Asana ID of the Asana project representing the current
           release testing sprint.
     """
+
+    # These teams are responsible for the initial triage of any issues reported by their services, but it does not
+    # necessarily mean that they officially "own" the service - they can delegate as needed.
+    _SERVER_TEAM_MAPPING = {
+        # Team: Detection
+        'panther-alert-delivery-api': teams.DETECTIONS,
+        'panther-analysis-api': teams.DETECTIONS,
+        'panther-aws-event-processor': teams.DETECTIONS,
+        'panther-cloudsecurity-datalake-forwarder': teams.DETECTIONS,
+        'panther-compliance-api': teams.DETECTIONS,
+        'panther-layer-manager': teams.DETECTIONS,
+        'panther-log-alert-forwarder': teams.DETECTIONS,
+        'panther-outputs-api': teams.DETECTIONS,
+        'panther-policy-engine': teams.DETECTIONS,
+        'panther-resource-processor': teams.DETECTIONS,
+        'panther-resources-api': teams.DETECTIONS,
+        'panther-snapshot-pollers': teams.DETECTIONS,
+        'panther-snapshot-scheduler': teams.DETECTIONS,
+
+        # Team: Ingestion
+        'panther-alerts-api': teams.INGESTION,
+        'panther-data-archiver': teams.INGESTION,
+        'panther-datacatalog-compactor': teams.INGESTION,
+        'panther-datacatalog-compactor-callbacks': teams.INGESTION,
+        'panther-datacatalog-compactor-reaper': teams.INGESTION,
+        'panther-datacatalog-updater': teams.INGESTION,
+        'panther-holding-tank': teams.INGESTION,
+        'panther-log-processor': teams.INGESTION,
+        'panther-log-puller': teams.INGESTION,
+        'panther-log-router': teams.INGESTION,
+        'panther-logtypes-api': teams.INGESTION,
+        'panther-message-forwarder': teams.INGESTION,
+        'panther-rules-engine': teams.INGESTION,
+        'panther-source-api': teams.INGESTION,
+        'panther-system-status': teams.INGESTION,
+
+        # Team: Investigation
+        'panther-athena-admin-api': teams.INVESTIGATIONS,
+        'panther-athena-api': teams.INVESTIGATIONS,
+        'panther-lookup-tables-api': teams.INVESTIGATIONS,
+        'panther-snowflake-admin-api': teams.INVESTIGATIONS,
+        'panther-snowflake-api': teams.INVESTIGATIONS,
+
+        # Team: Core Product
+        'panther-apitoken-authorizer': teams.CORE_PRODUCT,
+        'panther-cfn-custom-resources': teams.CORE_PRODUCT,
+        'panther-cn-router': teams.CORE_PRODUCT,
+        'panther-graph-api': teams.CORE_PRODUCT,
+        'panther-metrics-api': teams.CORE_PRODUCT,
+        'panther-ops-tools': teams.CORE_PRODUCT,
+        'panther-organization-api': teams.CORE_PRODUCT,
+        'panther-pip-layer-builder': teams.CORE_PRODUCT,
+        'panther-token-authorizer': teams.CORE_PRODUCT,
+        'panther-users-api': teams.CORE_PRODUCT,
+    }
 
     def __init__(self, asana_client: AsanaClient, load_asana_projects: bool = True) -> None:
         self._asana_client = asana_client
@@ -297,8 +351,8 @@ class AsanaService:
     # Fetch details of the assigned team.
     #
     # There is a service ownership mapping in Asana as well, but we want to avoid the extra API call to look that up.
-    @staticmethod
-    def _get_owning_team(server_name: str, event_type: Optional[str] = None) -> teams.EngTeam:
+    @classmethod
+    def _get_owning_team(cls, server_name: str, event_type: Optional[str] = None) -> teams.EngTeam:
         """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
@@ -318,51 +372,4 @@ class AsanaService:
             # TODO: team-level routing based on URL: https://app.asana.com/0/1201267919523642/1201079771956134/f
             return teams.CORE_PRODUCT
 
-        server_name_to_team_map = {
-            'panther-token-authorizer': teams.CORE_PRODUCT,
-            'panther-alert-processor': teams.DETECTIONS,
-            'panther-alert-forwarder': teams.DETECTIONS,
-            'panther-log-alert-forwarder': teams.DETECTIONS,
-            'panther-aws-event-processor': teams.DETECTIONS,
-            'panther-compliance-api': teams.DETECTIONS,
-            'panther-layer-manager': teams.DETECTIONS,
-            'panther-policy-engine': teams.DETECTIONS,
-            'panther-resource-processor': teams.DETECTIONS,
-            'panther-resources-api': teams.DETECTIONS,
-            'panther-alert-delivery-api': teams.DETECTIONS,
-            'panther-analysis-api': teams.DETECTIONS,
-            'panther-cfn-custom-resources': teams.PRODUCTIVITY,
-            'panther-graph-api': teams.CORE_PRODUCT,
-            'panther-metrics-api': teams.CORE_PRODUCT,
-            'panther-organization-api': teams.CORE_PRODUCT,
-            'panther-outputs-api': teams.CORE_PRODUCT,
-            'panther-users-api': teams.CORE_PRODUCT,
-            'panther-alerts-api': teams.INGESTION,
-            'panther-message-forwarder': teams.INGESTION,
-            'panther-rules-engine': teams.INGESTION,
-            'panther-source-api': teams.INGESTION,
-            'panther-system-status': teams.INGESTION,
-            'panther-holding-tank': teams.INGESTION,
-            'panther-data-archiver': teams.INGESTION,
-        }
-        if server_name in server_name_to_team_map:
-            return server_name_to_team_map[server_name]
-
-        generic_server_name_to_team_lookup = [
-            # TODO: switch some of these services to new data platform team
-            ('panther-athena*', teams.INVESTIGATIONS),
-            ('panther-datacatalog*', teams.INVESTIGATIONS),
-            ('panther-snowflake*', teams.INVESTIGATIONS),
-
-            ('panther-cloudsecurity*', teams.DETECTIONS),
-            ('panther*remediation*', teams.DETECTIONS),
-            ('panther-snapshot*', teams.DETECTIONS),
-            ('panther-cn-*', teams.CORE_PRODUCT),
-            ('panther-log*', teams.INGESTION),
-        ]
-
-        for pattern, team in generic_server_name_to_team_lookup:
-            if fnmatch.fnmatch(server_name, pattern):
-                return team
-
-        return teams.CORE_PRODUCT
+        return cls._SERVER_TEAM_MAPPING.get(server_name, teams.CORE_PRODUCT)

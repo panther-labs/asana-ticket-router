@@ -33,26 +33,6 @@ class TestAsanaService(TestCase):
         # Assert
         self.assertEqual(result, expected_result)
 
-    def test_get_owning_team_with_fnmatch_server_name(self) -> None:
-        # Arrange
-        expected_result = teams.DETECTIONS
-
-        # Act
-        result = AsanaService._get_owning_team('panther-remediation-api')
-
-        # Assert
-        self.assertEqual(result, expected_result)
-
-    def test_get_owning_team_with_fnmatch_server_name_2(self) -> None:
-        # Arrange
-        expected_result = teams.INGESTION
-
-        # Act
-        result = AsanaService._get_owning_team('panther-log-alpha')
-
-        # Assert
-        self.assertEqual(result, expected_result)
-
     def test_get_owning_team_with_no_match_server_name(self) -> None:
         # Arrange
         expected_result = teams.CORE_PRODUCT
