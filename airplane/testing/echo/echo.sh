@@ -3,6 +3,7 @@
 
 # Setup
 
+PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 
 ls hosted-deployments

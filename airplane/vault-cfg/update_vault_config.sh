@@ -2,6 +2,7 @@
 # Linked to https://app.airplane.dev/t/update_vault_config [do not edit this line]
 set -eu
 
+PATH=$PATH:util # For running airplane locally
 REPOSITORY=aws-vault-config git-clone
 cd aws-vault-config
 
@@ -18,4 +19,4 @@ aws-vault-config add-customer $(echo ${args})
 
 git add aws_vault_config/aws_config.yml
 TITLE="Add ${PARAM_FAIRYTALE_NAME} profiles" git-commit
-git-push
+TEST_RUN="${PARAM_AIRPLANE_TEST_RUN}" git-push

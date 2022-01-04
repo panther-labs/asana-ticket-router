@@ -4,6 +4,7 @@
 # Params are in environment variables as PARAM_{SLUG}, e.g. PARAM_USER_ID
 : "${PARAM_CUSTOMERID:?Expected CUSTOMERID param}"
 
+PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 
 echo "================================"

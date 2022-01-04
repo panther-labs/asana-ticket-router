@@ -57,6 +57,9 @@ def main(params):
         AWS_Organization="panther-hosted-root",
     )
 
+    if params["airplane_test_run"]:
+        task.Service_Type = "Airplane Testing"
+
     task.commit()
 
     # Return output https://docs.airplane.dev/tasks/outputs

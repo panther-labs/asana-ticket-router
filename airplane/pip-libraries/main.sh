@@ -5,6 +5,7 @@
 : "${PARAM_CUSTOMERID:?Expected CUSTOMERID param}"
 : "${PARAM_PIPLIBRARIES:?Expected PIPLIBRARIES param}"
 
+PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 
 echo "Customer: ${PARAM_CUSTOMERID}"
@@ -30,4 +31,4 @@ git status
 
 TITLE="Updating '${PARAM_CUSTOMERID}' PipLibraries from airplane" git-commit
 
-git-push
+TEST_RUN="${PARAM_AIRPLANE_TEST_RUN}" git-push

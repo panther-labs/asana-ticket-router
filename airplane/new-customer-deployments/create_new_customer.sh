@@ -2,6 +2,7 @@
 # Linked to https://app.airplane.dev/t/add_pr_for_new_customer_skv [do not edit this line]
 set -eu
 
+PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 cd hosted-deployments
 git checkout "${HOSTED_DEPLOYMENTS_BRANCH}"
@@ -23,6 +24,6 @@ printf "\n=== Finished generating customer files ===\n\n"
 
 git add deployment-metadata
 TITLE="Creating customer '${PARAM_CUSTOMER_NAME}'" git-commit
-git-push
+TEST_RUN="${PARAM_AIRPLANE_TEST_RUN}" git-push
 
 echo "airplane_output_set {\"fairytale_name\": \"${FAIRYTALE_NAME}\", \"panther_version\": \"${PANTHER_VERSION}\"}"

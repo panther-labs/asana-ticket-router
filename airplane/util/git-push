@@ -1,15 +1,13 @@
 #!/bin/sh -eu
 
-DEFAULT_AIRPLANE_RUN_TYPE="{\"value\": \"production\"}"
-PARAM_AIRPLANE_RUN_TYPE="${PARAM_AIRPLANE_RUN_TYPE:-${DEFAULT_AIRPLANE_RUN_TYPE}}"
-PARAM_AIRPLANE_RUN_TYPE=$(echo "${PARAM_AIRPLANE_RUN_TYPE}" | jq '.value')
+: "${TEST_RUN:?Must specify whether this is a test run}"
 
-if [ "${PARAM_AIRPLANE_RUN_TYPE}" = "test" ]; then
-  printf "=== This is a test run! No files will be pushed to git. ===\n\n"
-  printf "=== git status ===\n\n"
-  git status
+if [ "${TEST_RUN}" = "true" ]; then
+  printf "\n\n=== This is a test run! Files should already be committed, but no files will be pushed. ===\n\n"
+  printf "=== Files changed ===\n\n"
+  git diff HEAD^ HEAD --stat
   printf "\n\n=== git diff ===\n\n"
-  git --no-pager diff
+  git diff HEAD^ HEAD
 else
   # Robust pushing to git to prevent merge conflicts
   MAX_ATTEMPTS=3
