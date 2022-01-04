@@ -17,31 +17,20 @@ import re
 def create_s3_input(account_id, s3_bucket, log_processing_arn, kms_key):
     payload_s3 = {
         "putIntegration": {
-            "integrationLabel":
-            "s3-hosted-" + account_id,
-            "integrationType":
-            "aws-s3",
-            "userId":
-            "1",
-            "aWSAccountID":
-            account_id,
-            "cWEEnabled":
-            False,
-            "enabled":
-            True,
-            "s3Bucket":
-            s3_bucket,
-            "kmsKey":
-            kms_key,
+            "integrationLabel": "s3-hosted-" + account_id,
+            "integrationType": "aws-s3",
+            "userId":"1",
+            "aWSAccountID": account_id,
+            "cWEEnabled": False,
+            "enabled": True,
+            "s3Bucket": s3_bucket,
+            "kmsKey": kms_key,
             "s3PrefixLogTypes": [{
-                "s3Prefix":
-                "",
+                "s3Prefix": "",
                 "logTypes": ["AWS.ALB", "AWS.S3ServerAccess", "AWS.VPCFlow"]
             }],
-            "managedBucketNotifications":
-            True,
-            "logProcessingRole":
-            log_processing_arn
+            "managedBucketNotifications": True,
+            "logProcessingRole": log_processing_arn
         }
     }
 
@@ -173,12 +162,6 @@ def get_credentials(sts_client, role):
     return credentials
 
 
-def main(params):
-    aws_account_id = params["aws_account_id"]
-
-    run({"account_id": aws_account_id})
-
-
 def cli():
     parser = argparse.ArgumentParser(
         description='Onboard hosted account S3 and cloud sources into panther-hosted-security')
@@ -232,9 +215,10 @@ def run(args):
 
     if args.aws_s3:
         # if no ARN specified, assume we will use the default LogProcessingRole
-        if args.log_processing_arn is None:
+        if not args.log_processing_arn:
             args.log_processing_arn = ("arn:aws:iam::" + args.account_id +
                                 ":role/PantherLogProcessingRole-" + args.account_id)
+            print("[+] LogProcessingRole not provided, using " + arn.log_processing_arn)
 
         # find the bucket name if not provided
         if not args.s3_bucket:
@@ -260,6 +244,29 @@ def run(args):
         print("[+] Adding cloud account for scanning.")
         payload_cloud_account = create_cloud_account_payload(args.account_id)
         create_log_integration(payload_cloud_account, lambda_client)
+
+
+def main(params):
+    aws_account_id = params["aws_account_id"]
+
+    args = Namespace(
+        account_id = aws_account_id,
+        s3_bucket = "",
+        aws_s3 = True,
+        aws_scan = True,
+        log_processing_arn = "",
+        s3_onboarding_role_arn = "",
+        source_onboarding_role_arn = "",
+        kms_key = ""
+    )
+    
+    run(args)
+
+
+class Namespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
 
 if __name__ == "__main__":
     cli()
