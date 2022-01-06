@@ -1,0 +1,7 @@
+# For airplane, the lowest-level directory that has requirements.txt in it defines the root directory.
+# If you want access to pyshared, do NOT put requirements.txt in your task's directory.
+# Instead, stick your requirements here in this common requirements.txt file.
+boto3>=1.20.20
+notional
+pytz
+tenacity>=8.0.1
