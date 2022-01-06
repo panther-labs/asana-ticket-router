@@ -218,7 +218,7 @@ def run(args):
         if not args.log_processing_arn:
             args.log_processing_arn = ("arn:aws:iam::" + args.account_id +
                                 ":role/PantherLogProcessingRole-" + args.account_id)
-            print("[+] LogProcessingRole not provided, using " + arn.log_processing_arn)
+            print("[+] LogProcessingRole not provided, using " + args.log_processing_arn)
 
         # find the bucket name if not provided
         if not args.s3_bucket:
