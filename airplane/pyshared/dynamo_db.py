@@ -24,9 +24,7 @@ def raise_exception_after_query_fails(retry_state):
     raise RuntimeError("Polling for DynamoDB query failed")
 
 
-class DynamoDbQuery:
-    """Class to interact with AWS DynamoDB. Assumption is made that the proper role is assumed prior to running
-    this script."""
+class DynamoDbSearch:
     def __init__(self, table_name, assumed_role_creds=None, region=None):
         region = DYNAMO_REGION if region is None else region
         dynamo_db = boto3.resource(**self._get_boto3_resource_kwargs(assumed_role_creds, region))
@@ -40,9 +38,23 @@ class DynamoDbQuery:
         wait=tenacity.wait_fixed(POLL_FREQUENCY_SECS)
     )
     def poll_until_available(self, partition_key, partition_value, query_result_keys):
-        return self._recursive_get_from_query_result(
+        return self._recursive_get_from_dynamodb_result(
             self._get_query_item(partition_key, partition_value), query_result_keys
         )
+
+    def scan_and_organize_result(self, scan_result_keys=None):
+        """Scan the table and create a new dict result, with the keys being the value of query_result_keys."""
+        scan_result = self.table.scan()
+
+        if scan_result_keys is None:
+            return scan_result
+
+        organized_scan_result = {}
+        for item in scan_result["Items"]:
+            key = self._recursive_get_from_dynamodb_result(item, scan_result_keys)
+            if key:
+                organized_scan_result[key] = item
+        return organized_scan_result
 
     def _get_query_item(self, key, val):
         dynamo_filter = Key(key).eq(val)
@@ -69,5 +81,7 @@ class DynamoDbQuery:
         return kwargs
 
     @staticmethod
-    def _recursive_get_from_query_result(query_result, result_keys):
-        return reduce(lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}), result_keys, query_result)
+    def _recursive_get_from_dynamodb_result(dynamodb_result, dynamodb_item_keys):
+        return reduce(
+            lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}),dynamodb_item_keys, dynamodb_result
+        )
