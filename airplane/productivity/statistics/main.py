@@ -38,7 +38,7 @@ def main(params):
     return {
         "total": total,
         "failed": failed,
-        "human_rate": f"{success / total * 100}%"
+        "human_rate": f"{round(success / total * 100, 4)}%"
     }
 
 
