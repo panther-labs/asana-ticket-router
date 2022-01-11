@@ -51,6 +51,7 @@ class AsanaService:
 
         # Team: Ingestion
         'panther-alerts-api': teams.INGESTION,
+        'panther-cloud-puller': teams.INGESTION,
         'panther-data-archiver': teams.INGESTION,
         'panther-datacatalog-compactor': teams.INGESTION,
         'panther-datacatalog-compactor-callbacks': teams.INGESTION,
