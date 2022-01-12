@@ -69,10 +69,10 @@ def needs_update(attr, notion_val, update_val):
     if update_val is IGNORE_FIELD:
         return False
 
-    if attr == "Upgraded" and update_val and update_val:
+    if attr == "Upgraded" and str(notion_val) and update_val:
         # Notion and/or notional doesn't maintain the seconds when parsing the page.
-        # Remove seconds (which are always 0 for notion and are some value for Dynamo, then compare for equality
-        notion_no_seconds = datetime.datetime.strptime(str(notion_val).split(":00+00")[0], "%Y-%m-%d %H:%M")
+        # Remove seconds, then compare for equality
+        notion_no_seconds = datetime.datetime.strptime(":".join(str(notion_val).split(":", 2)[:-1]), "%Y-%m-%d %H:%M")
         dynamo_no_seconds = datetime.datetime.strptime(update_val.rsplit(":", 1)[0], "%Y-%m-%dT%H:%M")
         return notion_no_seconds != dynamo_no_seconds
 
