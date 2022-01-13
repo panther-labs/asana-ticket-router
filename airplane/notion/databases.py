@@ -16,8 +16,8 @@ def create_rtf_value(text, url=None):
     })
 
 
-def create_data_value(text_date):
-    return types.Date.parse_obj({"type": "date", "date": {"start": text_date, "end": None}})
+def create_date_time_value(updated_datetime):
+    return types.Date(date={"start": str(updated_datetime)})
 
 
 class AccountsDatabase(page, database="cc445b0819164efca9d281e8ea2efab7"):

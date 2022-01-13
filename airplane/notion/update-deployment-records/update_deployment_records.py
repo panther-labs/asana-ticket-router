@@ -1,10 +1,11 @@
 # Linked to https://app.airplane.dev/t/update_panther_deployments_notion_record [do not edit this line]
 import datetime
+import pytz
 import re
 import urllib.parse
 
 from notion.customer_info_retriever import AllCustomerAccountsInfo
-# from notion.databases import create_rtf_value
+from notion.databases import create_date_time_value
 from pyshared.git_ops import git_clone
 
 EMPTY_FIELD = ""
@@ -36,6 +37,10 @@ def get_expected_customer_attributes(account_info):
     # except KeyError:
     #    company_name = account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
     region = account_info.dynamo_info['GithubConfiguration']['CustomerRegion']
+    upgraded_time_utc = pytz.timezone("UTC").localize(
+        datetime.datetime.strptime(account_info.dynamo_info["Updated"], "%Y-%m-%dT%H:%M:%S"))
+    upgraded_time_pt = upgraded_time_utc.astimezone(pytz.timezone("US/Pacific"))
+
     # role_name = f"PantherSupportRole-{region}"
     # url_support_name = urllib.parse.quote(f"{company_name} Support")
 
@@ -50,7 +55,8 @@ def get_expected_customer_attributes(account_info):
         # Ignoring PoC
         "Region": region,
         # Ignoring Service_Type
-        "Upgraded": account_info.dynamo_info["Updated"],
+        # Notion doesn't keep the seconds field, so zero it out in the Dynamo value
+        "Upgraded": create_date_time_value(upgraded_time_pt.replace(second=0)),
         "Version": get_version_number(account_info.dynamo_info["PantherTemplateURL"],
                                       account_info.notion_info.Version),
     }
@@ -69,12 +75,8 @@ def needs_update(attr, notion_val, update_val):
     if update_val is IGNORE_FIELD:
         return False
 
-    if attr == "Upgraded" and str(notion_val) and update_val:
-        # Notion and/or notional doesn't maintain the seconds when parsing the page.
-        # Remove seconds, then compare for equality
-        notion_no_seconds = datetime.datetime.strptime(":".join(str(notion_val).split(":", 2)[:-1]), "%Y-%m-%d %H:%M")
-        dynamo_no_seconds = datetime.datetime.strptime(update_val.rsplit(":", 1)[0], "%Y-%m-%dT%H:%M")
-        return notion_no_seconds != dynamo_no_seconds
+    if attr == "Upgraded" and str(notion_val) and str(update_val):
+        return str(notion_val) != str(update_val)
 
     return notion_val != update_val
 
@@ -88,10 +90,13 @@ def main(params):
           f"{all_accounts.uncommon_fairytale_names}")
 
     for account_info in all_accounts:
+        changed = False
         expected_attrs = get_expected_customer_attributes(account_info)
         for attr in expected_attrs:
             current_val, update_val = getattr(account_info.notion_info, attr), expected_attrs[attr]
             if needs_update(attr, current_val, update_val):
                 print(f"{attr} will be updated for {account_info.fairytale_name}:\n{current_val} -> {update_val}\n\n")
                 setattr(account_info.notion_info, attr, update_val)
-        account_info.notion_info.commit()
+                changed = True
+        if changed:
+            account_info.notion_info.commit()
