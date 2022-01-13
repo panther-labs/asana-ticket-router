@@ -35,6 +35,7 @@ fi
 iam_roles_file=$(find "panther-hosted-${fairytale_name}" -name "${IAM_ROLES_FILENAME}")
 if [ -z "${iam_roles_file}" ]; then
   echo "No file named ${IAM_ROLES_FILENAME} exists for ${fairytale_name}"
+  exit 1
 fi
 
 for arn in "${source_accounts_and_arns[@]}"; do
