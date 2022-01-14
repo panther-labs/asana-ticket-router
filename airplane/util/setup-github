@@ -18,4 +18,11 @@ EOF
 git config --global user.email "github-service-account@runpanther.io"
 git config --global user.name "Airplane"
 
-ssh -T git@github.com || echo "ok"
+set +e
+OUTPUT=$(ssh -T git@github.com 2>&1)
+set -e
+
+if ! $(echo ${OUTPUT} | grep -q "successfully") ; then
+  echo $OUTPUT >&2
+  exit 1
+fi
