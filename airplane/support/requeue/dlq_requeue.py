@@ -31,7 +31,7 @@ def assume_hosted_root_support_role():
 
     hosted_root_arn = os.environ.get(
         "HOSTED_ROOT_SUPPORT_ROLE_ARN",
-        "arn:aws:iam::255674391660:role/AirplaneCustomerSupport")
+        "arn:aws:iam::255674391660:role/CustomerSupport")
 
     return sts_conn.assume_role(
         RoleArn=hosted_root_arn,
