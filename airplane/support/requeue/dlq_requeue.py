@@ -47,7 +47,7 @@ def assume_customer_support_role(conn, account_id, region):
 
     return conn.assume_role(
         RoleArn=customer_role_arn,
-        RoleSessionName="airplane_support",
+        RoleSessionName="support",
     )
 
 
@@ -77,10 +77,10 @@ def get_client(conn, client, region):
 
 if __name__ == "__main__":
     params = {
-        # papaya-oarfish
-        'aws_account_id': "548688929292",
+        # gainful-wapiti
+        'aws_account_id': "335415977059",
         'from_queue': "panther-alerts-queue-dlq",
         'to_queue': "panther-alerts-queue",
-        'region': "us-west-2",
+        'region': "us-east-2",
     }
     main(params)
