@@ -38,6 +38,6 @@ echo "Staged changes"
 git status
 
 TITLE="Updating staging to '${LATEST_RC}'" git-commit
-git-push
+TEST_RUN=false git-push
 
 echo "airplane_output_set {\"version\": \"${LATEST_RC}\"}"
