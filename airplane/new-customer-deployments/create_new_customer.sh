@@ -12,8 +12,8 @@ printf "\nWorking in hosted deployments branch (which is an Airplane environment
 pip3 install -r automation-scripts/requirements.txt
 printf "\n\n=== Generating customer files ===\n"
 FAIRYTALE_NAME=$(python3 automation-scripts/create_config_from_airplane.py)
-python3 automation-scripts/lint.py
 python3 automation-scripts/generate.py
+python3 automation-scripts/lint.py
 GEN_FILE="deployment-metadata/generated/${FAIRYTALE_NAME}.yml"
 PANTHER_TEMPLATE_URL=$(yq e '.PantherTemplateURL' "${GEN_FILE}")
 # shellcheck disable=SC2001
