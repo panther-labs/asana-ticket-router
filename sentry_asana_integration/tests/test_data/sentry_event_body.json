@@ -34,6 +34,10 @@
                     "f31e80dd1"
                 ],
                 [
+                    "customer_name",
+                    "AwesomeCo"
+                ],
+                [
                     "data_lake",
                     "athena"
                 ],

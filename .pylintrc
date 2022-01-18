@@ -1,6 +1,6 @@
 [FORMAT]
 max-line-length=140
-max-locals=20
+max-locals=25
 
 [MASTER]
 disable=

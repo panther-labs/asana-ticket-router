@@ -17,6 +17,19 @@ from ..enum import teams
 from ..enum.priority import AsanaPriority
 from ..util.logger import get_logger
 
+# A list of hardcoded Account IDs for our self hosted customers, as extracted via
+# https://github.com/panther-labs/aws-management-cloudformation/blob/master/panther-public/enterprise-accounts.yml
+SELF_HOSTED_ACCOUNTS_IDS = [
+    '880172401261',  # Grail,
+
+    '346666025108',  # Infoblox IT,
+    '405093580753',  # Infoblox dev,
+    '718190095844',  # Infoblox prod,
+
+    '971535947767',  # Coinbase dev
+    '817873525313',  # Coinbase prod
+]
+
 
 class AsanaService:
     """Service class that interacts with Asana API/entities.
@@ -239,12 +252,13 @@ class AsanaService:
 
             return prev_link
 
+    # pylint: disable=too-many-branches,too-many-statements
     def create_asana_task_from_sentry_event(
-        self,
-        sentry_event: Dict[str, Any],
-        prev_asana_link: Optional[str],
-        root_asana_link: Optional[str]
-        ) -> str:
+            self,
+            sentry_event: Dict[str, Any],
+            prev_asana_link: Optional[str],
+            root_asana_link: Optional[str]
+    ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task using the Asana client.
 
         This method receives the Sentry event information and proceeds to make the relevant calls
@@ -269,6 +283,8 @@ class AsanaService:
         customer = 'Unknown'
         server_name = 'Unknown'
         event_type = None
+        aws_region = None
+        aws_account_id = None
         for tag in sentry_event['tags']:
             key = tag[0]
             value = tag[1]
@@ -278,11 +294,23 @@ class AsanaService:
                 server_name = value
             elif key == 'type':
                 event_type = value
+            elif key == 'aws_region':
+                aws_region = value
+            elif key == 'aws_account_id':
+                aws_account_id = value
         assigned_team = AsanaService._get_owning_team(server_name, event_type)
         task_note = (f'Sentry Issue URL: {url}\n\n'
                      f'Event Datetime: {sentry_event["datetime"]}\n\n'
                      f'Customer Impacted: {customer}\n\n'
                      f'Environment: {sentry_event["environment"].lower()}\n\n')
+
+        # if a customer is not self-hosted, add a switch role link
+        if aws_account_id not in SELF_HOSTED_ACCOUNTS_IDS:
+            task_note = task_note + (f'AWS Switch Role Link: https://{aws_region}.signin.aws.amazon.com/switchrole'
+                                     f'?roleName=PantherSupportRole-{aws_region}'
+                                     f'&account={aws_account_id}'
+                                     f'&displayName={customer}%20Support\n\n'
+                                     )
         # If we had a root task link, set it in the payload
         if root_asana_link:
             task_note = f'Root Asana Task: {root_asana_link}\n\n' + task_note
@@ -290,7 +318,8 @@ class AsanaService:
         if prev_asana_link:
             task_note = f'Previous Asana Task: {prev_asana_link}\n\n' + task_note
 
-        project_gids = self._get_project_ids(sentry_event['environment'].lower(), sentry_event['level'].lower(), assigned_team)
+        project_gids = self._get_project_ids(sentry_event['environment'].lower(), sentry_event['level'].lower(),
+                                             assigned_team)
         if len(project_gids) == 0 or (sentry_event['environment'].lower() == 'staging' and len(project_gids) <= 1):
             project_gids.append(teams.CORE_PRODUCT.backlog_id)
             task_note += 'Unable to find the sprint project; assigning to core product backlog.\n\n'
@@ -300,11 +329,11 @@ class AsanaService:
             'projects': project_gids,
             'custom_fields': {
                 '1159524604627932': AsanaService._get_task_priority(sentry_event['level'].lower()).value,
-                '1199912337121892': '1200218109698442',     # Task Type: Investigate (Enum)
-                '1199944595440874': 0.1,                    # Estimate (d): <number>
-                '1200165681182165': '1200198568911550',     # Reporter: Sentry.io (Enum)
+                '1199912337121892': '1200218109698442',  # Task Type: Investigate (Enum)
+                '1199944595440874': 0.1,  # Estimate (d): <number>
+                '1200165681182165': '1200198568911550',  # Reporter: Sentry.io (Enum)
                 '1199906290951705': assigned_team.team_id,  # Team: <relevant team enum gid>: str> (Enum)
-                '1200216708142306': '1200822942218893'      # Impacted: One Customer (Enum)
+                '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
             },
             'notes': task_note
         }
@@ -326,8 +355,8 @@ class AsanaService:
             'projects': project_gids,
             'notes': task_note
         }
-        self._logger.debug('Attempting to retry Asana task creation with the following minimal set of fields: %s',\
-                          task_creation_details)
+        self._logger.debug('Attempting to retry Asana task creation with the following minimal set of fields: %s', \
+                           task_creation_details)
         task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
         self._logger.debug('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
