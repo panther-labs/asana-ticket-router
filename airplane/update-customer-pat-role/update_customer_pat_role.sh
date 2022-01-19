@@ -5,9 +5,10 @@ set -eu
 
 export REPOSITORY="hosted-aws-management"
 BRANCH="${BRANCH_OVERRIDE:-master}"
+DEPLOYMENT_METADATA_TABLE="hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B"
 DIRECTORY_PREFIX="panther-hosted-"
 IAM_ROLES_FILENAME="iam-roles.yml"
-
+YAML_PRINCIPAL_PATH=".Resources.CustomerAccess.Properties.AssumeRolePolicyDocument.Statement[0].Principal.AWS"
 fairytale_name="${PARAM_FAIRYTALE_NAME}"
 account_directory="${DIRECTORY_PREFIX}${fairytale_name}"
 test_run="${PARAM_AIRPLANE_TEST_RUN}"
@@ -22,28 +23,51 @@ git-clone
 
 cd "${REPOSITORY}"
 git checkout "${BRANCH}"
-printf "\nWorking in hosted deployments branch (overridable by Airplane environment variable BRANCH_OVERRIDE) '%s'\n\n" \
+printf "\nWorking in hosted deployments branch (overridable by Airplane environment variable BRANCH_OVERRIDE) '%s'\n" \
   $(git branch --show-current)
 
-# TODO: in the future if no directory or file exists, have the ability to lookup region and create directory structure and file
-if [ ! -d "${account_directory}" ]
-then
-    echo "No directory exists for ${account_directory}"
-    exit 1
+# assume the role if declared, should only run on ECS
+if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
+  # https://stackoverflow.com/a/67636523
+  export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+    $(aws sts assume-role \
+    --role-arn "${DYNAMO_RO_ROLE_ARN}" \
+    --role-session-name Airplane \
+    --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+    --output text))
 fi
 
-iam_roles_file=$(find "panther-hosted-${fairytale_name}" -name "${IAM_ROLES_FILENAME}")
-if [ -z "${iam_roles_file}" ]; then
-  echo "No file named ${IAM_ROLES_FILENAME} exists for ${fairytale_name}"
+# retrieve the region from DynamoDB
+account_region=$(aws dynamodb get-item \
+    --table-name "${DEPLOYMENT_METADATA_TABLE}" \
+    --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}' \
+    --query "Item.GithubConfiguration.M.CustomerRegion.S" \
+    --output text)
+if [ "${account_region}" = "None" ]; then
+  printf "\nRegion not found in DynamoDB table for ${fairytale_name}\n"
   exit 1
+fi
+
+iam_roles_file="${account_directory}/${account_region}/${IAM_ROLES_FILENAME}"
+if [ ! -f "${iam_roles_file}" ]; then
+  printf "\nNo file named ${IAM_ROLES_FILENAME} exists for ${fairytale_name}, copying from templates/${IAM_ROLES_FILENAME}\n"
+  mkdir -p "${account_directory}/${account_region}"
+  cp "templates/${IAM_ROLES_FILENAME}" "${iam_roles_file}"
 fi
 
 for arn in "${source_accounts_and_arns[@]}"; do
   # if only an account number is provided, change it to a full ARN. Although not required, this does follow the current pattern.
   full_arn=$(echo "${arn}" | sed -e 's|^\([0-9]\{12\}\)$|arn:aws:iam::\1:root|')
-  yq e -i '.Resources.CustomerAccess.Properties.AssumeRolePolicyDocument.Statement[0].Principal.AWS += ["'"${full_arn}"'"]' "${iam_roles_file}"
+  printf "\nAdding ${full_arn} to PAT roles\n"
+  yq e -i "${YAML_PRINCIPAL_PATH}"' += ["'"${full_arn}"'"]' "${iam_roles_file}"
 done
+
+# In the case of a new file, delete the placeholder entry "arn:aws:iam::{REPLACE_ME}:root"
+# We do this last because of yq's way of adding elements to an empty array uses brackets over single hyphenated lines.
+printf "\nRemoving placeholder entry from template if exists\n"
+yq e -i 'del('"${YAML_PRINCIPAL_PATH}"[]' | select(. == "arn:aws:iam::{REPLACE_ME}:root"))' "${iam_roles_file}"
 
 git add "${iam_roles_file}"
 TITLE="Updating PAT role(s) for '${fairytale_name}'" git-commit
 TEST_RUN="${test_run}" git-push
+printf "\nProcess complete\n"
