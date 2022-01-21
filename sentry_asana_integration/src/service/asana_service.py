@@ -127,10 +127,11 @@ class AsanaService:
         release_testing_projects = []
         for proj in get_projects_response:
             project_name = proj['name'].lower()
-
-            if 'sprint' in project_name and 'template' not in project_name and 'closed' not in project_name:
+            # pylint: disable=line-too-long
+            if 'sprint' in project_name and 'template' not in project_name and 'closed' not in project_name and 'sandbox' not in project_name:
                 eng_sprint_projects.append(proj)
-            elif 'release testing:' in project_name and 'template' not in project_name and 'closed' not in project_name:
+            # pylint: disable=line-too-long
+            elif 'release testing:' in project_name and 'template' not in project_name and 'closed' not in project_name and 'sandbox' not in project_name:
                 release_testing_projects.append(proj)
 
         self._logger.debug('The following projects are sprint related: %s', eng_sprint_projects)
