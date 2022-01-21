@@ -79,6 +79,7 @@ class AsanaService:
         # Team: Investigation
         'panther-athena-admin-api': teams.INVESTIGATIONS,
         'panther-athena-api': teams.INVESTIGATIONS,
+        'panther-database-workflow': teams.INVESTIGATIONS,
         'panther-datacatalog-compactor': teams.INVESTIGATIONS,
         'panther-datacatalog-compactor-callbacks': teams.INVESTIGATIONS,
         'panther-datacatalog-compactor-reaper': teams.INVESTIGATIONS,
