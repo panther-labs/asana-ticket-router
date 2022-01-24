@@ -5,6 +5,12 @@ import pytz
 from notion.databases import AccountsDatabase
 
 
+def get_backend(backend):
+    return {
+        "Managed": "Managed SF"
+    }.get(backend, backend)
+
+
 def main(params):
     print("parameters:", params)
 
@@ -20,7 +26,7 @@ def main(params):
     task = AccountsDatabase.create(
         Fairytale_Name=fairytale,
         AWS_Account_ID=params["aws_account_id"],
-        Backend=params["backend"],
+        Backend=get_backend(params["backend"]),
         Deploy_Group="L",
         Email=params["email"],
         Name=params["customer_name"],
