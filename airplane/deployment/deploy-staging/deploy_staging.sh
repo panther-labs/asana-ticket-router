@@ -14,67 +14,72 @@ echo "Found latest RC: ${LATEST_RC}"
 export LATEST_RC
 
 ## staging-deployment
-printf "\n\n=== Generating changes for staging-deployments ===\n"
-REPOSITORY=staging-deployments git-clone
-cd staging-deployments
-git checkout main
+(
+    printf "\n\n=== Generating changes for staging-deployments ===\n"
+    REPOSITORY=staging-deployments git-clone
+    cd staging-deployments
+    git checkout main
 
-pip3 install -r automation-scripts/requirements.txt
+    pip3 install --quiet -r automation-scripts/requirements.txt
 
-CONFIG_FILE="deployment-metadata/deployment-groups/staging.yml"
-yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
+    CONFIG_FILE="deployment-metadata/deployment-groups/staging.yml"
+    yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
 
-if $(git diff --quiet deployment-metadata); then
-    echo "No changes made"
-    exit 0
-fi
+    if $(git diff --quiet deployment-metadata); then
+        echo "No changes made"
+        exit 0
+    fi
 
-# Generate and lint
-python3 automation-scripts/generate.py
-python3 automation-scripts/lint.py
+    # Generate and lint
+    python3 automation-scripts/generate.py
+    python3 automation-scripts/lint.py
 
-echo "Changes"
-git diff deployment-metadata
-git add deployment-metadata
+    echo "Changes"
+    git diff deployment-metadata
+    git add deployment-metadata
 
-echo "Staged changes"
-git status
+    echo "Staged changes"
+    git status
 
-TITLE="Updating staging to '${LATEST_RC}'" git-commit
-TEST_RUN=false git-push
-
-cd -
+    TITLE="Updating staging to '${LATEST_RC}'" git-commit
+    TEST_RUN=false git-push
+)
 
 ## hosted-deployment
-printf "\n\n=== Generating changes for hosted-deployments ===\n"
-REPOSITORY=hosted-deployments git-clone
-cd hosted-deployments
-git checkout main
+(
+    # setup extra deploy key
+    # NB re-using key location (see util/setup-github)
+    echo ${HOSTED_DEPLOY_KEY_BASE64} | base64 -d > ~/.ssh/id_github
 
-pip3 install -r automation-scripts/requirements.txt
+    printf "\n\n=== Generating changes for hosted-deployments ===\n"
+    REPOSITORY=hosted-deployments git-clone
+    cd hosted-deployments
+    git checkout master
 
-CONFIG_FILE="deployment-metadata/deployment-groups/internal.yml"
-yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
+    pip3 install --quiet -r automation-scripts/requirements.txt
 
-if $(git diff --quiet deployment-metadata); then
-    echo "No changes made"
-    exit 0
-fi
+    CONFIG_FILE="deployment-metadata/deployment-groups/internal.yml"
+    yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
 
-# Generate and lint
-python3 automation-scripts/generate.py
-python3 automation-scripts/lint.py
+    if $(git diff --quiet deployment-metadata); then
+        echo "No changes made"
+        exit 0
+    fi
 
-echo "Changes"
-git diff deployment-metadata
-git add deployment-metadata
+    # Generate and lint
+    python3 automation-scripts/generate.py
+    python3 automation-scripts/lint.py
 
-echo "Staged changes"
-git status
+    echo "Changes"
+    git diff deployment-metadata
+    git add deployment-metadata
 
-TITLE="Updating internal group to '${LATEST_RC}'" git-commit
-TEST_RUN=false git-push
+    echo "Staged changes"
+    git status
+
+    TITLE="Updating internal group to '${LATEST_RC}'" git-commit
+    TEST_RUN=false git-push
+)
 
 ## Airplane output
-
 echo "airplane_output_set {\"version\": \"${LATEST_RC}\"}"
