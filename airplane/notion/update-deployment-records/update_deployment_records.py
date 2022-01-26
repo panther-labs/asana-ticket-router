@@ -5,7 +5,7 @@ import re
 import urllib.parse
 
 from notion.customer_info_retriever import AllCustomerAccountsInfo
-from notion.databases import create_date_time_value
+from notion.databases import are_rtf_values_equal, create_date_time_value, create_rtf_value
 from pyshared.git_ops import git_clone
 
 EMPTY_FIELD = ""
@@ -32,17 +32,17 @@ def standardize_deploy_group(deploy_group: str) -> str:
 
 def get_expected_customer_attributes(account_info):
     aws_account_id = account_info.dynamo_info.get("AWSConfiguration", {}).get("AccountId", IGNORE_FIELD)
-    # try:
-    #    company_name = account_info.dynamo_info["CompanyDisplayName"]
-    # except KeyError:
-    #    company_name = account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
+    try:
+        company_name = account_info.dynamo_info["CompanyDisplayName"]
+    except KeyError:
+        company_name = account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
     region = account_info.dynamo_info['GithubConfiguration']['CustomerRegion']
     upgraded_time_utc = pytz.timezone("UTC").localize(
         datetime.datetime.strptime(account_info.dynamo_info["Updated"], "%Y-%m-%dT%H:%M:%S"))
     upgraded_time_pt = upgraded_time_utc.astimezone(pytz.timezone("US/Pacific"))
 
-    # role_name = f"PantherSupportRole-{region}"
-    # url_support_name = urllib.parse.quote(f"{company_name} Support")
+    role_name = f"PantherSupportRole-{region}"
+    url_support_name = urllib.parse.quote(f"{company_name} Support")
 
     expected_attrs = {
         # Ignoring AWS_Organization
@@ -63,20 +63,22 @@ def get_expected_customer_attributes(account_info):
 
     if aws_account_id != IGNORE_FIELD:
         expected_attrs["AWS_Account_ID"] = aws_account_id
-    #    expected_attrs["Support_Role"] = create_rtf_value(
-    #        text=role_name,
-    #        url=(f"https://{region}.signin.aws.amazon.com/switchrole?roleName={role_name}&account={aws_account_id}&"
-    #             f"displayName={url_support_name}")
-    #    )
+        expected_attrs["Support_Role"] = create_rtf_value(
+            text=role_name,
+            url=(f"https://{region}.signin.aws.amazon.com/switchrole?roleName={role_name}&account={aws_account_id}&"
+                 f"displayName={url_support_name}")
+        )
     return expected_attrs
 
 
-def needs_update(attr, notion_val, update_val):
+def needs_update(attr, notion_val, update_val, notion_page):
     if update_val is IGNORE_FIELD:
         return False
 
-    if attr == "Upgraded" and str(notion_val) and str(update_val):
+    if (attr == "Upgraded") and str(notion_val) and str(update_val):
         return str(notion_val) != str(update_val)
+    if attr == "Support_Role":
+        return not are_rtf_values_equal(notion_page.properties["Support Role"].rich_text, update_val.rich_text)
 
     return notion_val != update_val
 
@@ -93,8 +95,9 @@ def main(params):
         changed = False
         expected_attrs = get_expected_customer_attributes(account_info)
         for attr in expected_attrs:
-            current_val, update_val = getattr(account_info.notion_info, attr), expected_attrs[attr]
-            if needs_update(attr, current_val, update_val):
+            current_val, = getattr(account_info.notion_info, attr),
+            update_val = expected_attrs[attr]
+            if needs_update(attr, current_val, update_val, account_info.notion_info.page):
                 print(f"{attr} will be updated for {account_info.fairytale_name}:\n{current_val} -> {update_val}\n\n")
                 setattr(account_info.notion_info, attr, update_val)
                 changed = True

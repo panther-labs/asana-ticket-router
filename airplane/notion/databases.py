@@ -16,6 +16,17 @@ def create_rtf_value(text, url=None):
     })
 
 
+def are_rtf_values_equal(rtf_val_1, rtf_val_2):
+    try:
+        if isinstance(rtf_val_1, list):
+            rtf_val_1 = rtf_val_1[0]
+        if isinstance(rtf_val_2, list):
+            rtf_val_2= rtf_val_2[0]
+    except IndexError:
+        return False
+    return (rtf_val_1.plain_text == rtf_val_2.plain_text) and (rtf_val_1.href != rtf_val_2.href)
+
+
 def create_date_time_value(updated_datetime):
     return types.Date(date={"start": str(updated_datetime)})
 
