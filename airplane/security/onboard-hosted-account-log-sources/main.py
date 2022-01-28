@@ -12,7 +12,6 @@ import json
 import os
 import re
 
-
 # payload for creating a S3 source integration
 def create_s3_input(account_id, s3_bucket, log_processing_arn, kms_key):
     payload_s3 = {
@@ -228,7 +227,7 @@ def run(args):
                 print("[+] Found S3 bucket: " + args.s3_bucket)
             else:
                 print("[+] Auditlogs S3 not found, exiting.")
-                return 1
+                raise RuntimeError("Auditlogs S3 not found")
 
 
         print("[+] Checking for existing S3 notifications.")
