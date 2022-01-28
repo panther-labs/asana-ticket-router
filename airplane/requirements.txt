@@ -6,3 +6,5 @@ notional
 pytz
 pyyaml>=6.0
 tenacity>=8.0.1
+ruamel.yaml>=0.17.20
+ruamel.yaml.clib>=0.2.6

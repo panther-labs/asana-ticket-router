@@ -1,0 +1,10 @@
+#!/bin/sh -eu
+
+: "${BRANCH:?Must specify a branch name}"
+CREATE="${CREATE:-false}"
+
+if [ "${CREATE}" == "true" ]; then
+  git checkout -b "${BRANCH}"
+else
+  git checkout "${BRANCH}"
+fi
