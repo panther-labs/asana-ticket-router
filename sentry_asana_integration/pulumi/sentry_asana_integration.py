@@ -15,35 +15,35 @@ import pulumi
 
 class SentryAsanaIntegration(pulumi.ComponentResource):
     """A Pulumi Component Resource that represents a Lambda Fn & API Gateway that enable Sentry -> Asana integration."""
+
     def __init__(self, name: str, lambda_deployment_pkg_dir: str, opts: pulumi.ResourceOptions = None):
         super().__init__('panther:internal:integration', name, None, opts)
-        region = aws.config.region # type: ignore
+        region = aws.config.region  # type: ignore
         account = aws.get_caller_identity().account_id
         config = pulumi.Config()
         stack_name = pulumi.get_stack()
         handler_lambda_name = f'{stack_name}-handler'
         deployment_params = config.get_object('deploymentParams')
 
-
         log_group_arn = f'arn:aws:logs:{region}:{account}:log-group:/aws/lambda/{handler_lambda_name}'
         inline_policies: List[aws.iam.RoleInlinePolicyArgs] = [
             # like the AWSLambdaBasicExecutionRole managed policy, but restricted to just our log group
             aws.iam.RoleInlinePolicyArgs(name=f'{stack_name}-WriteLogs', policy=json.dumps({
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': [
-                                'logs:CreateLogGroup',
-                                'logs:CreateLogStream',
-                                'logs:PutLogEvents'
-                            ],
-                            'Resource': [
-                                log_group_arn,
-                                f'{log_group_arn}:log-stream:*'
-                            ]
-                        }
-                    ],
-                })
+                'Statement': [
+                    {
+                        'Effect': 'Allow',
+                        'Action': [
+                            'logs:CreateLogGroup',
+                            'logs:CreateLogStream',
+                            'logs:PutLogEvents'
+                        ],
+                        'Resource': [
+                            log_group_arn,
+                            f'{log_group_arn}:log-stream:*'
+                        ]
+                    }
+                ],
+            })
             )
         ]
 
@@ -51,14 +51,14 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
         secret_arn = f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
         inline_policies.append(
             aws.iam.RoleInlinePolicyArgs(name=f'{stack_name}-GetSecret', policy=json.dumps({
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 'secretsmanager:GetSecretValue',
-                            'Resource': secret_arn
-                        }
-                    ],
-                })
+                'Statement': [
+                    {
+                        'Effect': 'Allow',
+                        'Action': 'secretsmanager:GetSecretValue',
+                        'Resource': secret_arn
+                    }
+                ],
+            })
             )
         )
 
@@ -79,6 +79,12 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
 
+        is_local_dev = False
+        if deployment_params and 'development' in deployment_params:
+            dev_env = deployment_params.get('development')
+            if dev_env in ['1', 'true', True]:
+                is_local_dev = True
+
         # Create the lambda to execute
         lambda_function = aws.lambda_.Function(
             f'{stack_name}-handler-function',
@@ -91,7 +97,11 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
                     'SECRET_NAME': 'Sentry_Asana_Secrets',
                     'ASANA_ENGINEERING_TEAM_ID': '1199906122285402',
                     'ASANA_PANTHER_LABS_WORKSPACE_ID': '1159526352574257',
-                    'DEV_ASANA_SENTRY_PROJECT': '1200611106362920', # Asana ID for 'Test Project (Sentry-Asana integration work)'
+                    # Asana ID for 'Test Project (Sentry-Asana integration work)'
+                    'DEV_ASANA_SENTRY_PROJECT': '1200611106362920',
+                    'RELEASE_TESTING_PORTFOLIO': '1199961111326835',
+                    'RELEASE_TESTING_PORTFOLIO_DEV': '1201700591175658',
+                    'DEVELOPMENT': is_local_dev
                 }
             },
             runtime='python3.9',
@@ -99,7 +109,7 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             role=lambda_role.arn,
             handler='src.handler.handler',
             description='The handler function for the Sentry-Asana integration service',
-            timeout=120,
+            timeout=180,
             opts=pulumi.ResourceOptions(parent=self),
         )
 
@@ -110,11 +120,11 @@ class SentryAsanaIntegration(pulumi.ComponentResource):
             opts=pulumi.ResourceOptions(parent=self),
         )
         topic_arns = [default_sns_topic.arn]
-        if deployment_params and deployment_params.get('metricAlarmActionsArns'):
-            topic_arns.extend(list(deployment_params.get('metricAlarmActionsArns')))
+        if deployment_params and 'metricAlarmActionsArns' in deployment_params:
+            topic_arns.extend(
+                list(deployment_params.get('metricAlarmActionsArns')))
 
-
-        if deployment_params and deployment_params.get('snsTopicSubscriptionEmailAddresses'):
+        if deployment_params and 'snsTopicSubscriptionEmailAddresses' in deployment_params:
             for itr, email_address in enumerate(list(deployment_params.get('snsTopicSubscriptionEmailAddresses'))):
                 aws.sns.TopicSubscription(
                     f'{stack_name}-sns-topic-{itr + 1}-subscription',

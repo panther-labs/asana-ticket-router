@@ -13,6 +13,7 @@ import requests
 from ..util.logger import get_logger
 from .secrets_service import SecretKey, SecretsService
 
+
 class SentryClient:
     """Service class that interacts with Sentry API
 
@@ -21,6 +22,7 @@ class SentryClient:
         _client: A requestor client to dispatch HTTP requests
         _logger: A reference to a Logger object.
     """
+
     def __init__(self, secrets_service: SecretsService, client: Any) -> None:
         self._secrets_service = secrets_service
         self._client = client
@@ -46,7 +48,8 @@ class SentryClient:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as excpt:
-            self._logger.error('Unknown error fetching sentry issue: %s', excpt)
+            self._logger.error(
+                'Unknown error fetching sentry issue: %s', excpt)
             return None
 
     def add_asana_link_to_issue(self, issue_id: str, asana_task_id: str) -> Any:
@@ -79,6 +82,7 @@ class SentryClient:
             self._logger.error('Unknown error adding asana link: %s', excpt)
             return None
 
+
 class SentryService:
     """Service class that interacts with Sentry API
 
@@ -86,6 +90,7 @@ class SentryService:
         _sentry_client: A SentryClient object; used to dispatch requests to the Sentry API
         _logger: A reference to a Logger object.
     """
+
     def __init__(self, sentry_client: SentryClient) -> None:
         self._sentry_client = sentry_client
         self._logger = get_logger()
@@ -107,7 +112,8 @@ class SentryService:
 
         plugin_issues = issue.get('pluginIssues', [])
         # Extract the first asana plugin issue we find in the list
-        asana_issue: Dict[str, Any] = next((issue for issue in plugin_issues if issue.get('id') == 'asana'), {})
+        asana_issue: Dict[str, Any] = next(
+            (issue for issue in plugin_issues if issue.get('id') == 'asana'), {})
         if not asana_issue:
             self._logger.error('No asana plugin found for issue: %s', issue_id)
             return None
@@ -130,7 +136,8 @@ class SentryService:
             A bool representing whether the API call to link the issue with the task
               was successful.
         """
-        response = self._sentry_client.add_asana_link_to_issue(issue_id, asana_task_id)
+        response = self._sentry_client.add_asana_link_to_issue(
+            issue_id, asana_task_id)
         if response is None:
             return False
         return True

@@ -30,6 +30,20 @@ SELF_HOSTED_ACCOUNTS_IDS = [
     '817873525313',  # Coinbase prod
 ]
 
+# Pulumi config setting will be "1" or "0" string, but account for full string
+devEnv = os.environ.get('DEVELOPMENT', '').lower()
+IS_LOCAL_DEV = False
+if devEnv in ['1', 'true']:
+    IS_LOCAL_DEV = True
+
+
+def filter_projects(project_name: str) -> bool:
+    """Filters a list of asana projects from common unwanted projects
+    """
+    if 'template' not in project_name and 'complete' not in project_name and 'closed' not in project_name:
+        return True
+    return False
+
 
 class AsanaService:
     """Service class that interacts with Asana API/entities.
@@ -38,7 +52,7 @@ class AsanaService:
         _asana_client: A Client object from the Asana package, a wrapper class used to make
           API calls to Asana.
         _logger: A reference to a Logger object.
-        _current_eng_sprint_project_id: The Asana ID of the Asana project representing the current
+        _current_eng_sprint_project_ids: The Asana ID of the Asana project representing the current
           eng sprint.
         _current_release_testing_project_id: The Asana ID of the Asana project representing the current
           release testing sprint.
@@ -104,44 +118,72 @@ class AsanaService:
     def __init__(self, asana_client: AsanaClient, load_asana_projects: bool = True) -> None:
         self._asana_client = asana_client
         self._logger = get_logger()
-        self._current_eng_sprint_project_id: Optional[str] = None
+        # Store a map of current sprints per team { <team>: <current sprint> }
+        self._current_eng_sprint_project_ids: Dict[str, Optional[str]] = {}
         self._current_release_testing_project_id: Optional[str] = None
         # This flag helps keep the mocking/patching down in unit testing
         if load_asana_projects:
             self._load_asana_projects()
 
+    def _get_relevant_projects(self, portfolio_gid: Optional[str]) -> List[Any]:
+        """Retrieves all projects inside a specific portfolio and filters non-relevant projects
+
+        Parameters
+        ----------
+        portfolio_gid : {Gid} The portfolio from which to get the list of items.
+        """
+
+        if portfolio_gid is None:
+            return []
+        projects = self._asana_client.portfolios.get_items(portfolio_gid)
+        self._logger.debug('Got projects from portfolio: %s', projects)
+        return list(filter(lambda proj: filter_projects(proj['name'].lower()), projects))
+
+    def _load_asana_team_sprint_projects(self) -> None:
+        """Retrieves the current eng sprint for each team and stores them in a class attribute
+        """
+        for team in teams.ALL:
+            self._logger.debug(
+                'Searching for projects in portfolio: %s', team.sprint_portfolio_id)
+
+            # If we're in local dev, use the development sprints
+            projects = []
+            if IS_LOCAL_DEV:
+                projects = self._get_relevant_projects(
+                    team.sprint_portfolio_id_dev)
+            else:
+                projects = self._get_relevant_projects(
+                    team.sprint_portfolio_id)
+            self._logger.debug('Got projects for team: %s', projects)
+            current_sprint_id = self._get_newest_created_project_id(projects)
+            self._logger.debug(
+                'Got newest project for team: %s', current_sprint_id)
+            self._current_eng_sprint_project_ids[team.team_id] = current_sprint_id
+
+        self._logger.debug('current eng sprints: %s',
+                           self._current_eng_sprint_project_ids)
+
+    def _load_asana_release_testing_projects(self, project_gid: str) -> None:
+        """Retrieves the current release testing projects and stores them in a class attribute.
+        """
+        release_testing_projects = self._get_relevant_projects(project_gid)
+        self._logger.debug(
+            'The following projects are release testing related: %s', release_testing_projects)
+        self._current_release_testing_project_id = self._get_newest_created_project_id(
+            release_testing_projects)
+        self._logger.debug('current release testing sprint project ID: %s',
+                           self._current_release_testing_project_id)
+
     def _load_asana_projects(self) -> None:
-        """Retrieves the current eng sprint, release testing, and backlog projects & stores them in class attributes.
+        """Initializes class attributes with a set of projects that are used throughout the lifetime of the lambda
 
         This function is written as such (does not return anything, accesses protected class attributes) to allow
         the class' project_id attributes to be refreshed periodically while reducing the number of places these class
         attributes are modified.
         """
-        get_projects_response = self._asana_client.projects.get_projects({
-            'workspace': os.environ.get('ASANA_PANTHER_LABS_WORKSPACE_ID'),
-            'team': os.environ.get('ASANA_ENGINEERING_TEAM_ID'),
-            'archived': False
-        })
-        self._logger.debug('get_projects_response: %s', get_projects_response)
-        eng_sprint_projects = []
-        release_testing_projects = []
-        for proj in get_projects_response:
-            project_name = proj['name'].lower()
-            # pylint: disable=line-too-long
-            if 'sprint' in project_name and 'template' not in project_name and 'closed' not in project_name and 'sandbox' not in project_name:
-                eng_sprint_projects.append(proj)
-            # pylint: disable=line-too-long
-            elif 'release testing:' in project_name and 'template' not in project_name and 'closed' not in project_name and 'sandbox' not in project_name:
-                release_testing_projects.append(proj)
-
-        self._logger.debug('The following projects are sprint related: %s', eng_sprint_projects)
-        self._logger.debug('The following projects are release testing related: %s', release_testing_projects)
-
-        self._current_eng_sprint_project_id = self._get_newest_created_project_id(eng_sprint_projects)
-        self._current_release_testing_project_id = self._get_newest_created_project_id(release_testing_projects)
-
-        self._logger.debug('current eng sprint project ID: %s', self._current_eng_sprint_project_id)
-        self._logger.debug('current release testing sprint project ID: %s', self._current_release_testing_project_id)
+        self._load_asana_team_sprint_projects()
+        self._load_asana_release_testing_projects(
+            os.environ.get('RELEASE_TESTING_PORTFOLIO', ''))
 
     def _get_newest_created_project_id(self, projects: List[Any]) -> Optional[str]:
         """Finds the most recently created project from a list of projects.
@@ -171,11 +213,14 @@ class AsanaService:
         newest_proj_date = None
         if len(projects) > 1:
             for proj in projects:
-                proj_details = self._asana_client.projects.get_project(proj['gid'])
-                self._logger.debug('get_project(%s) response: %s', proj['gid'], proj_details)
+                proj_details = self._asana_client.projects.get_project(
+                    proj['gid'])
+                self._logger.debug(
+                    'get_project(%s) response: %s', proj['gid'], proj_details)
                 created_date = None
                 if proj_details:
-                    created_date = datetime.strptime(proj_details['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                    created_date = datetime.strptime(
+                        proj_details['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
                 if created_date and (not newest_proj or not newest_proj_date or newest_proj_date < created_date):
                     newest_proj_date = created_date
                     newest_proj = proj
@@ -199,14 +244,37 @@ class AsanaService:
             A list containing the ids (string) of each relevant project
         """
         project_ids: List[str] = []
+
+        # If running in local dev, only do the following
+        if IS_LOCAL_DEV:
+            # These should be development sprintboards defined by the env flag
+            current_sprint_id = self._current_eng_sprint_project_ids.get(
+                owning_team.team_id)
+            if current_sprint_id is not None:
+                project_ids.append(current_sprint_id)
+
+            # Add to the dev asana project board for easier grouping (and bulk deletion)
+            project_ids.append(os.environ.get('DEV_ASANA_SENTRY_PROJECT', ''))
+            return project_ids
+
+        # Sentry events can come from a specific environment. Not to be
+        # confused with __this__ lambda's environment.
         environment = environment.lower()
         if environment == 'dev':
-            # Providing a default value to satisfy mypy; essentially, Optional[str] != str
-            # Default value given is the Asana ID for 'Test Project (Sentry-Asana integration work)'
-            return [os.environ.get('DEV_ASANA_SENTRY_PROJECT', '1200611106362920')]
+            # These should be development sprintboards defined by the env flag
+            current_sprint_id = self._current_eng_sprint_project_ids.get(
+                owning_team.team_id)
+            if current_sprint_id is not None:
+                project_ids.append(current_sprint_id)
+
+            # Add to the dev asana project board for easier grouping (and bulk deletion)
+            project_ids.append(os.environ.get('DEV_ASANA_SENTRY_PROJECT', ''))
+            return project_ids
         if environment == 'staging':
-            if self._current_eng_sprint_project_id:
-                project_ids.append(self._current_eng_sprint_project_id)
+            current_sprint_id = self._current_eng_sprint_project_ids.get(
+                owning_team.team_id)
+            if current_sprint_id is not None:
+                project_ids.append(current_sprint_id)
             if self._current_release_testing_project_id:
                 project_ids.append(self._current_release_testing_project_id)
             return project_ids
@@ -214,8 +282,10 @@ class AsanaService:
         if level == 'warning':
             project_ids.append(owning_team.backlog_id)
             return project_ids
-        if self._current_eng_sprint_project_id:
-            project_ids.append(self._current_eng_sprint_project_id)
+        current_sprint_id = self._current_eng_sprint_project_ids.get(
+            owning_team.team_id)
+        if current_sprint_id is not None:
+            project_ids.append(current_sprint_id)
         return project_ids
 
     def extract_root_asana_link(self, task_gid: str) -> Optional[str]:
@@ -238,10 +308,12 @@ class AsanaService:
         else:
             notes = task.get('notes', None)
             if not notes:
-                self._logger.error('Could not find notes in task: %s', task_gid)
+                self._logger.error(
+                    'Could not find notes in task: %s', task_gid)
                 return None
 
-            parser = re.compile(r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
+            parser = re.compile(
+                r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
             match = parser.search(notes)
             if not match:
                 self._logger.debug('No root asana task link found')
@@ -331,24 +403,34 @@ class AsanaService:
             'projects': project_gids,
             'custom_fields': {
                 '1159524604627932': AsanaService._get_task_priority(sentry_event['level'].lower()).value,
-                '1199912337121892': '1200218109698442',  # Task Type: Investigate (Enum)
+                # Task Type: Investigate (Enum)
+                '1199912337121892': '1200218109698442',
                 '1199944595440874': 0.1,  # Estimate (d): <number>
-                '1200165681182165': '1200198568911550',  # Reporter: Sentry.io (Enum)
-                '1199906290951705': assigned_team.team_id,  # Team: <relevant team enum gid>: str> (Enum)
-                '1200216708142306': '1200822942218893'  # Impacted: One Customer (Enum)
+                # Reporter: Sentry.io (Enum)
+                '1200165681182165': '1200198568911550',
+                # Team: <relevant team enum gid>: str> (Enum)
+                '1199906290951705': assigned_team.team_id,
+                # Impacted: One Customer (Enum)
+                '1200216708142306': '1200822942218893'
             },
             'notes': task_note
         }
-        self._logger.debug('Attempting to create Asana task with the following fields: %s', task_creation_details)
+        self._logger.debug(
+            'Attempting to create Asana task with the following fields: %s', task_creation_details)
         try:
-            task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
-            self._logger.debug('Task creation result: %s', task_creation_result)
+            task_creation_result = self._asana_client.tasks.create_task(
+                task_creation_details)
+            self._logger.debug('Task creation result: %s',
+                               task_creation_result)
             if 'gid' not in task_creation_result:
-                self._logger.error('Unable to verify that Asana task was created correctly')
-                raise KeyError('Unable to verify that Asana task was created correctly')
+                self._logger.error(
+                    'Unable to verify that Asana task was created correctly')
+                raise KeyError(
+                    'Unable to verify that Asana task was created correctly')
             return task_creation_result['gid']
         except AsanaError.InvalidRequestError as ex:
-            self._logger.error('Unable to create the Asana task with custom fields: %s', str(ex))
+            self._logger.error(
+                'Unable to create the Asana task with custom fields: %s', str(ex))
 
         task_note += ('Unable to create this task with all custom fields filled out.'
                       ' Please alert a team member from observability about this message.')
@@ -357,13 +439,16 @@ class AsanaService:
             'projects': project_gids,
             'notes': task_note
         }
-        self._logger.debug('Attempting to retry Asana task creation with the following minimal set of fields: %s', \
+        self._logger.debug('Attempting to retry Asana task creation with the following minimal set of fields: %s',
                            task_creation_details)
-        task_creation_result = self._asana_client.tasks.create_task(task_creation_details)
+        task_creation_result = self._asana_client.tasks.create_task(
+            task_creation_details)
         self._logger.debug('Task creation result: %s', task_creation_result)
         if 'gid' not in task_creation_result:
-            self._logger.error('Unable to verify that the second attempt to create the Asana task succeeded')
-            raise KeyError('Unable to verify that the second attempt to create the Asana task succeeded')
+            self._logger.error(
+                'Unable to verify that the second attempt to create the Asana task succeeded')
+            raise KeyError(
+                'Unable to verify that the second attempt to create the Asana task succeeded')
         return task_creation_result['gid']
 
     @staticmethod

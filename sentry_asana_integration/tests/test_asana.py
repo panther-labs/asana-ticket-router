@@ -20,7 +20,8 @@ from ..src.service.asana_service import AsanaService
 class TestAsanaService(TestCase):
     """Unit Testing Class for AsanaService"""
     _env_vars = {
-        'DEV_ASANA_SENTRY_PROJECT': 'dev-project'
+        'DEV_ASANA_SENTRY_PROJECT': 'dev-project',
+        'RELEASE_TESTING_PORTFOLIO': 'release-testing-portfolio'
     }
 
     def test_get_owning_team_with_exact_match_server_name(self) -> None:
@@ -127,10 +128,12 @@ class TestAsanaService(TestCase):
         asana_service = AsanaService(mock_asana_client, False)
 
         # Act
-        root_asana_link = asana_service.extract_root_asana_link('1201413464115989')
+        root_asana_link = asana_service.extract_root_asana_link(
+            '1201413464115989')
 
         # Assert
-        mock_asana_client.tasks.find_by_id.assert_called_with('1201413464115989')
+        mock_asana_client.tasks.find_by_id.assert_called_with(
+            '1201413464115989')
         assert root_asana_link is None
 
     def test_get_previous_asana_link_success(
@@ -217,10 +220,12 @@ class TestAsanaService(TestCase):
         asana_service = AsanaService(mock_asana_client, False)
 
         # Act
-        root_asana_link = asana_service.extract_root_asana_link('1201413464115989')
+        root_asana_link = asana_service.extract_root_asana_link(
+            '1201413464115989')
 
         # Assert
-        mock_asana_client.tasks.find_by_id.assert_called_with('1201413464115989')
+        mock_asana_client.tasks.find_by_id.assert_called_with(
+            '1201413464115989')
         assert root_asana_link == 'https://app.asana.com/0/0/999'
 
     @patch.object(AsanaService, '_get_owning_team')
@@ -265,7 +270,8 @@ class TestAsanaService(TestCase):
             "name": "new project"
         }
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.CORE_PRODUCT.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -291,7 +297,8 @@ class TestAsanaService(TestCase):
         }
 
         # Act
-        asana_service.create_asana_task_from_sentry_event(sentry_event, 'https://PREV', 'https://ROOT')
+        asana_service.create_asana_task_from_sentry_event(
+            sentry_event, 'https://PREV', 'https://ROOT')
 
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
@@ -338,7 +345,8 @@ class TestAsanaService(TestCase):
             "name": "new project"
         }
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.CORE_PRODUCT.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -360,7 +368,8 @@ class TestAsanaService(TestCase):
         }
 
         # Act
-        asana_service.create_asana_task_from_sentry_event(sentry_event, 'https://PREV', 'https://ROOT')
+        asana_service.create_asana_task_from_sentry_event(
+            sentry_event, 'https://PREV', 'https://ROOT')
 
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
@@ -407,7 +416,8 @@ class TestAsanaService(TestCase):
             "name": "new project"
         }
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.CORE_PRODUCT.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -431,7 +441,8 @@ class TestAsanaService(TestCase):
         }
 
         # Act
-        asana_service.create_asana_task_from_sentry_event(sentry_event, None, None)
+        asana_service.create_asana_task_from_sentry_event(
+            sentry_event, None, None)
 
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
@@ -478,7 +489,7 @@ class TestAsanaService(TestCase):
             "name": "new project"
         }
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = None
+        asana_service._current_eng_sprint_project_ids = {}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -503,7 +514,8 @@ class TestAsanaService(TestCase):
         }
 
         # Act
-        asana_service.create_asana_task_from_sentry_event(sentry_event, None, None)
+        asana_service.create_asana_task_from_sentry_event(
+            sentry_event, None, None)
 
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
@@ -555,7 +567,8 @@ class TestAsanaService(TestCase):
             }
         ]
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current_eng_sprint_id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.DETECTIONS.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -573,94 +586,120 @@ class TestAsanaService(TestCase):
         }
 
         # Act
-        asana_service.create_asana_task_from_sentry_event(sentry_event, None, None)
+        asana_service.create_asana_task_from_sentry_event(
+            sentry_event, None, None)
 
         # Assert
         mock_asana_client.tasks.create_task.assert_called_with(expected_result)
 
-    @patch.dict(os.environ, _env_vars)
-    def test_load_asana_projects(self) -> None:
+    def test_load_asana_team_sprint_projects(self) -> None:
         # Arrange
         mock_asana_client = MagicMock()
-        mock_asana_client.projects.get_projects.return_value = [
+        mock_asana_client.portfolios.get_items.return_value = [
             {
-                "gid": "1199906291903396",
-                "name": "Template: Sprint",
+                "gid": "1201696631711907",
+                "name": "Eng Sprint: 01/04",
                 "resource_type": "project"
             },
             {
-                "gid": "1200031963805016",
-                "name": "Template: Release Testing",
+                "gid": "1201696631711908",
+                "name": "(Closed) Eng Sprint: 02/04",
                 "resource_type": "project"
             },
             {
-                "gid": "1199910262482819",
-                "name": "Template: Eng Project",
+                "gid": "1201696631711909",
+                "name": "🐆 Template: Eng Sprint MM/DD - MM/DD",
                 "resource_type": "project"
             },
             {
-                "gid": "1199906407795548",
-                "name": "Backlog: Ingestion",
+                "gid": "1201696631711910",
+                "name": "Eng Sprint: 04/04",
                 "resource_type": "project"
-            },
-            {
-                "gid": "1200693863324520",
-                "name": "Sprint 08/02 - 08/20",
-                "resource_type": "project"
-            },
-            {
-                "gid": "1200693863324521",
-                "name": "Eng Sprint 07/20 - 07/26 (old)",
-                "resource_type": "project"
-            },
-            {
-                "gid": "1200319127186571",
-                "name": "Release Testing: 08/23 - 09/01",
-                "resource_type": "project"
-            },
-            {
-                "gid": "1200319127186570",
-                "name": "E2E Testing for Release Testing",
-                "resource_type": "project"
-            },
+            }
         ]
 
-        def get_project_side_effect(gid: str) -> Dict[str, Any]:
-            project_info_map = {
-                '1200693863324520': {
-                    "gid": "1200693863324520",  # Eng Sprint 08/02 - 08/20
-                    "archived": False,
-                    "color": "dark-orange",
-                    "created_at": "2021-08-01T20:30:30.159Z"
-                },
-                '1200693863324521': {
-                    "gid": "1200693863324521",  # Eng Sprint 07/20 - 07/26 (old)
-                    "archived": False,
-                    "color": "dark-orange",
-                    "created_at": "2021-07-19T20:30:30.159Z"
-                },
-                '1200319127186571': {
-                    "gid": "1200319127186571",  # Release Testing: 08/23 - 09/01
-                    "archived": False,
-                    "color": "dark-orange",
-                    "created_at": "2021-08-01T10:30:30.159Z"
-                }
-            }
-            if gid in project_info_map:
-                return project_info_map[gid]
-            return {}
+        mock_asana_client.projects.get_project.return_value = {
+            "gid": "1201696631711910",  # Eng Sprint: 04/04
+            "archived": False,
+            "color": "dark-orange",
+            "created_at": "2021-08-01T20:30:30.159Z"
+        }
+        mock_asana_client
 
-        mock_asana_client.projects.get_project.side_effect = get_project_side_effect
         asana_service = AsanaService(mock_asana_client, False)
 
         # Act
-        asana_service._load_asana_projects()
+        asana_service._load_asana_team_sprint_projects()
 
-        # Assert
-        self.assertEqual(asana_service._current_eng_sprint_project_id, '1200693863324520')
-        self.assertEqual(asana_service._current_release_testing_project_id, '1200319127186571')
+        # Assert. Function should be called 2x per team (9) since there are two filtered
+        # projects in the mock
+        self.assertEqual(mock_asana_client.projects.get_project.call_count, 18)
+
+        # Assert. The values assigned to each team will be the same due to the
+        # nature of the mocked values (which are static)
+        self.assertEqual(
+            asana_service._current_eng_sprint_project_ids, {'1199906290951706': '1201696631711907',
+                                                            '1199906290951709': '1201696631711907',
+                                                            '1199906290951721': '1201696631711907',
+                                                            '1200813282274945': '1201696631711907',
+                                                            '1201305154831711': '1201696631711907',
+                                                            '1201305154831712': '1201696631711907',
+                                                            '1201305154831713': '1201696631711907',
+                                                            '1201305154831714': '1201696631711907',
+                                                            '1201305154831715': '1201696631711907'})
+        self.assertEqual(
+            asana_service._current_release_testing_project_id, None)
 
     @patch.dict(os.environ, _env_vars)
+    def test_load_asana_release_testing_projects(self) -> None:
+        # Arrange
+        mock_asana_client = MagicMock()
+        mock_asana_client.portfolios.get_items.return_value = [
+            {
+                "gid": "1201696631711907",
+                "name": "Release Testing: 01/04",
+                "resource_type": "project"
+            },
+            {
+                "gid": "1201696631711908",
+                "name": "(Closed) Release Testing: 02/04",
+                "resource_type": "project"
+            },
+            {
+                "gid": "1201696631711909",
+                "name": "🐆 Template: Release Testing MM/DD - MM/DD",
+                "resource_type": "project"
+            },
+            {
+                "gid": "1201696631711910",
+                "name": "Release Testing: 04/04",
+                "resource_type": "project"
+            }
+        ]
+
+        mock_asana_client.projects.get_project.return_value = {
+            "gid": "1201696631711910",  # Release Testing: 04/04
+            "archived": False,
+            "color": "dark-orange",
+            "created_at": "2021-08-01T20:30:30.159Z"
+        }
+        mock_asana_client
+
+        asana_service = AsanaService(mock_asana_client, False)
+
+        # Act
+        asana_service._load_asana_release_testing_projects(
+            os.environ.get('RELEASE_TESTING_PORTFOLIO', ''))
+
+        # Assert
+        self.assertEqual(mock_asana_client.projects.get_project.call_count, 2,
+            'Function should be called 2x since there are 2 projects that were filtered')
+
+        # Assert.
+        self.assertEqual(
+            asana_service._current_release_testing_project_id, '1201696631711907')
+
+    @ patch.dict(os.environ, _env_vars)
     def test_get_project_ids_dev(self) -> None:
         # Arrange
         mock_asana_client = MagicMock()
@@ -668,7 +707,8 @@ class TestAsanaService(TestCase):
         expected_result = ['dev-project']
 
         # Act
-        result = asana_service._get_project_ids('dev', 'warning', teams.INVESTIGATIONS)
+        result = asana_service._get_project_ids(
+            'dev', 'warning', teams.INVESTIGATIONS)
 
         # Assert
         self.assertEqual(result, expected_result)
@@ -677,12 +717,15 @@ class TestAsanaService(TestCase):
         # Arrange
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.DETECTIONS.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
-        expected_result = ['current-eng-sprint-id', 'current_release_testing_project_id']
+        expected_result = ['current_eng_sprint_id',
+                           'current_release_testing_project_id']
 
         # Act
-        result = asana_service._get_project_ids('staging', 'warning', teams.DETECTIONS)
+        result = asana_service._get_project_ids(
+            'staging', 'warning', teams.DETECTIONS)
 
         # Assert
         self.assertEqual(result, expected_result)
@@ -691,12 +734,14 @@ class TestAsanaService(TestCase):
         # Arrange
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.INGESTION.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
-        expected_result: List[str] = ['current-eng-sprint-id']
+        expected_result: List[str] = ['current_eng_sprint_id']
 
         # Act
-        result = asana_service._get_project_ids('prod', 'critical', teams.INGESTION)
+        result = asana_service._get_project_ids(
+            'prod', 'critical', teams.INGESTION)
 
         # Assert
         self.assertEqual(result, expected_result)
@@ -705,12 +750,14 @@ class TestAsanaService(TestCase):
         # Arrange
         mock_asana_client = MagicMock()
         asana_service = AsanaService(mock_asana_client, False)
-        asana_service._current_eng_sprint_project_id = 'current-eng-sprint-id'
+        asana_service._current_eng_sprint_project_ids = {
+            teams.INGESTION.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result: List[str] = [teams.INGESTION.backlog_id]
 
         # Act
-        result = asana_service._get_project_ids('prod', 'warning', teams.INGESTION)
+        result = asana_service._get_project_ids(
+            'prod', 'warning', teams.INGESTION)
 
         # Assert
         self.assertEqual(result, expected_result)

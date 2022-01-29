@@ -36,6 +36,7 @@ class SecretsService:
         _secrets: A dict containing all the secret key/values needed for the
           Sentry-Asana integration service.
     """
+
     def __init__(self, secrets_client: Any):
         self._secrets_client = secrets_client
         self._secrets: Dict[str, str] = self.get_secrets_from_secrets_manager()
@@ -58,7 +59,8 @@ class SecretsService:
         if 'SecretString' in get_secret_value_response:
             secret = json.loads(get_secret_value_response['SecretString'])
         else:
-            secret = json.loads(base64.b64decode(get_secret_value_response['SecretBinary']))
+            secret = json.loads(base64.b64decode(
+                get_secret_value_response['SecretBinary']))
         return secret
 
     def get_secret_value(self, secret_key: SecretKey) -> str:

@@ -26,26 +26,30 @@ log = get_logger()
 secrets_service = SecretsService(boto3.client('secretsmanager'))
 
 # Init our asana services
-asana_client = asana.Client.access_token(secrets_service.get_secret_value(SecretKey.ASANA_PAT))
+asana_client = asana.Client.access_token(
+    secrets_service.get_secret_value(SecretKey.ASANA_PAT))
 # Set this header to silence warnings (we're opting in to the new API changes)
-asana_client.headers={'Asana-Enable': 'new_user_task_lists'}
+asana_client.headers = {'Asana-Enable': 'new_user_task_lists'}
 asana_service = AsanaService(asana_client, True)
 
 # Init our sentry services
 sentry_client = SentryClient(secrets_service, requests)
 sentry_service = SentryService(sentry_client)
 
+
 def handler(event: Dict, _: Dict) -> Dict:
     """The handler function that is run when the Lambda function executes."""
     body = event['body']
-    client_secret = secrets_service.get_secret_value(SecretKey.SENTRY_CLIENT_SEC)
+    client_secret = secrets_service.get_secret_value(
+        SecretKey.SENTRY_CLIENT_SEC)
     expected = hmac.new(
         key=client_secret.encode('utf-8'),
         msg=body.encode('utf-8'),
         digestmod=sha256,
     ).hexdigest()
     if expected != event['headers']['sentry-hook-signature']:
-        log.error('Unable to match received signature %s with expected signature %s', event['headers']['sentry-hook-signature'], expected)
+        log.error('Unable to match received signature %s with expected signature %s',
+                  event['headers']['sentry-hook-signature'], expected)
         raise ValueError(
             f'Invalid signature received. Expected signature: {expected} - Received signature: {event["headers"]["sentry-hook-signature"]}'
         )
@@ -57,7 +61,7 @@ def handler(event: Dict, _: Dict) -> Dict:
     issue_id = issue_url.strip('/').split('/').pop()
     if not issue_id:
         raise ValueError(
-           'Could not extract the sentry issue id from the event payload!'
+            'Could not extract the sentry issue id from the event payload!'
         )
 
     # Then, fetch the sentry issue and return the linked asana task
@@ -67,7 +71,6 @@ def handler(event: Dict, _: Dict) -> Dict:
 
     # If we have an asana task associated, we fetch that task and check to see
     # if the body contains a root task payload embedded in the description.
-    #
     root_asana_link = None
     if asana_link:
         task_gid = asana_link.strip('/').split('/').pop()
@@ -84,7 +87,8 @@ def handler(event: Dict, _: Dict) -> Dict:
     # - Add a link to the previous asana task in the task body
     # - Add a link to the first (root) asana task link in the task body
     log.info('Creating asana task...')
-    new_task_gid = asana_service.create_asana_task_from_sentry_event(json_body['data']['event'], asana_link, root_asana_link)
+    new_task_gid = asana_service.create_asana_task_from_sentry_event(
+        json_body['data']['event'], asana_link, root_asana_link)
 
     # Finally, link the newly created asana task back to the sentry issue
     log.info('Linking Sentry issue with Asana task...')

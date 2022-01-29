@@ -13,7 +13,9 @@ from unittest.mock import MagicMock
 
 from ..src.service.sentry_service import SentryService
 
-SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
+SENTRY_ISSUE = os.path.join(os.path.dirname(
+    __file__), 'test_data', 'sentry_issue.json')
+
 
 class TestAsanaService(TestCase):
     """Unit Testing Class for AsanaService"""
@@ -61,18 +63,22 @@ class TestAsanaService(TestCase):
         # Assert
         mock_sentry_client.find_by_id.assert_called_with('1201413464115989')
         assert asana_link is None
+
     def test_add_asana_link_to_issue_success(self) -> None:
         # Arrange
         mock_sentry_client = MagicMock()
 
         # Set to truthy payload
-        mock_sentry_client.add_asana_link_to_issue.return_value = {'foo':'bar'}
+        mock_sentry_client.add_asana_link_to_issue.return_value = {
+            'foo': 'bar'}
         sentry_service = SentryService(mock_sentry_client)
 
         # Act
-        success = sentry_service.add_asana_link_to_issue('issue_id', 'asana_task_id')
+        success = sentry_service.add_asana_link_to_issue(
+            'issue_id', 'asana_task_id')
         # Assert
-        mock_sentry_client.add_asana_link_to_issue.assert_called_with('issue_id', 'asana_task_id')
+        mock_sentry_client.add_asana_link_to_issue.assert_called_with(
+            'issue_id', 'asana_task_id')
         assert success is True
 
     def test_add_asana_link_to_issue_fail(self) -> None:
@@ -84,7 +90,9 @@ class TestAsanaService(TestCase):
         sentry_service = SentryService(mock_sentry_client)
 
         # Act
-        success = sentry_service.add_asana_link_to_issue('issue_id', 'asana_task_id')
+        success = sentry_service.add_asana_link_to_issue(
+            'issue_id', 'asana_task_id')
         # Assert
-        mock_sentry_client.add_asana_link_to_issue.assert_called_with('issue_id', 'asana_task_id')
+        mock_sentry_client.add_asana_link_to_issue.assert_called_with(
+            'issue_id', 'asana_task_id')
         assert success is False

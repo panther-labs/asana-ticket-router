@@ -7,7 +7,7 @@
 
 import os
 import shutil
-import subprocess # nosec: True
+import subprocess  # nosec: True
 
 import pulumi
 
@@ -15,6 +15,7 @@ from sentry_asana_integration.pulumi.sentry_asana_integration import \
     SentryAsanaIntegration
 
 LAMBDA_DEPLOYMENT_PACKAGE_DIR = '.lambda-deployment'
+
 
 def create_lambda_deployment_packages() -> None:
     """A helper function for creating the lambda deployment packages."""
@@ -25,11 +26,12 @@ def create_lambda_deployment_packages() -> None:
     os.mkdir(f'{LAMBDA_DEPLOYMENT_PACKAGE_DIR}/sentry_asana_integration')
     # copy all src files into new dir; shutil.copytree, the most suggested way of doing this
     # in python, apparently has some issues that cause unexpected headaches
-    subprocess.call( # nosec: True
-        ['cp', '-r', 'sentry_asana_integration/src', f'{LAMBDA_DEPLOYMENT_PACKAGE_DIR}/sentry_asana_integration'],
+    subprocess.call(  # nosec: True
+        ['cp', '-r', 'sentry_asana_integration/src',
+            f'{LAMBDA_DEPLOYMENT_PACKAGE_DIR}/sentry_asana_integration'],
         shell=False
     )
-    subprocess.call( # nosec: True
+    subprocess.call(  # nosec: True
         [
             'pip',
             'install',
@@ -41,6 +43,7 @@ def create_lambda_deployment_packages() -> None:
         shell=False
     )
 
+
 pulumi.log.info('Attempting to create the Lambda deployment packages')
 create_lambda_deployment_packages()
 sentry_asana_integration = SentryAsanaIntegration(
@@ -48,4 +51,5 @@ sentry_asana_integration = SentryAsanaIntegration(
     f'./{LAMBDA_DEPLOYMENT_PACKAGE_DIR}/sentry_asana_integration'
 )
 
-pulumi.export('sentry-asana-apigw-endpoint', sentry_asana_integration.apigw_endpoint)
+pulumi.export('sentry-asana-apigw-endpoint',
+              sentry_asana_integration.apigw_endpoint)

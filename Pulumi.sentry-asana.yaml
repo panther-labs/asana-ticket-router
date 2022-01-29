@@ -1,5 +1,7 @@
 config:
   sentry-asana-integration:deploymentParams:
+    # Set to true for local dev
+    development: false
     metricAlarmActionsArns:
       - arn:aws:sns:us-west-2:964675078129:sns-Topic-1B3PF0U6O5MTQ
     snsTopicSubscriptionEmailAddresses:
