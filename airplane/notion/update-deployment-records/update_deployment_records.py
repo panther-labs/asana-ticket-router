@@ -30,12 +30,25 @@ def standardize_deploy_group(deploy_group: str) -> str:
     }.get(deploy_group.lower(), deploy_group.upper())
 
 
+def get_company_name(account_info):
+    # For special cases, where the display name in Notion doesn't match what is in dynamo - we can override it by
+    # filling in the Notes section of the Notion table entry
+    notes = str(account_info.notion_info.Notes)
+    name_key = "Name: "
+    if name_key in notes:
+        after_name_index = notes.index(name_key) + len(name_key)
+
+        notes = notes[after_name_index:]
+        return notes.split(",")[0]
+    try:
+        return account_info.dynamo_info["CompanyDisplayName"]
+    except KeyError:
+        return account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
+
+
 def get_expected_customer_attributes(account_info):
     aws_account_id = account_info.dynamo_info.get("AWSConfiguration", {}).get("AccountId", IGNORE_FIELD)
-    try:
-        company_name = account_info.dynamo_info["CompanyDisplayName"]
-    except KeyError:
-        company_name = account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
+    company_name = get_company_name(account_info)
     region = account_info.dynamo_info['GithubConfiguration']['CustomerRegion']
     upgraded_time_utc = pytz.timezone("UTC").localize(
         datetime.datetime.strptime(account_info.dynamo_info["Updated"], "%Y-%m-%dT%H:%M:%S"))
@@ -51,7 +64,10 @@ def get_expected_customer_attributes(account_info):
         # Ignoring Deploy Type
         "Email": f"panther-hosted+{account_info.fairytale_name}@panther.io",
         # Ignoring Legacy_Stacks
-        # Ignoring Name
+        "Name": create_rtf_value(
+            text=company_name,
+            url=f"https://{account_info.dynamo_info['GithubCloudFormationParameters']['CustomDomain']}/sign-in"
+        ),
         # Ignoring PoC
         "Region": region,
         # Ignoring Service_Type
@@ -77,8 +93,9 @@ def needs_update(attr, notion_val, update_val, notion_page):
 
     if (attr == "Upgraded") and str(notion_val) and str(update_val):
         return str(notion_val) != str(update_val)
-    if attr == "Support_Role":
-        return not are_rtf_values_equal(notion_page.properties["Support Role"].rich_text, update_val.rich_text)
+    if attr in ("Name", "Support_Role"):
+        page_prop = attr.replace("_", " ")
+        return not are_rtf_values_equal(notion_page.properties[page_prop].rich_text, update_val.rich_text)
 
     return notion_val != update_val
 

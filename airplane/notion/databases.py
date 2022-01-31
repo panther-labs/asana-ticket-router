@@ -21,7 +21,7 @@ def are_rtf_values_equal(rtf_val_1, rtf_val_2):
         if isinstance(rtf_val_1, list):
             rtf_val_1 = rtf_val_1[0]
         if isinstance(rtf_val_2, list):
-            rtf_val_2= rtf_val_2[0]
+            rtf_val_2 = rtf_val_2[0]
     except IndexError:
         return False
     return (rtf_val_1.plain_text == rtf_val_2.plain_text) and (rtf_val_1.href != rtf_val_2.href)
@@ -39,6 +39,7 @@ class AccountsDatabase(page, database="cc445b0819164efca9d281e8ea2efab7"):
     Email = Property("Email", types.Email)
     Legacy_Stacks = Property("Legacy Stacks?", types.Checkbox)
     Name = Property("Name", types.RichText)
+    Notes = Property("Notes", types.RichText)
     PoC = Property("PoC?", types.Checkbox)
     Region = Property("Region", types.SelectOne)
     Service_Type = Property("Service Type", types.SelectOne)
