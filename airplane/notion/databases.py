@@ -47,3 +47,4 @@ class AccountsDatabase(page, database="cc445b0819164efca9d281e8ea2efab7"):
     Upgraded = Property("Upgraded", types.Date)
     Version = Property("Version", types.SelectOne)
     AWS_Organization = Property("AWS Organization", types.SelectOne)
+    Account_Info_Auto_Updated = Property("Account Info Auto-Updated", types.Checkbox)

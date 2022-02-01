@@ -1,5 +1,6 @@
 # Linked to https://app.airplane.dev/t/update_panther_deployments_notion_record [do not edit this line]
 import datetime
+import os
 import pytz
 import re
 import urllib.parse
@@ -58,6 +59,7 @@ def get_expected_customer_attributes(account_info):
     url_support_name = urllib.parse.quote(f"{company_name} Support")
 
     expected_attrs = {
+        "Account_Info_Auto_Updated": True,
         # Ignoring AWS_Organization
         # Ignoring Backend
         "Deploy_Group": standardize_deploy_group(account_info.deploy_yml_info.get("DeploymentGroup")),
@@ -100,13 +102,25 @@ def needs_update(attr, notion_val, update_val, notion_page):
     return notion_val != update_val
 
 
+def set_updated_field_to_false_for_ignored_accounts(all_accounts):
+    for fairytale_name, notion_info in all_accounts.notion_accounts.items():
+        if fairytale_name in all_accounts.uncommon_fairytale_names:
+            if notion_info.Account_Info_Auto_Updated:
+                notion_info.Account_Info_Auto_Updated = False
+                notion_info.commit()
+
+
 def main(params):
     hosted_deploy_dir = (params["hosted_deploy_dir"] if "hosted_deploy_dir" in params
                          else git_clone(repo="hosted-deployments", github_setup=True))
-    all_accounts = AllCustomerAccountsInfo(hosted_deploy_dir=hosted_deploy_dir)
+    os.environ["DEPLOY_KEY_BASE64"] = os.environ.get("STAGING_DEPLOY_KEY_BASE64", None)
+    staging_deploy_dir = (params["staging_deploy_dir"] if "staging_deploy_dir" in params
+                          else git_clone(repo="staging-deployments", github_setup=True))
+    all_accounts = AllCustomerAccountsInfo(hosted_deploy_dir=hosted_deploy_dir, staging_deploy_dir=staging_deploy_dir)
 
-    print(f"Accounts that will be skipped due to not existing in Notion, Dynamo, or hosted-deployments:\n"
+    print(f"Accounts that will be skipped due to not existing in Notion or hosted/staging deployments:\n"
           f"{all_accounts.uncommon_fairytale_names}")
+    set_updated_field_to_false_for_ignored_accounts(all_accounts=all_accounts)
 
     for account_info in all_accounts:
         changed = False

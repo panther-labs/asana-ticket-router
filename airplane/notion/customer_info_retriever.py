@@ -3,11 +3,12 @@ import yaml
 
 from pyshared.aws_creds import get_assumed_role_creds
 from pyshared.dynamo_db import DynamoDbSearch
-from pyshared.dynamo_db_tables import HOSTED_DEPLOYMENTS_METADATA
+from pyshared.dynamo_db_tables import HOSTED_DEPLOYMENTS_METADATA, STAGING_DEPLOYMENTS_METADATA
 from notion.auth import notion_session
 from notion.databases import AccountsDatabase
 
 DYNAMO_RO_ROLE_ARN = os.environ.get("DYNAMO_RO_ROLE_ARN")
+ROOT_DYNAMO_RO_ROLE_ARN = os.environ.get("ROOT_DYNAMO_RO_ROLE_ARN")
 
 
 class CustomerAccountInfo:
@@ -19,10 +20,11 @@ class CustomerAccountInfo:
 
 
 class AllCustomerAccountsInfo:
-    def __init__(self, hosted_deploy_dir):
+    def __init__(self, hosted_deploy_dir, staging_deploy_dir):
         self.dynamo_accounts = self.get_dynamo_results()
         self.notion_accounts = self.get_notion_results()
         self.deploy_yml_accounts = self.get_deploy_yml_accounts(hosted_deploy_dir)
+        self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(staging_deploy_dir)}
         self.common_fairytale_names, self.uncommon_fairytale_names = self._get_common_and_uncommon_fairytale_names()
 
     def __iter__(self):
@@ -32,10 +34,16 @@ class AllCustomerAccountsInfo:
 
     @staticmethod
     def get_dynamo_results() -> dict[str, dict]:
-        db_search = DynamoDbSearch(
-            table_name=HOSTED_DEPLOYMENTS_METADATA, assumed_role_creds=get_assumed_role_creds(arn=DYNAMO_RO_ROLE_ARN)
-        )
-        return db_search.scan_and_organize_result(scan_result_keys=("CustomerId",))
+        results = {}
+
+        for table_name, arn in ((HOSTED_DEPLOYMENTS_METADATA, DYNAMO_RO_ROLE_ARN),
+                                (STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN),):
+            db_search = DynamoDbSearch(
+                table_name=table_name, assumed_role_creds=get_assumed_role_creds(arn=arn)
+            )
+            results = {**results, **db_search.scan_and_organize_result(scan_result_keys=("CustomerId",))}
+
+        return results
 
     @staticmethod
     def get_notion_results() -> dict[str, AccountsDatabase]:
