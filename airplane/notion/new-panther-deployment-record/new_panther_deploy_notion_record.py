@@ -14,7 +14,7 @@ def get_backend(backend):
 def main(params):
     print("parameters:", params)
 
-    customer = params["customer_name"]
+    customer = params["account_name"]
     fairytale = params["fairytale_name"]
     email = f'panther-hosted+{fairytale}@runpanther.io'
     region = params["region"]
@@ -29,7 +29,7 @@ def main(params):
         Backend=get_backend(params["backend"]),
         Deploy_Group="L",
         Email=params["email"],
-        Name=params["customer_name"],
+        Account_Name=params["account_name"],
         PoC=params["poc"],
         Region=region,
         Service_Type=params["service_type"],

@@ -66,7 +66,7 @@ def get_expected_customer_attributes(account_info):
         # Ignoring Deploy Type
         "Email": f"panther-hosted+{account_info.fairytale_name}@panther.io",
         # Ignoring Legacy_Stacks
-        "Name": create_rtf_value(
+        "Account_Name": create_rtf_value(
             text=company_name,
             url=f"https://{account_info.dynamo_info['GithubCloudFormationParameters']['CustomDomain']}/sign-in"
         ),
@@ -95,7 +95,7 @@ def needs_update(attr, notion_val, update_val, notion_page):
 
     if (attr == "Upgraded") and str(notion_val) and str(update_val):
         return str(notion_val) != str(update_val)
-    if attr in ("Name", "Support_Role"):
+    if attr in ("Account_Name", "Support_Role"):
         page_prop = attr.replace("_", " ")
         return not are_rtf_values_equal(notion_page.properties[page_prop].rich_text, update_val.rich_text)
 

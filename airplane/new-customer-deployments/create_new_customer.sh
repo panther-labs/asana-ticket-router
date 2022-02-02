@@ -23,7 +23,7 @@ printf "\nNew/changed files are:\n%s" "$(git status --porcelain | sed s/^...//)"
 printf "\n=== Finished generating customer files ===\n\n"
 
 git add deployment-metadata
-TITLE="Creating customer '${PARAM_CUSTOMER_NAME}'" git-commit
+TITLE="Creating customer '${PARAM_ACCOUNT_NAME}'" git-commit
 TEST_RUN="${PARAM_AIRPLANE_TEST_RUN}" git-push
 
 echo "airplane_output_set {\"fairytale_name\": \"${FAIRYTALE_NAME}\", \"panther_version\": \"${PANTHER_VERSION}\"}"
