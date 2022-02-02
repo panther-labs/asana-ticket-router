@@ -9,6 +9,7 @@ import os
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib import parse
 
 from asana import Client as AsanaClient
 from asana import error as AsanaError
@@ -16,19 +17,6 @@ from asana import error as AsanaError
 from ..enum import teams
 from ..enum.priority import AsanaPriority
 from ..util.logger import get_logger
-
-# A list of hardcoded Account IDs for our self hosted customers, as extracted via
-# https://github.com/panther-labs/aws-management-cloudformation/blob/master/panther-public/enterprise-accounts.yml
-SELF_HOSTED_ACCOUNTS_IDS = [
-    '880172401261',  # Grail,
-
-    '346666025108',  # Infoblox IT,
-    '405093580753',  # Infoblox dev,
-    '718190095844',  # Infoblox prod,
-
-    '971535947767',  # Coinbase dev
-    '817873525313',  # Coinbase prod
-]
 
 # Pulumi config setting will be "1" or "0" string, but account for full string
 devEnv = os.environ.get('DEVELOPMENT', '').lower()
@@ -57,6 +45,22 @@ class AsanaService:
         _current_release_testing_project_id: The Asana ID of the Asana project representing the current
           release testing sprint.
     """
+
+    # A list of hardcoded Account IDs for our self hosted customers, as extracted via
+    # https://github.com/panther-labs/aws-management-cloudformation/blob/master/panther-public/enterprise-accounts.yml
+    _SELF_HOSTED_ACCOUNTS_IDS = [
+        '880172401261',  # Grail,
+
+        '346666025108',  # Infoblox IT,
+        '405093580753',  # Infoblox dev,
+        '718190095844',  # Infoblox prod,
+
+        '971535947767',  # Coinbase dev
+        '817873525313',  # Coinbase prod
+    ]
+
+    # The URL describing the process we follow for Sentry tickets
+    _RUNBOOK_URL = 'https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396'
 
     # These teams are responsible for the initial triage of any issues reported by their services, but it does not
     # necessarily mean that they officially "own" the service - they can delegate as needed.
@@ -354,36 +358,24 @@ class AsanaService:
         issue_url = sentry_event.get('issue_url', '')
         issue_id = issue_url.strip('/').split('/').pop()
         url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
-        customer = 'Unknown'
-        server_name = 'Unknown'
-        event_type = None
-        aws_region = None
-        aws_account_id = None
-        for tag in sentry_event['tags']:
-            key = tag[0]
-            value = tag[1]
-            if key == 'customer_name':
-                customer = value
-            elif key == 'server_name':
-                server_name = value
-            elif key == 'type':
-                event_type = value
-            elif key == 'aws_region':
-                aws_region = value
-            elif key == 'aws_account_id':
-                aws_account_id = value
-        assigned_team = AsanaService._get_owning_team(server_name, event_type)
+
+        sentry_event_tags_dict = dict(sentry_event['tags'])
+        aws_region = sentry_event_tags_dict.get('aws_region', None)
+        aws_account_id = sentry_event_tags_dict.get('aws_account_id', None)
+        customer = sentry_event_tags_dict.get('customer_name', 'Unknown')
+        assigned_team = AsanaService._get_owning_team(sentry_event_tags_dict)
         task_note = (f'Sentry Issue URL: {url}\n\n'
                      f'Event Datetime: {sentry_event["datetime"]}\n\n'
                      f'Customer Impacted: {customer}\n\n'
-                     f'Environment: {sentry_event["environment"].lower()}\n\n')
+                     f'Environment: {sentry_event["environment"].lower()}\n\n'
+                     f'Runbook: {AsanaService._RUNBOOK_URL}\n\n')
 
         # if a customer is not self-hosted, add a switch role link
-        if aws_account_id not in SELF_HOSTED_ACCOUNTS_IDS:
+        if aws_account_id not in AsanaService._SELF_HOSTED_ACCOUNTS_IDS:
             task_note = task_note + (f'AWS Switch Role Link: https://{aws_region}.signin.aws.amazon.com/switchrole'
                                      f'?roleName=PantherSupportRole-{aws_region}'
                                      f'&account={aws_account_id}'
-                                     f'&displayName={customer}%20Support\n\n'
+                                     f'&displayName={parse.quote(customer)}%20Support\n\n'
                                      )
         # If we had a root task link, set it in the payload
         if root_asana_link:
@@ -465,11 +457,49 @@ class AsanaService:
         """
         return AsanaPriority.MEDIUM if level == 'warning' else AsanaPriority.HIGH
 
+    # These teams are responsible for the initial triage of any FE-related issues reported on URLs for pages that they
+    # own, but it does not necessarily mean that they officially "own" the service - they can delegate as needed.
+    # These should be updated based on the available URLs found under
+    # https://github.com/panther-labs/panther-enterprise/blob/master/web/src/urls.ts
+    @staticmethod
+    def _get_owning_team_from_url(url: str) -> teams.EngTeam:
+        # Everything on analysis
+        if any(path in url for path in [
+            '/overview/',
+            '/analysis/',
+            '/detections/',
+            '/data-models/',
+            '/helpers/',
+            '/resources/',
+            '/destinations/',
+        ]):
+            return teams.DETECTIONS
+
+        if any(path in url for path in [
+            '/explorer/',
+            '/saved-queries/',
+            '/indicator-search/',
+            '/query-history/',
+            '/alerts-and-errors/',
+            '/enrichment/',
+        ]):
+            return teams.INVESTIGATIONS
+
+        if any(path in url for path in [
+            '/log-sources/',
+            '/cloud-accounts/',
+            '/data-schemas/',
+        ]):
+            return teams.INGESTION
+
+        # fallback to the core product for all the rest
+        return teams.CORE_PRODUCT
+
     # Fetch details of the assigned team.
     #
     # There is a service ownership mapping in Asana as well, but we want to avoid the extra API call to look that up.
     @classmethod
-    def _get_owning_team(cls, server_name: str, event_type: Optional[str] = None) -> teams.EngTeam:
+    def _get_owning_team(cls, sentry_event_tags_dict: Dict[str, Any]) -> teams.EngTeam:
         """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
@@ -479,14 +509,15 @@ class AsanaService:
         https://sentry.io/settings/panther-labs/projects/panther-enterprise/ownership/
 
         Args:
-            server_name: A string representing the 'server_name' key/value in the tags of the originating Sentry event.
-            event_type: A string representing the 'type' key/value in the tags of the originating Sentry event.
+            sentry_event_tags_dict: A dict with all the tags that this sentry event has
 
         Returns:
             Team that takes responsibility for the entity with the given 'server_name'.
         """
-        if event_type and event_type.lower() == 'web':
-            # TODO: team-level routing based on URL: https://app.asana.com/0/1201267919523642/1201079771956134/f
-            return teams.CORE_PRODUCT
+        server_name = sentry_event_tags_dict.get('server_name', 'Unknown')
+        event_url = sentry_event_tags_dict.get('url', None)
+
+        if event_url:
+            return cls._get_owning_team_from_url(event_url)
 
         return cls._SERVER_TEAM_MAPPING.get(server_name, teams.CORE_PRODUCT)

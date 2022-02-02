@@ -29,8 +29,7 @@ class TestAsanaService(TestCase):
         expected_result = teams.INGESTION
 
         # Act
-        result = AsanaService._get_owning_team('panther-log-router')
-
+        result = AsanaService._get_owning_team(dict([('server_name', 'panther-log-router')]))
         # Assert
         self.assertEqual(result, expected_result)
 
@@ -39,7 +38,27 @@ class TestAsanaService(TestCase):
         expected_result = teams.CORE_PRODUCT
 
         # Act
-        result = AsanaService._get_owning_team('alpha-beta')
+        result = AsanaService._get_owning_team(dict([('server_name', 'foo')]))
+
+        # Assert
+        self.assertEqual(result, expected_result)
+
+    def test_get_owning_team_with_matching_url_tag(self) -> None:
+        # Arrange
+        expected_result = teams.INVESTIGATIONS
+
+        # Act
+        result = AsanaService._get_owning_team(dict([('url', 'https://panther.com/alerts-and-errors/123/')]))
+
+        # Assert
+        self.assertEqual(result, expected_result)
+
+    def test_get_owning_team_with_no_matching_url_tag(self) -> None:
+        # Arrange
+        expected_result = teams.CORE_PRODUCT
+
+        # Act
+        result = AsanaService._get_owning_team(dict([('url', 'foo')]))
 
         # Assert
         self.assertEqual(result, expected_result)
@@ -290,6 +309,7 @@ class TestAsanaService(TestCase):
                       'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
                       'Customer Impacted: alpha\n\n'
                       'Environment: prod\n\n'
+                      'Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\n'
                       'AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole'
                       '?roleName=PantherSupportRole-us-west-2'
                       '&account=609709239620'
@@ -364,7 +384,8 @@ class TestAsanaService(TestCase):
                       'Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
                       'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
                       'Customer Impacted: alpha\n\n'
-                      'Environment: prod\n\n')
+                      'Environment: prod\n\n'
+                      'Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\n')
         }
 
         # Act
@@ -380,7 +401,7 @@ class TestAsanaService(TestCase):
             mock_get_owning_team: Any
     ) -> None:
         # Arrange
-        mock_get_owning_team.return_value = teams.CORE_PRODUCT
+        mock_get_owning_team.return_value = teams.INVESTIGATIONS
         sentry_event = {
             "datetime": "2021-07-14T00:10:08.299179Z",
             "environment": "prod",
@@ -396,11 +417,15 @@ class TestAsanaService(TestCase):
                 ],
                 [
                     "customer_name",
-                    "alpha"
+                    "alpha beta"
                 ],
                 [
                     "server_name",
                     "panther-snapshot-pollers"
+                ],
+                [
+                    "url",
+                    "https://test.runpanther.net/data/query-history/"
                 ]
             ],
             "timestamp": 1626221408.299179,
@@ -417,7 +442,7 @@ class TestAsanaService(TestCase):
         }
         asana_service = AsanaService(mock_asana_client, False)
         asana_service._current_eng_sprint_project_ids = {
-            teams.CORE_PRODUCT.team_id: 'current_eng_sprint_id'}
+            teams.INVESTIGATIONS.team_id: 'current_eng_sprint_id'}
         asana_service._current_release_testing_project_id = 'current_release_testing_project_id'
         expected_result = {
             'name': "some-title",
@@ -427,17 +452,18 @@ class TestAsanaService(TestCase):
                 '1199912337121892': '1200218109698442',
                 '1199944595440874': 0.1,
                 '1200165681182165': '1200198568911550',
-                '1199906290951705': teams.CORE_PRODUCT.team_id,
+                '1199906290951705': teams.INVESTIGATIONS.team_id,
                 '1200216708142306': '1200822942218893'
             },
             'notes': ('Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/c\n\n'
                       'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
-                      'Customer Impacted: alpha\n\n'
+                      'Customer Impacted: alpha beta\n\n'
                       'Environment: prod\n\n'
+                      'Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\n'
                       'AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole'
                       '?roleName=PantherSupportRole-us-west-2'
                       '&account=609709239620'
-                      '&displayName=alpha%20Support\n\n')
+                      '&displayName=alpha%20beta%20Support\n\n')
         }
 
         # Act
@@ -506,6 +532,7 @@ class TestAsanaService(TestCase):
                       'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
                       'Customer Impacted: alpha\n\n'
                       'Environment: staging\n\n'
+                      'Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\n'
                       'AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole'
                       '?roleName=PantherSupportRole-us-west-2'
                       '&account=609709239620'
@@ -577,6 +604,7 @@ class TestAsanaService(TestCase):
                       'Event Datetime: 2021-07-14T00:10:08.299179Z\n\n'
                       'Customer Impacted: alpha\n\n'
                       'Environment: prod\n\n'
+                      'Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\n'
                       'AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole'
                       '?roleName=PantherSupportRole-us-west-2'
                       '&account=609709239620'
