@@ -1,0 +1,27 @@
+# This is the configuration file read by the dependency_injector
+# Environment values are all parsed as strings at runtime
+logging:
+  version: 1
+  formatters:
+    console:
+      class: logging.Formatter
+      format: "[%(levelname)s] [%(asctime)s.%(msecs)03dZ] [%(pathname)s:%(funcName)s:%(lineno)d] %(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: console
+      stream: ext://sys.stdout
+  root:
+    level: DEBUG
+    handlers:
+      - console
+common:
+  is_lambda: "${IS_LAMBDA}"
+  debug: "${DEBUG}"
+  development: "${DEVELOPMENT}"
+services:
+  sqs:
+    queue_url: "${QUEUE_URL}"
+  secrets:
+    secret_name: "${SECRET_NAME}"

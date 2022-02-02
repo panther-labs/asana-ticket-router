@@ -15,7 +15,13 @@ venv
 **/__pycache__
 
 # Pulumi Lambda Deployment Artifacts
-.lambda-deployment
+.deployments
 
 # Dev Pulumi Deployment Configs
 Pulumi.dev*.yaml
+
+# pytest cov
+.coverage
+
+# pyenv
+.python-version
