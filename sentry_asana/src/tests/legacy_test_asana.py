@@ -27,7 +27,9 @@ class TestAsanaService(TestCase):
         expected_result = teams.INGESTION
 
         # Act
-        result = AsanaService._get_owning_team(dict([('server_name', 'panther-log-router')]))
+        result = AsanaService._get_owning_team(
+            dict([('server_name', 'panther-log-router'), ('url', 'https://test.com/overview/')])
+        )
         # Assert
         self.assertEqual(result, expected_result)
 
@@ -57,6 +59,16 @@ class TestAsanaService(TestCase):
 
         # Act
         result = AsanaService._get_owning_team(dict([('url', 'foo')]))
+
+        # Assert
+        self.assertEqual(result, expected_result)
+
+    def test_get_owning_team_with_no_tags(self) -> None:
+        # Arrange
+        expected_result = teams.CORE_PRODUCT
+
+        # Act
+        result = AsanaService._get_owning_team(dict([]))
 
         # Assert
         self.assertEqual(result, expected_result)

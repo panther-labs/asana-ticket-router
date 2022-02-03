@@ -519,10 +519,16 @@ class AsanaService:
         Returns:
             Team that takes responsibility for the entity with the given 'server_name'.
         """
-        server_name = sentry_event_tags_dict.get('server_name', 'Unknown')
+        server_name = sentry_event_tags_dict.get('server_name', None)
         event_url = sentry_event_tags_dict.get('url', None)
 
+        # Prioritize ownership via the `server_name` tag
+        if server_name:
+            return cls._SERVER_TEAM_MAPPING.get(server_name, teams.CORE_PRODUCT)
+
+        # In its absence, fallback to ownership via URL if it exists
         if event_url:
             return cls._get_owning_team_from_url(event_url)
 
-        return cls._SERVER_TEAM_MAPPING.get(server_name, teams.CORE_PRODUCT)
+        # If both a `url` and a `server_name` are missing, fallback to the Core Product team
+        return teams.CORE_PRODUCT
