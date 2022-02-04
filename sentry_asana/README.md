@@ -6,7 +6,7 @@ the manual process of the on-call engineer triaging such events.
 ## Architecture
 
 The service follows a single producer, single consumer pattern. However, we actually achieve multiple producer, multiple consumer (MPMC)
-because of how AWS Lambda scales up for both lambas and how AWS determines when to send messates (in batches) to the consumer.
+because of how AWS Lambda scales up for both lambas and how AWS determines when to send messages (in batches) to the consumer.
 
 The producer's job is to capture Sentry events, format an SQS message and place on an SQS queue. The consumer's job is to process those messages on the queue in a reliable way. It is driven by SQS events and will process multiple messages on the queue.
 
@@ -20,6 +20,11 @@ Consumer
 
 - Sentry event is retried up to 10x only for failed records in the batch of events
 - Continuously failed events land in a DLQ for manual requeuing
+
+## Modifying service mappings
+
+To change what teams are responsible for what services, modify the mappinigs found in `./sentry_asana/src/consumer/service/asana_service.py`.
+Each team's services are grouped by team there, be sure to move the mapping to the correct section in addition to updating the team being mapped to.
 
 ## Credentials
 

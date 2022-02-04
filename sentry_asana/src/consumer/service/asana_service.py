@@ -66,13 +66,11 @@ class AsanaService:
     # necessarily mean that they officially "own" the service - they can delegate as needed.
     _SERVER_TEAM_MAPPING = {
         # Team: Detection
-        'panther-alert-delivery-api': teams.DETECTIONS,
         'panther-analysis-api': teams.DETECTIONS,
         'panther-aws-event-processor': teams.DETECTIONS,
         'panther-cloudsecurity-datalake-forwarder': teams.DETECTIONS,
         'panther-compliance-api': teams.DETECTIONS,
         'panther-layer-manager': teams.DETECTIONS,
-        'panther-log-alert-forwarder': teams.DETECTIONS,
         'panther-outputs-api': teams.DETECTIONS,
         'panther-policy-engine': teams.DETECTIONS,
         'panther-resource-processor': teams.DETECTIONS,
@@ -81,7 +79,6 @@ class AsanaService:
         'panther-snapshot-scheduler': teams.DETECTIONS,
 
         # Team: Ingestion
-        'panther-alerts-api': teams.INGESTION,
         'panther-cloud-puller': teams.INGESTION,
         'panther-data-archiver': teams.INGESTION,
         'panther-holding-tank': teams.INGESTION,
@@ -95,6 +92,8 @@ class AsanaService:
         'panther-system-status': teams.INGESTION,
 
         # Team: Investigation
+        'panther-alerts-api': teams.INVESTIGATIONS,
+        'panther-alert-delivery-api': teams.INVESTIGATIONS,
         'panther-athena-admin-api': teams.INVESTIGATIONS,
         'panther-athena-api': teams.INVESTIGATIONS,
         'panther-database-workflow': teams.INVESTIGATIONS,
@@ -102,6 +101,7 @@ class AsanaService:
         'panther-datacatalog-compactor-callbacks': teams.INVESTIGATIONS,
         'panther-datacatalog-compactor-reaper': teams.INVESTIGATIONS,
         'panther-datacatalog-updater': teams.INVESTIGATIONS,
+        'panther-log-alert-forwarder': teams.INVESTIGATIONS,
         'panther-lookup-tables-api': teams.INVESTIGATIONS,
         'panther-snowflake-admin-api': teams.INVESTIGATIONS,
         'panther-snowflake-api': teams.INVESTIGATIONS,
