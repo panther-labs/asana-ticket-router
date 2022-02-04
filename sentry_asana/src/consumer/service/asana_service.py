@@ -70,8 +70,10 @@ class AsanaService:
         'panther-aws-event-processor': teams.DETECTIONS,
         'panther-cloudsecurity-datalake-forwarder': teams.DETECTIONS,
         'panther-compliance-api': teams.DETECTIONS,
+        'panther-detections-engine': teams.DETECTIONS,
         'panther-layer-manager': teams.DETECTIONS,
         'panther-outputs-api': teams.DETECTIONS,
+        'panther-pip-layer-builder': teams.DETECTIONS,
         'panther-policy-engine': teams.DETECTIONS,
         'panther-resource-processor': teams.DETECTIONS,
         'panther-resources-api': teams.DETECTIONS,
@@ -112,11 +114,15 @@ class AsanaService:
         'panther-cn-router': teams.CORE_PRODUCT,
         'panther-graph-api': teams.CORE_PRODUCT,
         'panther-metrics-api': teams.CORE_PRODUCT,
-        'panther-ops-tools': teams.CORE_PRODUCT,
         'panther-organization-api': teams.CORE_PRODUCT,
-        'panther-pip-layer-builder': teams.CORE_PRODUCT,
         'panther-token-authorizer': teams.CORE_PRODUCT,
         'panther-users-api': teams.CORE_PRODUCT,
+
+        # Team: Observability
+        'panther-alarm-logger': teams.OBSERVABILITY_PERF,
+
+        # Team: Productivity
+        'panther-ops-tools': teams.PRODUCTIVITY,
     }
 
     def __init__(self, asana_client: AsanaClient, load_asana_projects: bool = True) -> None:
