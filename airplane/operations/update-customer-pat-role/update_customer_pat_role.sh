@@ -2,6 +2,7 @@
 # Linked to https://app.airplane.dev/t/update_customer_pat_role [do not edit this line]
 
 set -eu
+pip3 install cfn-lint PyYAML
 
 export REPOSITORY="hosted-aws-management"
 BRANCH="${BRANCH_OVERRIDE:-master}"
@@ -37,14 +38,18 @@ if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
     --output text))
 fi
 
-# retrieve the region from DynamoDB
-account_region=$(aws dynamodb get-item \
+# Retrieve the region and AWS account ID from DynamoDB
+account_info=$(aws dynamodb get-item \
     --table-name "${DEPLOYMENT_METADATA_TABLE}" \
-    --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}' \
-    --query "Item.GithubConfiguration.M.CustomerRegion.S" \
-    --output text)
+    --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}')
+account_region=$(echo "${account_info}" | jq -r '.Item.GithubConfiguration.M.CustomerRegion.S')
+aws_account_id=$(echo "${account_info}" | jq -r '.Item.AWSConfiguration.M.AccountId.S')
 if [ "${account_region}" = "None" ]; then
-  printf "\nRegion not found in DynamoDB table for ${fairytale_name}\n"
+  printf "\nRegion not found in DynamoDB table for %s\n" "${fairytale_name}"
+  exit 1
+fi
+if [ "${aws_account_id}" = "None" ]; then
+  printf "\nAWS account ID not found in DynamoDB table for %s\n" "${fairytale_name}"
   exit 1
 fi
 
@@ -66,6 +71,23 @@ done
 # We do this last because of yq's way of adding elements to an empty array uses brackets over single hyphenated lines.
 printf "\nRemoving placeholder entry from template if exists\n"
 yq e -i 'del('"${YAML_PRINCIPAL_PATH}"[]' | select(. == "arn:aws:iam::{REPLACE_ME}:root"))' "${iam_roles_file}"
+
+if ! grep -q "hosted-${fairytale_name}" account-mapping.yml; then
+  echo "hosted-${fairytale_name}: \"${aws_account_id}\"" >> account-mapping.yml
+  git add account-mapping.yml
+fi
+
+python3 repository-deployment-automation/generate_codepipeline.py
+git add panther-hosted-root/us-west-2/codepipeline.yml
+
+echo "Running lint. This takes a bit..."
+for directory in $(find . -maxdepth 1 -type d ! -name .git  ! -name .github); do
+  if ! cfn-lint "${directory}"/**/*.yml; then
+    echo "Linting failed on directory \"${directory}\""
+    exit 1;
+  fi
+done
+echo "Finished running lint."
 
 git add "${iam_roles_file}"
 TITLE="Updating PAT role(s) for '${fairytale_name}'" git-commit
