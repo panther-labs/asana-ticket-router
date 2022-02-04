@@ -52,7 +52,7 @@ def assume_customer_support_role(conn, account_id, region):
 
 
 def invoke(client, from_queue, to_queue):
-    payload = {'requeue': {'toQueue': from_queue, 'fromQueue': to_queue}}
+    payload = {'requeue': {'fromQueue': from_queue, 'toQueue': to_queue}}
 
     print("payload: ", payload)
 
