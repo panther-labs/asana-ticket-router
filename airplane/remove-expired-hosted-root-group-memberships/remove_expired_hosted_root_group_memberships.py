@@ -9,10 +9,8 @@ from collections import namedtuple
 
 REPOSITORY = "hosted-aws-management"
 GROUPS_FILE_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
-CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get(
-    "CLOUDFORMATION_READ_ONLY_ROLE_ARN",
-    "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly"
-)
+CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get("CLOUDFORMATION_READ_ONLY_ROLE_ARN",
+                                                   "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly")
 TEMP_COMMENT_REGEX = "^# Temporary: .+ Expires: (20\d{2}-\d{1,2}-\d{1,2})(\\n)*$"
 
 GroupUser = namedtuple('GroupUser', ['group', 'user'])
@@ -35,23 +33,25 @@ def remove_expired_users(data):
             continue
 
         for index, comment in list(value['Properties']['Users'].ca.items.items()):
+
+            # We iterate over a list copy of the members because iterating over and modifying `data` raises a
+            # CollectionChanged exception. This requires us to keep up with the count of previously removed members
+            # so we remove the correct entry.
+            previously_removed_user_count = 0
             if is_membership_expired(comment[0].value):
                 removed_memberships.append(
-                    GroupUser(
-                        group=group_name_from_resource(data, value['Properties']['GroupName'].value),
-                        user=get_cloudformation_export_value(
-                            export_name=value['Properties']['Users'][index].value,
-                            role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN
-                        )
-                    )
-                )
-                value['Properties']['Users'].pop(index)
+                    GroupUser(group=group_name_from_resource(data, value['Properties']['GroupName'].value),
+                              user=get_cloudformation_export_value(
+                                  export_name=value['Properties']['Users'][index].value,
+                                  role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)))
+                value['Properties']['Users'].pop(index - previously_removed_user_count)
+                previously_removed_user_count += 1
     return removed_memberships
 
 
 def main(params):
-    repository_dir = (params["hosted_aws_management_dir"] if "hosted_aws_management_dir" in params
-                      else git_clone(repo=REPOSITORY, github_setup=os.environ.get("DEPLOY_KEY_BASE64")))
+    repository_dir = (params["hosted_aws_management_dir"] if "hosted_aws_management_dir" in params else git_clone(
+        repo=REPOSITORY, github_setup=os.environ.get("DEPLOY_KEY_BASE64")))
 
     data_path = os.path.join(repository_dir, GROUPS_FILE_PATH)
 
