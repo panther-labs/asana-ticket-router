@@ -45,6 +45,7 @@ def remove_expired_users(data):
                                   export_name=value['Properties']['Users'][index].value,
                                   role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)))
                 value['Properties']['Users'].pop(index - previously_removed_user_count)
+                print(f"Removing {removed_memberships[-1].user} from {removed_memberships[-1].group}")
                 previously_removed_user_count += 1
     return removed_memberships
 
