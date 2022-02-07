@@ -1,6 +1,6 @@
 import boto3
 import os
-from pyshared.aws_creds import get_assumed_role_creds
+from pyshared.aws_creds import get_credentialed_client
 
 REGION = os.environ.get("AWS_REGION", "us-west-2")
 
@@ -30,15 +30,7 @@ def group_name_from_resource(data, resource):
 
 
 def _create_cloudformation_client(role_arn):
-    credentials = get_assumed_role_creds(arn=role_arn, desc="cfn_list_exports")['Credentials']
-    client = boto3.client(
-        'cloudformation',
-        region_name=REGION,
-        aws_access_key_id=credentials['AccessKeyId'],
-        aws_secret_access_key=credentials['SecretAccessKey'],
-        aws_session_token=credentials['SessionToken'],
-    )
-    return client
+    return get_credentialed_client(service_name="cloudformation", region=REGION, arn=role_arn, desc="cfn_list_exports")
 
 
 def list_exports(role_arn):

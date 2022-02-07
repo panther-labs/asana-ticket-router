@@ -1,7 +1,6 @@
 import os
 import yaml
 
-from pyshared.aws_creds import get_assumed_role_creds
 from pyshared.dynamo_db import DynamoDbSearch
 from pyshared.dynamo_db_tables import HOSTED_DEPLOYMENTS_METADATA, STAGING_DEPLOYMENTS_METADATA
 from notion.auth import notion_session
@@ -12,6 +11,7 @@ ROOT_DYNAMO_RO_ROLE_ARN = os.environ.get("ROOT_DYNAMO_RO_ROLE_ARN")
 
 
 class CustomerAccountInfo:
+
     def __init__(self, fairytale_name: str, deploy_yml_info: dict, dynamo_info: dict, notion_info: AccountsDatabase):
         self.deploy_yml_info = deploy_yml_info
         self.dynamo_info = dynamo_info
@@ -20,6 +20,7 @@ class CustomerAccountInfo:
 
 
 class AllCustomerAccountsInfo:
+
     def __init__(self, hosted_deploy_dir, staging_deploy_dir):
         self.dynamo_accounts = self.get_dynamo_results()
         self.notion_accounts = self.get_notion_results()
@@ -36,19 +37,21 @@ class AllCustomerAccountsInfo:
     def get_dynamo_results() -> dict[str, dict]:
         results = {}
 
-        for table_name, arn in ((HOSTED_DEPLOYMENTS_METADATA, DYNAMO_RO_ROLE_ARN),
-                                (STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN),):
-            db_search = DynamoDbSearch(
-                table_name=table_name, assumed_role_creds=get_assumed_role_creds(arn=arn)
-            )
-            results = {**results, **db_search.scan_and_organize_result(scan_result_keys=("CustomerId",))}
+        for table_name, arn in (
+            (HOSTED_DEPLOYMENTS_METADATA, DYNAMO_RO_ROLE_ARN),
+            (STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN),
+        ):
+            db_search = DynamoDbSearch(table_name=table_name, arn=arn)
+            results = {**results, **db_search.scan_and_organize_result(scan_result_keys=("CustomerId", ))}
 
         return results
 
     @staticmethod
     def get_notion_results() -> dict[str, AccountsDatabase]:
-        return {account.Fairytale_Name: account
-                for account in notion_session.databases.query(AccountsDatabase).execute()}
+        return {
+            account.Fairytale_Name: account
+            for account in notion_session.databases.query(AccountsDatabase).execute()
+        }
 
     @staticmethod
     def get_deploy_yml_accounts(hosted_deploy_dir) -> dict[str, dict]:
@@ -74,9 +77,7 @@ class AllCustomerAccountsInfo:
         return common, uncommon
 
     def get_account_info(self, fairytale_name) -> CustomerAccountInfo:
-        return CustomerAccountInfo(
-            fairytale_name=fairytale_name,
-            deploy_yml_info=self.deploy_yml_accounts[fairytale_name],
-            dynamo_info=self.dynamo_accounts[fairytale_name],
-            notion_info=self.notion_accounts[fairytale_name]
-        )
+        return CustomerAccountInfo(fairytale_name=fairytale_name,
+                                   deploy_yml_info=self.deploy_yml_accounts[fairytale_name],
+                                   dynamo_info=self.dynamo_accounts[fairytale_name],
+                                   notion_info=self.notion_accounts[fairytale_name])

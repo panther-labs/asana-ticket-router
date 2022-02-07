@@ -3,6 +3,8 @@ import boto3
 import os
 from datetime import datetime, timedelta
 
+from pyshared.aws_creds import get_credentialed_client
+
 
 def main(params):
     print("parameters:", params)
@@ -10,8 +12,11 @@ def main(params):
     date = get_date(range)
     print(f"Filtering from {date}")
 
-    root_conn = assume_hosted_root_role()
-    client = get_client(root_conn, "stepfunctions", "us-west-2")
+    client = get_credentialed_client(service_name="stepfunctions",
+                                     arn=os.environ.get("HOSTED_ROOT_ROLE_ARN",
+                                                        "arn:aws:iam::255674391660:role/AirplaneStepFunctionReadOnly"),
+                                     desc="deployment_statistics",
+                                     region="us-west-2")
 
     paginator = client.get_paginator('list_executions')
     arn = 'arn:aws:states:us-west-2:255674391660:stateMachine:AutomatedDeploymentStateMachine-y5bh5L9a5z41'
@@ -35,12 +40,7 @@ def main(params):
 
     success = total - failed
 
-    return {
-        "total": total,
-        "failed": failed,
-        "success": success,
-        "human_rate": f"{round(success / total * 100, 4)}%"
-    }
+    return {"total": total, "failed": failed, "success": success, "human_rate": f"{round(success / total * 100, 4)}%"}
 
 
 def get_date(range):
@@ -49,26 +49,3 @@ def get_date(range):
         "month": datetime.today().replace(day=1),
     }
     return options.get(range)
-
-
-def get_client(conn, client, region):
-    return boto3.client(
-        client,
-        aws_access_key_id=conn["Credentials"]["AccessKeyId"],
-        aws_secret_access_key=conn["Credentials"]["SecretAccessKey"],
-        aws_session_token=conn["Credentials"]["SessionToken"],
-        region_name=region,
-    )
-
-
-def assume_hosted_root_role():
-    sts_conn = boto3.client("sts")
-
-    hosted_root_arn = os.environ.get(
-        "HOSTED_ROOT_ROLE_ARN",
-        "arn:aws:iam::255674391660:role/AirplaneStepFunctionReadOnly")
-
-    return sts_conn.assume_role(
-        RoleArn=hosted_root_arn,
-        RoleSessionName="airplane_productivity",
-    )

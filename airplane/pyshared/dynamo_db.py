@@ -2,9 +2,10 @@ import boto3
 import os
 import tenacity
 
+from boto3.dynamodb.conditions import Key
 from functools import reduce
 
-from boto3.dynamodb.conditions import Key
+from pyshared.aws_creds import get_credentialed_client
 
 DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
 POLL_FREQUENCY_SECS = int(os.environ.get("POLL_FREQUENCY_SECONDS", 60))
@@ -25,22 +26,22 @@ def raise_exception_after_query_fails(retry_state):
 
 
 class DynamoDbSearch:
-    def __init__(self, table_name, assumed_role_creds=None, region=None):
-        region = DYNAMO_REGION if region is None else region
-        dynamo_db = boto3.resource(**self._get_boto3_resource_kwargs(assumed_role_creds, region))
+
+    def __init__(self, table_name, arn=None, region=None):
+        dynamo_db = get_credentialed_client(service_name="dynamodb",
+                                            arn=arn,
+                                            desc="dynamo_db",
+                                            region=DYNAMO_REGION if region is None else region)
         self.table = dynamo_db.Table(table_name)
 
-    @tenacity.retry(
-        before=print_before_query,
-        retry=tenacity.retry_if_result(lambda desired_val: not bool(desired_val)),
-        retry_error_callback=raise_exception_after_query_fails,
-        stop=tenacity.stop_after_delay(POLL_TIMEOUT_SECS),
-        wait=tenacity.wait_fixed(POLL_FREQUENCY_SECS)
-    )
+    @tenacity.retry(before=print_before_query,
+                    retry=tenacity.retry_if_result(lambda desired_val: not bool(desired_val)),
+                    retry_error_callback=raise_exception_after_query_fails,
+                    stop=tenacity.stop_after_delay(POLL_TIMEOUT_SECS),
+                    wait=tenacity.wait_fixed(POLL_FREQUENCY_SECS))
     def poll_until_available(self, partition_key, partition_value, query_result_keys):
-        return self._recursive_get_from_dynamodb_result(
-            self._get_query_item(partition_key, partition_value), query_result_keys
-        )
+        return self._recursive_get_from_dynamodb_result(self._get_query_item(partition_key, partition_value),
+                                                        query_result_keys)
 
     def scan_and_organize_result(self, scan_result_keys=None):
         """Scan the table and create a new dict result, with the keys being the value of query_result_keys."""
@@ -67,21 +68,6 @@ class DynamoDbSearch:
         return {} if query_result["Count"] == 0 else query_result["Items"][0]
 
     @staticmethod
-    def _get_boto3_resource_kwargs(assumed_role_creds, region):
-        kwargs = {
-            "service_name": "dynamodb",
-            "region_name": region
-        }
-
-        if assumed_role_creds:
-            kwargs["aws_access_key_id"] = assumed_role_creds["Credentials"]["AccessKeyId"]
-            kwargs["aws_secret_access_key"] = assumed_role_creds["Credentials"]["SecretAccessKey"]
-            kwargs["aws_session_token"] = assumed_role_creds["Credentials"]["SessionToken"]
-
-        return kwargs
-
-    @staticmethod
     def _recursive_get_from_dynamodb_result(dynamodb_result, dynamodb_item_keys):
-        return reduce(
-            lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}),dynamodb_item_keys, dynamodb_result
-        )
+        return reduce(lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}), dynamodb_item_keys,
+                      dynamodb_result)

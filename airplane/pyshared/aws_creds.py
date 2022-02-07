@@ -1,16 +1,22 @@
 import boto3
 
 
-def get_assumed_role_creds(arn, desc="task"):
-    if arn:
-        return boto3.client("sts").assume_role(
-            RoleArn=arn, RoleSessionName=f"airplane_workers_{desc}")
-    return None
+def _get_assumed_role_creds(arns, desc="task", creds=None):
+    """Recursively assume roles, starting the first in the arns tuple. Each consecutive call will use credentials from
+    the previous function call.
+    :param arns: Tuple of arns to assume
+    :param desc: The description to give the AWS client
+    :param creds: Credentials from roles assuemd during previous calls
+    :return: The dictionary credentials for a desired role
+    """
+    if arns:
+        sts_client = boto3.client(**_get_kwargs(service_name="sts", creds=creds))
+        creds = sts_client.assume_role(RoleArn=arns[0], RoleSessionName=f"airplane_workers_{desc}")
+        return _get_assumed_role_creds(arns=arns[1:], desc=desc, creds=creds)
+    return creds
 
 
-def get_credentialed_client(service_name, arn, desc, region=None):
-    creds = get_assumed_role_creds(arn=arn, desc=desc)
-
+def _get_kwargs(service_name, region=None, creds=None):
     kwargs = {"service_name": service_name}
 
     if creds:
@@ -23,9 +29,19 @@ def get_credentialed_client(service_name, arn, desc, region=None):
     if region is not None:
         kwargs["region_name"] = region
 
-    return boto3.client(**kwargs)
+    return kwargs
 
-    return sts_conn.assume_role(
-        RoleArn=hosted_root_arn,
-        RoleSessionName="airplane_productivity",
-    )
+
+def get_credentialed_client(service_name, arns, desc, region=None):
+    """Get a client to a service that has assumed a role.
+
+    :param service_name: Name of service to assume, such as "lambda"
+    :param arns: A tuple of ARNs, such as ("arn1", "arn2"). Roles will be assumed sequentially, so order matters
+    :param desc: The sescription to give the AWS client
+    :param region: Region of the service
+    :return: Client for an AWS service
+    """
+    # Convert arns to a tuple
+    arn_tuple = {str: (arns, ), None: tuple()}.get(type(arns), arns)
+    creds = _get_assumed_role_creds(arns=arn_tuple, desc=desc)
+    return boto3.client(**_get_kwargs(service_name=service_name, region=region, creds=creds))
