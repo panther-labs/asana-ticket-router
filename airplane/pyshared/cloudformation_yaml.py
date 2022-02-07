@@ -30,7 +30,7 @@ def group_name_from_resource(data, resource):
 
 
 def _create_cloudformation_client(role_arn):
-    return get_credentialed_client(service_name="cloudformation", region=REGION, arn=role_arn, desc="cfn_list_exports")
+    return get_credentialed_client(service_name="cloudformation", region=REGION, arns=role_arn, desc="cfn_list_exports")
 
 
 def list_exports(role_arn):

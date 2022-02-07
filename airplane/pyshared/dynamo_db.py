@@ -29,7 +29,7 @@ class DynamoDbSearch:
 
     def __init__(self, table_name, arn=None, region=None):
         dynamo_db = get_credentialed_client(service_name="dynamodb",
-                                            arn=arn,
+                                            arns=arn,
                                             desc="dynamo_db",
                                             region=DYNAMO_REGION if region is None else region)
         self.table = dynamo_db.Table(table_name)

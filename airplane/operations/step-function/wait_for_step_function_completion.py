@@ -43,7 +43,7 @@ def get_execution_arn(client, fairytale_name):
 
 def main(params):
     client = get_credentialed_client(service_name="stepfunctions",
-                                     arn=STEP_FUNCTION_RO_ROLE_ARN,
+                                     arns=STEP_FUNCTION_RO_ROLE_ARN,
                                      desc="wait_for_step_function_completion",
                                      region=STEP_FUNCTION_REGION)
 

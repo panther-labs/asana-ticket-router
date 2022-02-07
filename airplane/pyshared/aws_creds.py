@@ -36,7 +36,8 @@ def get_credentialed_client(service_name, arns, desc, region=None):
     """Get a client to a service that has assumed a role.
 
     :param service_name: Name of service to assume, such as "lambda"
-    :param arns: A tuple of ARNs, such as ("arn1", "arn2"). Roles will be assumed sequentially, so order matters
+    :param arns: A string or tuple of ARNs, such as ("arn1", "arn2"), "arn", or None.
+                 Roles will be assumed sequentially, so order matters
     :param desc: The sescription to give the AWS client
     :param region: Region of the service
     :return: Client for an AWS service
