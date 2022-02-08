@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -eu
+
+version=""
+output_file="tools/panther-tools.zip"
+extract=""
+tool="opslambda"
+
+usage() { echo "Usage: $0 <-v <version (example: v1.26.5)> [-o <output file>] [-x extract files]" 1>&2; exit 1; }
+
+while getopts ":o:t:v:x" o; do
+  case "${o}" in
+    o)
+      output_file=${OPTARG}
+      ;;
+    t)
+      tool=${OPTARG}
+      ;;
+    v)
+      version=${OPTARG}
+      ;;
+    x)
+      extract="y"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${version}" ]; then
+  usage
+fi
+
+output_path="$(dirname "${output_file}")"
+mkdir -p "${output_path}"
+
+tools_url="https://panther-community-us-east-1.s3.amazonaws.com/${version}/tools/linux-amd64-${tool}.zip"
+
+printf "\nDownloading Panther tool ${tool} version ${version} from ${tools_url}.\n"
+
+curl "${tools_url}" -o "${output_file}"
+
+if [ -n "${extract}" ]; then
+  unzip -o -d "${output_path}" "${output_file}"
+  rm -f "${output_file}"
+fi

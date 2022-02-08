@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DEPLOYMENT_METADATA_TABLE="hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B"
+
+fairytale_name=""
+path="Item"
+format="json"
+
+usage() { echo "Usage: $0 <-f fairytale-name> [-p <path-to-field-to-return>] [-t enables text output]" 1>&2; exit 1; }
+
+while getopts ":f:p:t" o; do
+  case "${o}" in
+    f)
+      fairytale_name=${OPTARG}
+      ;;
+    p)
+      path=${OPTARG}
+      ;;
+    t)
+      format="text"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${fairytale_name}" ]; then
+  usage
+fi
+
+# assume the role if declared, should only run on ECS
+if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
+  # https://stackoverflow.com/a/67636523
+  export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+    $(aws sts assume-role \
+    --role-arn "${DYNAMO_RO_ROLE_ARN}" \
+    --role-session-name Airplane \
+    --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+    --output text))
+fi
+
+aws dynamodb get-item \
+  --table-name "${DEPLOYMENT_METADATA_TABLE}" \
+  --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}' \
+  --query "${path}" \
+  --output "${format}"
