@@ -5,7 +5,7 @@ import tenacity
 from boto3.dynamodb.conditions import Key
 from functools import reduce
 
-from pyshared.aws_creds import get_credentialed_client
+from pyshared.aws_creds import get_credentialed_resource
 
 DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
 POLL_FREQUENCY_SECS = int(os.environ.get("POLL_FREQUENCY_SECONDS", 60))
@@ -28,10 +28,10 @@ def raise_exception_after_query_fails(retry_state):
 class DynamoDbSearch:
 
     def __init__(self, table_name, arn=None, region=None):
-        dynamo_db = get_credentialed_client(service_name="dynamodb",
-                                            arns=arn,
-                                            desc="dynamo_db",
-                                            region=DYNAMO_REGION if region is None else region)
+        dynamo_db = get_credentialed_resource(service_name="dynamodb",
+                                              arns=arn,
+                                              desc="dynamo_db",
+                                              region=DYNAMO_REGION if region is None else region)
         self.table = dynamo_db.Table(table_name)
 
     @tenacity.retry(before=print_before_query,
