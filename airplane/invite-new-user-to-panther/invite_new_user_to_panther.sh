@@ -36,7 +36,14 @@ account_id=$(deployment_metadata_value '.AWSConfiguration.M.AccountId.S')
 account_region=$(deployment_metadata_value '.GithubConfiguration.M.CustomerRegion.S')
 
 # Download utils for the current version
-download-panther-tools -v "${current_version}" -o "tools/tools.zip" -x
+tools_dir="tools"
+tools_archive_file="${tools_dir}/tools.zip"
+download-panther-tools -v "${current_version}" -o "${tools_archive_file}"
+
+# reads the binary filename into a variable
+opslambda_file="${tools_dir}/$(unzip -Z1 ${tools_archive_file})"
+unzip -o -d "${tools_dir}" "${tools_archive_file}"
+rm -rf "${tools_archive_file}"
 
 # Assume the role for the hosted-root with CustomerSupport role.
 export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
@@ -59,7 +66,7 @@ if [ "${test_run}" = "true" ]; then
   printf "\n\n=== This is a test run! ===\n"
   aws --region "${account_region}" lambda list-functions | jq .Functions[].FunctionName
 else
-  tools/opslambda-linux-amd64 invite \
+  "${opslambda_file}" invite \
     -email "${email_address}" \
     -first "${first_name}" \
     -last "${last_name}" \
