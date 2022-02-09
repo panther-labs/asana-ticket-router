@@ -7,28 +7,20 @@
 # pylint: disable=no-member
 # mypy: ignore-errors
 import asyncio
-import boto3
+import requests
 from dependency_injector import containers, providers
 from . import service
 
 
-class SecretsManagerContainer(containers.DeclarativeContainer):
-    """Secrets Container"""
+class RequestsContainer(containers.DeclarativeContainer):
+    """Sentry Container"""
 
-    config = providers.Configuration(strict=True)
     logger = providers.Dependency()
-    serializer = providers.Dependency()
+    requests_client = providers.Dependency(default=requests)
 
-    secretsmanager_client = providers.Singleton(
-        boto3.client,
-        service_name="secretsmanager"
-    )
-
-    secretsmanager_service = providers.Singleton(
-        service.SecretsManagerService,
+    requests_service = providers.Singleton(
+        service.RequestsService,
         loop=asyncio.get_event_loop,
         logger=logger,
-        client=secretsmanager_client,
-        secret_name=config.secret_name,
-        serializer=serializer
+        client=requests_client
     )

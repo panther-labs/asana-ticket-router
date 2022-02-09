@@ -1,0 +1,896 @@
+{
+    "gid": "1201763515725751",
+    "assignee": {
+        "gid": "1199946339122360",
+        "name": "Aggelos Arvanitakis",
+        "resource_type": "user"
+    },
+    "assignee_status": "inbox",
+    "completed": false,
+    "completed_at": null,
+    "created_at": "2022-02-03T11:39:48.276Z",
+    "custom_fields": [
+        {
+            "gid": "1199910759928274",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1199910759930333",
+                    "color": "blue",
+                    "enabled": true,
+                    "name": "Not Started",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199910759930415",
+                    "color": "yellow",
+                    "enabled": true,
+                    "name": "In Progress",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199910759931446",
+                    "color": "orange",
+                    "enabled": true,
+                    "name": "In Review",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199910759931449",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "Complete",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1199910759930333",
+                "color": "blue",
+                "enabled": true,
+                "name": "Not Started",
+                "resource_type": "enum_option"
+            },
+            "name": "Stage",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "Not Started",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1199906290951705",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1199944655581609",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🐆  Panther Labs",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199906290951709",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🪣  Ingestion",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199906290951721",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🎯  Detections",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199906290951706",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🔎  Investigations",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200813282274945",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🔒  Security, IT & Compliance",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199906290951724",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🏛️  (DEPRECATED) Platform",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199919023483385",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🥸  Product",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201305154831711",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🦫. Productivity",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201305154831712",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🏎️  Observability & Performance",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201305154831713",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "☀️ Quality",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201305154831714",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🌲 Core Product",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201305154831715",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🗂️  Data Platform",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1201305154831714",
+                "color": "cool-gray",
+                "enabled": true,
+                "name": "🌲 Core Product",
+                "resource_type": "enum_option"
+            },
+            "name": "Team",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "🌲 Core Product",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1159524604627932",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1159524604627933",
+                    "color": "red",
+                    "enabled": true,
+                    "name": "High",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1159524604627934",
+                    "color": "orange",
+                    "enabled": true,
+                    "name": "Medium",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1159524604627935",
+                    "color": "yellow-orange",
+                    "enabled": true,
+                    "name": "Low",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1159524604627933",
+                "color": "red",
+                "enabled": true,
+                "name": "High",
+                "resource_type": "enum_option"
+            },
+            "name": "Priority",
+            "created_by": null,
+            "display_value": "High",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1200840914014762",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1200840914014763",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🎨  Frontend",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200840914014764",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🔌. Backend",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200908433281799",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🌈  Fullstack ",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200846949923647",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🧰. Infrastructure",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200840885611768",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "N/A",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": null,
+            "name": "Code Area",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": null,
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1199912337121892",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1200617341493620",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "🚀  EPD Quarterly Goal",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200617341493631",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "🚀  EPD Customer Unblocker",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200617341493636",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "🚀  EPD Product Usability",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200186444435112",
+                    "color": "purple",
+                    "enabled": true,
+                    "name": "🔮  Tech Foundation",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199912337122925",
+                    "color": "red",
+                    "enabled": true,
+                    "name": "🐞  Bug",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200218109698442",
+                    "color": "yellow",
+                    "enabled": true,
+                    "name": "🐛  Investigate",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201149032679381",
+                    "color": "blue-green",
+                    "enabled": true,
+                    "name": "🎯 Detection Content",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199936751420813",
+                    "color": "aqua",
+                    "enabled": true,
+                    "name": "☠️  Security",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201090660204895",
+                    "color": "aqua",
+                    "enabled": true,
+                    "name": "💾  IT",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201090660205034",
+                    "color": "aqua",
+                    "enabled": true,
+                    "name": "🚔  Compliance",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199919091851352",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📚  Problem Review",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200933602370081",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📚  Solution Review",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200933602373193",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📚  Implementation Review",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199936523196779",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📖  Gitbook Docs",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201030880412484",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📖  Notion Docs",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201097213669012",
+                    "color": "orange",
+                    "enabled": true,
+                    "name": "👁️‍🗨️  Marketing Content ",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199993297959489",
+                    "color": "yellow-orange",
+                    "enabled": true,
+                    "name": "📟  Customer Ops",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200050444811876",
+                    "color": "yellow-orange",
+                    "enabled": true,
+                    "name": "🔬 Release Testing ",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199912337122922",
+                    "color": "red",
+                    "enabled": true,
+                    "name": "❌  Deprecated (Story)",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201705357851102",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "⚡ Project Decomposition",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200239142546238",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🎨  Design",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1200218109698442",
+                "color": "yellow",
+                "enabled": true,
+                "name": "🐛  Investigate",
+                "resource_type": "enum_option"
+            },
+            "name": "Task Type",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "🐛  Investigate",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1199944595440874",
+            "enabled": true,
+            "name": "Est Cost (d)",
+            "number_value": 0.1,
+            "precision": 1,
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "0.1",
+            "resource_subtype": "number",
+            "resource_type": "custom_field",
+            "type": "number"
+        },
+        {
+            "gid": "1201748139072486",
+            "enabled": true,
+            "name": "Est Remaining (d)",
+            "number_value": null,
+            "precision": 1,
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": null,
+            "resource_subtype": "number",
+            "resource_type": "custom_field",
+            "type": "number"
+        },
+        {
+            "gid": "1201703835827824",
+            "enabled": true,
+            "name": "Actual Cost (d)",
+            "number_value": null,
+            "precision": 1,
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": null,
+            "resource_subtype": "number",
+            "resource_type": "custom_field",
+            "type": "number"
+        },
+        {
+            "gid": "1200165681182165",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1200198568911550",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Sentry.io",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200165681182171",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Panther Employee",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200165681182241",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Customer",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200216725417888",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "PagerDuty",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200239226084335",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Hackerone",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200239145270345",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Snyk.io",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200444211676504",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Snowflake",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200681325136582",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "GitHub Dependabot",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1201087806388459",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Cypress E2E Tests",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1200198568911550",
+                "color": "cool-gray",
+                "enabled": true,
+                "name": "Sentry.io",
+                "resource_type": "enum_option"
+            },
+            "name": "👾  Reporter",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "Sentry.io",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1200216708142306",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1200822942218880",
+                    "color": "blue",
+                    "enabled": true,
+                    "name": "Internal",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200822942218893",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "One customer",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200216708142308",
+                    "color": "yellow-green",
+                    "enabled": true,
+                    "name": "Some customers",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200826176404306",
+                    "color": "yellow",
+                    "enabled": true,
+                    "name": "Many customers",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200216885618704",
+                    "color": "red",
+                    "enabled": true,
+                    "name": "All customers",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1200822942218893",
+                "color": "green",
+                "enabled": true,
+                "name": "One customer",
+                "resource_type": "enum_option"
+            },
+            "name": "🤯  Impacted",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "One customer",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1200217676224128",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1200217676225173",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📉 Unable to onboard data",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676225181",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📉 Logs Dropped",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676225254",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📉 Fields Dropped",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676228345",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "📉  Resources not analyzed",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676228351",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "☎️. Alert loss",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676230415",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "☎️. Alert false positives",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217970447132",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🏕️. Destination failure",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217740898659",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🔍  Search/Query fails",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200224602095306",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🔍  Search/Query returns incorrect data",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200229873223993",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "💀  Security SLA (enforced)",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200229873224000",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "☠️  Security SLA (not enforced)",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676227314",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🖼️: Incorrect data displayed",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676231529",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🖼️: Major UI component degraded",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676231538",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🖼️  Minor UI component degraded",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200239499595219",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🖼️  UI aesthetic",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200224534302784",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "🖼️  UI performance",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200217676231554",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Other",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": null,
+            "name": "🐞  Severity",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": null,
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        },
+        {
+            "gid": "1199991823287604",
+            "enabled": true,
+            "enum_options": [
+                {
+                    "gid": "1199991823290682",
+                    "color": "cool-gray",
+                    "enabled": true,
+                    "name": "Planned",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1199991823290694",
+                    "color": "red",
+                    "enabled": true,
+                    "name": "Unplanned",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200034059151038",
+                    "color": "blue-green",
+                    "enabled": true,
+                    "name": "Negligible",
+                    "resource_type": "enum_option"
+                },
+                {
+                    "gid": "1200037873474271",
+                    "color": "green",
+                    "enabled": true,
+                    "name": "Extra Credit",
+                    "resource_type": "enum_option"
+                }
+            ],
+            "enum_value": {
+                "gid": "1199991823290694",
+                "color": "red",
+                "enabled": true,
+                "name": "Unplanned",
+                "resource_type": "enum_option"
+            },
+            "name": "Planning",
+            "created_by": {
+                "gid": "1199906122151855",
+                "name": "Joren McReynolds",
+                "resource_type": "user"
+            },
+            "display_value": "Unplanned",
+            "resource_subtype": "enum",
+            "resource_type": "custom_field",
+            "type": "enum"
+        }
+    ],
+    "due_at": null,
+    "due_on": null,
+    "followers": [
+        {
+            "gid": "1200900045899377",
+            "name": "Sentry",
+            "resource_type": "user"
+        },
+        {
+            "gid": "1199906122151855",
+            "name": "Joren McReynolds",
+            "resource_type": "user"
+        },
+        {
+            "gid": "1199946339122360",
+            "name": "Aggelos Arvanitakis",
+            "resource_type": "user"
+        },
+        {
+            "gid": "1199946235705709",
+            "name": "Austin Byers",
+            "resource_type": "user"
+        }
+    ],
+    "hearted": false,
+    "hearts": [],
+    "liked": false,
+    "likes": [],
+    "memberships": [
+        {
+            "project": {
+                "gid": "1201711145878095",
+                "name": "Sprint: Core Product: 01/31 - 02/11",
+                "resource_type": "project"
+            },
+            "section": {
+                "gid": "1201711145878096",
+                "name": "Not Started",
+                "resource_type": "section"
+            }
+        },
+        {
+            "project": {
+                "gid": "1200999710047991",
+                "name": "On-Call - Core Product",
+                "resource_type": "project"
+            },
+            "section": {
+                "gid": "1201000347519929",
+                "name": "Triage",
+                "resource_type": "section"
+            }
+        }
+    ],
+    "modified_at": "2022-02-04T19:05:57.334Z",
+    "name": "AWS ID: 465197116942, CW alarm: Panther-ELB5XXErrors-web",
+    "notes": "Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2985146112\n\nEvent Datetime: 2022-02-03T11:39:28.613614Z\n\nCustomer Impacted: AwesomeCo\n\nEnvironment: prod\n\nRunbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396\n\nAWS Switch Role Link: https://us-east-1.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-east-1&account=465197116942&displayName=AwesomeCo%20Support\n\n",
+    "num_hearts": 0,
+    "num_likes": 0,
+    "parent": null,
+    "permalink_url": "https://app.asana.com/0/1200999710047991/1201763515725751",
+    "projects": [
+        {
+            "gid": "1200999710047991",
+            "name": "On-Call - Core Product",
+            "resource_type": "project"
+        },
+        {
+            "gid": "1201711145878095",
+            "name": "Sprint: Core Product: 01/31 - 02/11",
+            "resource_type": "project"
+        }
+    ],
+    "resource_type": "task",
+    "start_at": null,
+    "start_on": null,
+    "tags": [],
+    "resource_subtype": "default_task",
+    "workspace": {
+        "gid": "1159526352574257",
+        "name": "Panther Labs",
+        "resource_type": "workspace"
+    }
+}

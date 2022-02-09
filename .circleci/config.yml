@@ -21,7 +21,7 @@ commands:
           keys:
             # These caches are persisted for 15 days. If you need to reset the cache,
             # just change the "a" to any other value which hasn't been used recently.
-            - &pip_cache_key venv-f-{{ checksum "requirements.txt" }}
+            - &pip_cache_key venv-g-{{ checksum "requirements.txt" }}
   save_caches:
     steps:
       - save_cache:

@@ -5,30 +5,33 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 from asyncio import AbstractEventLoop
-from typing import Callable
+from typing import Callable, Any
 from logging import Logger
 from functools import partial
-from mypy_boto3_sqs import SQSClient
-from mypy_boto3_sqs.type_defs import SendMessageResultTypeDef
+from requests import Response
 
 
-class QueueService:
-    """Message Service"""
+class RequestsService:
+    """HTTP Requests Service"""
 
-    def __init__(self, loop: Callable[[], AbstractEventLoop], logger: Logger, client: SQSClient, queue_url: str):
+    def __init__(
+        self,
+        loop: Callable[[], AbstractEventLoop],
+        logger: Logger,
+        client: Any,
+    ):
         self._loop = loop
         self._logger = logger
         self._client = client
-        self._queue_url = queue_url
 
-    async def put(self, message: str) -> SendMessageResultTypeDef:
-        """Put a message onto a queue"""
-        self._logger.debug("Sending to queue")
+    async def request(self, *args: Any, **kwargs: Any) -> Response:
+        """Make a request"""
+        self._logger.debug("Dispatching request")
         return await self._loop().run_in_executor(
             None,
             partial(
-                self._client.send_message,
-                QueueUrl=self._queue_url,
-                MessageBody=message,
+                self._client.request,
+                *args,
+                **kwargs
             )
         )

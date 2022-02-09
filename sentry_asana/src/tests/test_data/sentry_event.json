@@ -1,0 +1,633 @@
+{
+    "action": "triggered",
+    "installation": {
+      "uuid": "f4b14645-b9b7-4995-8f41-2da11247e35d"
+    },
+    "data": {
+      "event": {
+        "event_id": "5059d14bc1624426887e117fa98223d4",
+        "project": 5743495,
+        "release": null,
+        "dist": null,
+        "platform": "go",
+        "message": "snowflake-api: returned an error",
+        "datetime": "2022-01-29T00:19:22.986521Z",
+        "tags": [
+          [
+            "aws_account_id",
+            "758312592604"
+          ],
+          [
+            "aws_org_id",
+            "o-wyibehgf3h"
+          ],
+          [
+            "aws_partition",
+            "aws"
+          ],
+          [
+            "aws_region",
+            "us-west-2"
+          ],
+          [
+            "commit_sha",
+            "556d327fa"
+          ],
+          [
+            "data_lake",
+            "snowflake-self-hosted"
+          ],
+          [
+            "debug_enabled",
+            "false"
+          ],
+          [
+            "environment",
+            "dev"
+          ],
+          [
+            "fips_enabled",
+            "false"
+          ],
+          [
+            "lambda_memory_mb",
+            "2048"
+          ],
+          [
+            "level",
+            "error"
+          ],
+          [
+            "os.name",
+            "linux"
+          ],
+          [
+            "runtime",
+            "go go1.17.1"
+          ],
+          [
+            "runtime.name",
+            "go"
+          ],
+          [
+            "server_name",
+            "panther-snowflake-api"
+          ],
+          [
+            "url",
+            "https://web-930307996.us-west-2.elb.amazonaws.com"
+          ],
+          [
+            "zap_lambdaRequestId",
+            "3ad98716-cd00-41e2-af43-cb139bb969bb"
+          ]
+        ],
+        "_meta": {
+          "contexts": {
+            "Fields": {
+              "error": {
+                "": {
+                  "rem": [
+                    [
+                      "@password:filter",
+                      "s",
+                      0,
+                      10
+                    ]
+                  ],
+                  "len": 471
+                }
+              }
+            }
+          },
+          "extra": {
+            "lambda.env": {
+              "SECRET_ARN": {
+                "": {
+                  "rem": [
+                    [
+                      "@password:filter",
+                      "s",
+                      0,
+                      10
+                    ]
+                  ],
+                  "len": 105
+                }
+              }
+            }
+          }
+        },
+        "_metrics": {
+          "bytes.ingested.event": 14866,
+          "bytes.stored.event": 26056
+        },
+        "_ref": 5743495,
+        "_ref_version": 2,
+        "contexts": {
+          "Fields": {
+            "caller": "lambda/handler.go:263",
+            "error": "[Filtered]",
+            "lambdaRequestId": "3ad98716-cd00-41e2-af43-cb139bb969bb",
+            "type": "Fields"
+          },
+          "device": {
+            "arch": "amd64",
+            "num_cpu": 2,
+            "type": "device"
+          },
+          "os": {
+            "name": "linux",
+            "type": "os"
+          },
+          "runtime": {
+            "name": "go",
+            "version": "go1.17.1",
+            "go_maxprocs": 2,
+            "go_numcgocalls": 1,
+            "go_numroutines": 8,
+            "type": "runtime"
+          }
+        },
+        "culprit": "github.com/panther-labs/panther/internal/log_analysis/datalake/snowflake in GetSnowflakeCreds",
+        "environment": "dev",
+        "exception": {
+          "values": [
+            {
+              "type": "*awserr.requestError",
+              "value": "ValidationException: Invalid name. Must be a valid name containing alphanumeric characters, or any of the following: -/_+=.@!\\n\\tstatus code: 400, request id: 5860e286-f4dd-4a3e-bbd8-a2829bb65ead"
+            },
+            {
+              "type": "*errors.withStack",
+              "value": "cannot read snowflake secrets from arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: ValidationException: Invalid name. Must be a valid name containing alphanumeric characters, or any of the following: -/_+=.@!\\n\\tstatus code: 400, request id: 5860e286-f4dd-4a3e-bbd8-a2829bb65ead",
+              "stacktrace": {
+                "frames": [
+                  {
+                    "function": "main",
+                    "module": "main",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "lineno": 63,
+                    "in_app": false,
+                    "data": {
+                      "orig_in_app": -1
+                    }
+                  },
+                  {
+                    "function": "Start",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 37,
+                    "in_app": true
+                  },
+                  {
+                    "function": "StartHandler",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 46,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*Handler).Invoke",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 261,
+                    "in_app": true
+                  },
+                  {
+                    "function": "lambdaHandler",
+                    "module": "main",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "lineno": 47,
+                    "in_app": false,
+                    "data": {
+                      "orig_in_app": -1
+                    }
+                  },
+                  {
+                    "function": "SessionInit",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 151,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).dbSessionInit",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 163,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).openDBSession",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 292,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).getSnowflakeCreds",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/auth.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/auth.go",
+                    "lineno": 19,
+                    "in_app": true
+                  },
+                  {
+                    "function": "GetSnowflakeCreds",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/snowflake",
+                    "filename": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+                    "lineno": 58,
+                    "in_app": true
+                  }
+                ]
+              }
+            },
+            {
+              "type": "*errors.withStack",
+              "value": "cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: cannot read snowflake secrets from arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: ValidationException: Invalid name. Must be a valid name containing alphanumeric characters, or any of the following: -/_+=.@!\\n\\tstatus code: 400, request id: 5860e286-f4dd-4a3e-bbd8-a2829bb65ead",
+              "stacktrace": {
+                "frames": [
+                  {
+                    "function": "main",
+                    "module": "main",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "lineno": 63,
+                    "in_app": false,
+                    "data": {
+                      "orig_in_app": -1
+                    }
+                  },
+                  {
+                    "function": "Start",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 37,
+                    "in_app": true
+                  },
+                  {
+                    "function": "StartHandler",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 46,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*Handler).Invoke",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 261,
+                    "in_app": true
+                  },
+                  {
+                    "function": "lambdaHandler",
+                    "module": "main",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "lineno": 47,
+                    "in_app": false,
+                    "data": {
+                      "orig_in_app": -1
+                    }
+                  },
+                  {
+                    "function": "SessionInit",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 151,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).dbSessionInit",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 163,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).openDBSession",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 294,
+                    "in_app": true
+                  }
+                ]
+              }
+            },
+            {
+              "type": "snowflake-api: returned an error: AWS.ValidationException",
+              "value": "cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: cannot read snowflake secrets from arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: ValidationException: Invalid name. Must be a valid name containing alphanumeric characters, or any of the following: -/_+=.@!\\n\\tstatus code: 400, request id: 5860e286-f4dd-4a3e-bbd8-a2829bb65ead",
+              "stacktrace": {
+                "frames": [
+                  {
+                    "function": "Start",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 37,
+                    "in_app": true
+                  },
+                  {
+                    "function": "StartHandler",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 46,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*Handler).Invoke",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 263,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*API).openDBSession",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/database_api/snowflake/driver/api",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/api/api.go",
+                    "lineno": 294,
+                    "in_app": true
+                  },
+                  {
+                    "function": "GetSnowflakeCreds",
+                    "module": "github.com/panther-labs/panther/internal/log_analysis/datalake/snowflake",
+                    "filename": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+                    "lineno": 58,
+                    "in_app": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "extra": {
+          "cloudwatch logs": {
+            "log_group": "/aws/lambda/panther-snowflake-api",
+            "log_stream": "2022/01/29/[$LATEST]7489f179a60c46aebca61285029d4132",
+            "url": "https://us-west-2.console.aws.amazon.com/cloudwatch/home?region=us-west-2#logsV2:log-groups/log-group/$252Faws$252Flambda$252Fpanther-snowflake-api/log-events/2022$252F01$252F29$252F$255B$2524LATEST$255D7489f179a60c46aebca61285029d4132$3FfilterPattern$3D$257B$2524.lambdaRequestId$253D$25223ad98716-cd00-41e2-af43-cb139bb969bb$2522$257D"
+          },
+          "lambda": {
+            "aws_request_id": "3ad98716-cd00-41e2-af43-cb139bb969bb",
+            "function_version": "$LATEST"
+          },
+          "lambda.env": {
+            "ALERTS_RULE_INDEX_NAME": "ruleId-creationTime-index",
+            "ALERTS_TABLE_NAME": "panther-log-alert-info",
+            "ALERTS_TIME_INDEX_NAME": "timePartition-creationTime-index",
+            "CUSTOMER_NAME": "AwesomeCo",
+            "DATA_ANALYTICS_BUS": "arn:aws:events:us-west-2:758312592604:event-bus/default",
+            "DATA_ANALYTICS_DETAIL_TYPE": "backend-analytics",
+            "DEBUG": "false",
+            "DOWNLOAD_BUCKET": "panther-bootstrap-athenaresults-1xmp8qlpzcwkj",
+            "ENABLE_FIPS": "false",
+            "LAMBDA_NAME": "panther-snowflake-api",
+            "LAMBDA_RUNTIME_DIR": "/var/runtime",
+            "LAMBDA_TASK_ROOT": "/var/task",
+            "LANG": "en_US.UTF-8",
+            "LD_LIBRARY_PATH": "/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib",
+            "MAX_CONCURRENT_SCHEDULED_QUERIES": "50",
+            "MAX_RESULT_SIZE_MB": "100",
+            "MAX_SCHEDULED_QUERIES": "1000",
+            "PANTHER_COMMIT": "556d327fa",
+            "PANTHER_DATA_LAKE_TYPE": "snowflake-self-hosted",
+            "PANTHER_HOST": "web-930307996.us-west-2.elb.amazonaws.com",
+            "PANTHER_SEMVER": "0.0.0-INTERNAL",
+            "PANTHER_TABLES_ONLY": "true",
+            "PATH": "/usr/local/bin:/usr/bin/:/bin:/opt/bin",
+            "QUERY_EXECUTIONS_DELETE_RETENTION_DAYS": "30",
+            "QUERY_EXECUTIONS_INDEX_NAME": "timePartition-startedAt-index",
+            "QUERY_EXECUTIONS_TABLE_NAME": "panther-query-executions",
+            "RESULTS_PATH": "/mnt/snowflake/query_results",
+            "SAVED_QUERIES_DELETE_RETENTION_DAYS": "30",
+            "SAVED_QUERIES_EVAL_LAMBDA": "panther-detections-engine",
+            "SAVED_QUERIES_INDEX_NAME": "timePartition-createdAt-index",
+            "SAVED_QUERIES_LOCK_TABLE_NAME": "panther-lock",
+            "SAVED_QUERIES_SCHEDULE_INDEX_NAME": "timePartition-scheduleNextRunTime-index",
+            "SAVED_QUERIES_TABLE_NAME": "panther-saved-queries",
+            "SECRET_ARN": "[Filtered]",
+            "SENTRY_DSN": "https://ac304b4a43fa44a9a3264a1a08f7ee08@o260014.ingest.sentry.io/5743495",
+            "SENTRY_ENVIRONMENT": "dev",
+            "SF_OCSP_RESPONSE_CACHE_DIR": "/tmp/",
+            "STATEMACHINE_ARN": "arn:aws:states:us-west-2:758312592604:stateMachine:panther-database-workflow",
+            "TZ": ":UTC"
+          }
+        },
+        "fingerprint": [
+          "{{ default }}",
+          "snowflake-api: returned an error",
+          "*awserr.requestError",
+          "*errors.withStack",
+          "*errors.withStack",
+          "snowflake-api: returned an error: AWS.ValidationException",
+          "0f78f2628637d3aaf29d18091becda1144df7e2fc899ff2cd6c784cb2064a623"
+        ],
+        "grouping_config": {
+          "enhancements": "eJybzDRxY3J-bm5-npWRgaGlroGxrpHxBABcYgcZ",
+          "id": "newstyle:2019-10-29"
+        },
+        "hashes": [
+          "5304ba832c553bacb2bbb0096a4c3a87",
+          "ce4678c9355b530ea92cea70e2edcd3b"
+        ],
+        "ingest_path": [
+          {
+            "version": "21.12.0",
+            "public_key": "XE7QiyuNlja9PZ7I9qJlwQotzecWrUIN91BAO7Q5R38"
+          }
+        ],
+        "key_id": "1608236",
+        "level": "error",
+        "location": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+        "logentry": {
+          "formatted": "snowflake-api: returned an error"
+        },
+        "logger": "",
+        "metadata": {
+          "display_title_with_tree_label": false,
+          "filename": "/source/internal/log_analysis/datalake/snowflake/auth.go",
+          "function": "GetSnowflakeCreds",
+          "type": "snowflake-api: returned an error: AWS.ValidationException",
+          "value": "cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: cannot read snowflake secrets from arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed-readonly-secret-758312592604-Ror6Bn,: ValidationException: Invalid name. Must be a valid name containing alphanumeric characters, or any of the following: -/_+=.@!\\n\\tstatus code: 400, request id: 5860e286-f4dd-4a3e-bbd8-a2829bb65ead"
+        },
+        "modules": {
+          "github.com/99designs/gqlgen": "v0.14.0",
+          "github.com/Azure/azure-pipeline-go": "v0.2.3",
+          "github.com/Azure/azure-storage-blob-go": "v0.14.0",
+          "github.com/Masterminds/semver/v3": "v3.1.1",
+          "github.com/anyascii/go": "v0.3.0",
+          "github.com/apache/arrow/go/arrow": "v0.0.0-20211112161151-bc219186db40",
+          "github.com/aws/aws-lambda-go": "v1.27.1",
+          "github.com/aws/aws-sdk-go": "v1.42.28",
+          "github.com/aws/aws-sdk-go-v2": "v1.13.0",
+          "github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream": "v1.0.0",
+          "github.com/aws/aws-sdk-go-v2/credentials": "v1.6.5",
+          "github.com/aws/aws-sdk-go-v2/feature/s3/manager": "v1.7.5",
+          "github.com/aws/aws-sdk-go-v2/internal/configsources": "v1.1.4",
+          "github.com/aws/aws-sdk-go-v2/internal/endpoints/v2": "v2.2.0",
+          "github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding": "v1.5.0",
+          "github.com/aws/aws-sdk-go-v2/service/internal/presigned-url": "v1.5.2",
+          "github.com/aws/aws-sdk-go-v2/service/internal/s3shared": "v1.9.2",
+          "github.com/aws/aws-sdk-go-v2/service/s3": "v1.22.0",
+          "github.com/aws/smithy-go": "v1.10.0",
+          "github.com/cenkalti/backoff/v4": "v4.1.2",
+          "github.com/davecgh/go-spew": "v1.1.1",
+          "github.com/fatih/structtag": "v1.2.0",
+          "github.com/form3tech-oss/jwt-go": "v3.2.5+incompatible",
+          "github.com/gabriel-vasile/mimetype": "v1.4.0",
+          "github.com/getsentry/sentry-go": "v0.12.0",
+          "github.com/go-playground/locales": "v0.14.0",
+          "github.com/go-playground/universal-translator": "v0.18.0",
+          "github.com/google/flatbuffers": "v2.0.5+incompatible",
+          "github.com/google/go-github": "v17.0.0+incompatible",
+          "github.com/google/go-querystring": "v1.1.0",
+          "github.com/google/uuid": "v1.3.0",
+          "github.com/gorhill/cronexpr": "v0.0.0-20180427100037-88b0669f7d75",
+          "github.com/hashicorp/golang-lru": "v0.5.4",
+          "github.com/influxdata/go-syslog/v3": "v3.0.0",
+          "github.com/itchyny/timefmt-go": "v0.1.3",
+          "github.com/jmespath/go-jmespath": "v0.4.0",
+          "github.com/joho/godotenv": "v1.4.0",
+          "github.com/json-iterator/go": "v1.1.12",
+          "github.com/kelseyhightower/envconfig": "v1.4.0",
+          "github.com/klauspost/compress": "v1.13.6",
+          "github.com/leodido/go-urn": "v1.2.1",
+          "github.com/mattn/go-ieproxy": "v0.0.1",
+          "github.com/mattn/go-sqlite3": "v1.14.10",
+          "github.com/mitchellh/copystructure": "v1.2.0",
+          "github.com/mitchellh/mapstructure": "v1.4.3",
+          "github.com/mitchellh/reflectwalk": "v1.0.2",
+          "github.com/modern-go/concurrent": "v0.0.0-20180306012644-bacd9c7ef1dd",
+          "github.com/modern-go/reflect2": "v1.0.2",
+          "github.com/panther-labs/panther": "(devel)",
+          "github.com/pierrec/lz4/v4": "v4.1.12",
+          "github.com/pkg/browser": "v0.0.0-20210911075715-681adbf594b8",
+          "github.com/pkg/errors": "v0.9.1",
+          "github.com/pmezard/go-difflib": "v1.0.0",
+          "github.com/sirupsen/logrus": "v1.8.1",
+          "github.com/snowflakedb/gosnowflake": "v1.6.2 => github.com/panther-labs/gosnowflake v1.6.3-fix-error-bug",
+          "github.com/stretchr/objx": "v0.3.0",
+          "github.com/stretchr/testify": "v1.7.0",
+          "github.com/tidwall/gjson": "v1.12.1",
+          "github.com/tidwall/match": "v1.1.1",
+          "github.com/tidwall/pretty": "v1.2.0",
+          "github.com/valyala/bytebufferpool": "v1.0.0",
+          "github.com/valyala/fasttemplate": "v1.2.1",
+          "github.com/vektah/gqlparser/v2": "v2.2.0",
+          "github.com/xeipuuv/gojsonpointer": "v0.0.0-20190905194746-02993c407bfb",
+          "github.com/xeipuuv/gojsonreference": "v0.0.0-20180127040603-bd5ef7bd5415",
+          "github.com/xeipuuv/gojsonschema": "v1.2.0",
+          "go.uber.org/atomic": "v1.9.0",
+          "go.uber.org/multierr": "v1.7.0",
+          "go.uber.org/zap": "v1.20.0",
+          "golang.org/x/crypto": "v0.0.0-20211215153901-e495a2d5b3d3",
+          "golang.org/x/mod": "v0.5.1",
+          "golang.org/x/net": "v0.0.0-20220105145211-5b0dc2dfae98",
+          "golang.org/x/oauth2": "v0.0.0-20211104180415-d3ed0bb246c8",
+          "golang.org/x/sync": "v0.0.0-20210220032951-036812b2e83c",
+          "golang.org/x/sys": "v0.0.0-20211216021012-1d35b9e2eb4e",
+          "golang.org/x/text": "v0.3.7",
+          "golang.org/x/xerrors": "v0.0.0-20200804184101-5ec99f83aff1",
+          "gopkg.in/go-playground/validator.v9": "v9.31.0",
+          "gopkg.in/yaml.v2": "v2.4.0",
+          "gopkg.in/yaml.v3": "v3.0.0-20210107192922-496545a6307b"
+        },
+        "nodestore_insert": 1643415565.782065,
+        "received": 1643415563.126568,
+        "sdk": {
+          "name": "sentry.go",
+          "version": "0.12.0",
+          "integrations": [
+            "ContextifyFrames",
+            "Environment",
+            "IgnoreErrors",
+            "Modules"
+          ],
+          "packages": [
+            {
+              "name": "sentry-go",
+              "version": "0.12.0"
+            }
+          ]
+        },
+        "threads": {
+          "values": [
+            {
+              "stacktrace": {
+                "frames": [
+                  {
+                    "function": "main",
+                    "module": "main",
+                    "filename": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "abs_path": "/source/internal/log_analysis/datalake/database_api/snowflake/driver/main/main.go",
+                    "lineno": 63,
+                    "in_app": false,
+                    "data": {
+                      "orig_in_app": -1
+                    }
+                  },
+                  {
+                    "function": "Start",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 37,
+                    "in_app": true
+                  },
+                  {
+                    "function": "StartHandler",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 46,
+                    "in_app": true
+                  },
+                  {
+                    "function": "(*Handler).Invoke",
+                    "module": "github.com/panther-labs/panther/pkg/lambda",
+                    "filename": "/source/pkg/lambda/handler.go",
+                    "abs_path": "/source/pkg/lambda/handler.go",
+                    "lineno": 263,
+                    "in_app": true
+                  }
+                ]
+              },
+              "current": true
+            }
+          ]
+        },
+        "timestamp": 1643415562.986521,
+        "title": "snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...",
+        "type": "error",
+        "version": "7",
+        "url": "https://sentry.io/api/0/projects/panther-labs/panther-enterprise-dev/events/5059d14bc1624426887e117fa98223d4/",
+        "web_url": "https://sentry.io/organizations/panther-labs/issues/2971136216/events/5059d14bc1624426887e117fa98223d4/",
+        "issue_url": "https://sentry.io/api/0/issues/2971136216/",
+        "issue_id": "2971136216"
+      },
+      "triggered_rule": "Dev-Send-To-Asana"
+    },
+    "actor": {
+      "type": "application",
+      "id": "sentry",
+      "name": "Sentry"
+    }
+  }

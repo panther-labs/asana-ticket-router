@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from ..producer.components.queue.containers import QueueContainer
-from ..producer.components.logger.containers import LoggerContainer
+from ..common.components.logger.containers import LoggerContainer
 
 
 @pytest.fixture

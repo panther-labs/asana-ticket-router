@@ -1,2 +1,4 @@
 asana @ git+https://github.com/Asana/python-asana.git@v0.10.8
 requests==2.27.1
+boto3-stubs[secretsmanager]==1.20.44
+dependency-injector[yaml]==4.37.0

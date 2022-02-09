@@ -4,6 +4,8 @@
 # Panther Labs Inc ("Panther Commercial License") by contacting contact@runpanther.com.
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
+# pylint: disable=no-member
+# mypy: ignore-errors
 import json
 from dependency_injector import containers, providers
 from . import service
@@ -12,8 +14,9 @@ from . import service
 class SerializerContainer(containers.DeclarativeContainer):
     """Serializer Container"""
 
+    serializer_client = providers.Dependency(default=json)
+
     serializer_service = providers.Singleton(
         service.SerializerService,
-        serialize=json.dumps,
-        deserialize=json.loads,
+        client=serializer_client
     )

@@ -22,34 +22,36 @@ class ValidatorService:
         development: bool,
         hmac: Callable[..., HMAC],
         # returns private instance, so we have to use Any
-        digest: Callable[..., Any]
+        digest: Callable[..., Any],
+        key: str
     ) -> None:
-        self.loop = loop
-        self.logger = logger
-        self.development = development
-        self.hmac = hmac
-        self.digest = digest
+        self._loop = loop
+        self._logger = logger
+        self._development = development
+        self._hmac = hmac
+        self._digest = digest
+        self._key = key
 
-    async def validate(self, message: str, signature: str, key: str) -> bool:
+    async def validate(self, message: str, signature: str) -> bool:
         """Get the secret specified by the environment"""
-        if self.development is True:
-            self.logger.info(
+        if self._development is True:
+            self._logger.warning(
                 "Development mode enabled, skipping signature validation")
             return True
 
-        hashed = await self.hash(message, key)
-        self.logger.debug("Validating signature %s == %s", signature, hashed)
+        hashed = await self.hash(message)
+        self._logger.debug("Validating signature %s == %s", signature, hashed)
         return signature == hashed
 
-    async def hash(self, message: str, key: str) -> str:
+    async def hash(self, message: str) -> str:
         """Hash a message with a given key"""
-        hashed = await self.loop().run_in_executor(
+        hashed = await self._loop().run_in_executor(
             None,
             partial(
-                self.hmac,
-                key=key.encode('utf-8'),
+                self._hmac,
+                key=self._key.encode('utf-8'),
                 msg=message.encode('utf-8'),
-                digestmod=self.digest
+                digestmod=self._digest
             )
         )
         return hashed.hexdigest()

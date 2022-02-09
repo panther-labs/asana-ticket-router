@@ -8,20 +8,19 @@
 # mypy: ignore-errors
 import asyncio
 from typing import Dict, Callable
-import hmac
-from hashlib import sha256
+import asana
 from dependency_injector import containers, providers
 from . import service
 
-sentry_client_secret: Callable[[Dict],
-                               str] = lambda keys: keys['SENTRY_CLIENT_SECRET']
+asana_pat: Callable[[Dict], str] = lambda keys: keys['ASANA_PAT']
 
 
-class ValidatorContainer(containers.DeclarativeContainer):
-    """Validator Container"""
+class AsanaContainer(containers.DeclarativeContainer):
+    """Asana Container"""
 
     config = providers.Configuration(strict=True)
     logger = providers.Dependency()
+    serializer = providers.Dependency()
     keys = providers.Dependency()
 
     development = providers.Selector(
@@ -30,12 +29,18 @@ class ValidatorContainer(containers.DeclarativeContainer):
         false=providers.Factory(bool, False),
     )
 
-    validator_service = providers.Singleton(
-        service.ValidatorService,
+    asana_client = providers.Singleton(
+        asana.Client.access_token,
+        providers.Resource(asana_pat, keys)
+    )
+
+    asana_service = providers.Singleton(
+        service.AsanaService,
         loop=asyncio.get_event_loop,
-        logger=logger,
         development=development,
-        hmac=hmac.new,
-        digest=sha256,
-        key=providers.Resource(sentry_client_secret, keys)
+        dev_asana_sentry_project=config.dev_asana_sentry_project,
+        release_testing_portfolio=config.release_testing_portfolio,
+        logger=logger,
+        client=asana_client,
+        serializer=serializer,
     )

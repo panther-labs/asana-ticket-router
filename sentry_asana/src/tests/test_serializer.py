@@ -1,7 +1,7 @@
 # pylint: disable=redefined-outer-name
 
 import pytest
-from ..producer.components.serializer.containers import SerializerContainer
+from ..common.components.serializer.containers import SerializerContainer
 
 
 @pytest.fixture

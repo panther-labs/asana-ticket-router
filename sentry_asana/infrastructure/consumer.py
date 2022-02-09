@@ -100,7 +100,6 @@ class Consumer(pulumi.ComponentResource):
                     # Asana ID for 'Test Project (Sentry-Asana integration work)'
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920',
                     'RELEASE_TESTING_PORTFOLIO': '1199961111326835',
-                    'RELEASE_TESTING_PORTFOLIO_DEV': '1201700591175658'
                 }
             )
         )

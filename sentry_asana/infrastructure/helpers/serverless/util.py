@@ -7,12 +7,14 @@
 import os
 import subprocess  # nosec: True
 import shutil
-from sentry_asana.infrastructure.globals import PROJECT_ROOT, SRC_FOLDER_NAME, LAMBDA_DEPLOYMENT_PACKAGE_DIR, INIT_PATH
+from sentry_asana.infrastructure.globals import PROJECT_ROOT, \
+    SRC_FOLDER_NAME, LAMBDA_DEPLOYMENT_PACKAGE_DIR, INIT_PATH, COMMON_PATH
 
 
 def create_lambda_package(src_path: str) -> str:
     """Helper to package a lambda specified by the path to its source"""
     lambda_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, src_path)
+    common_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, COMMON_PATH)
     init_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, INIT_PATH)
     package_path = os.path.join(
         LAMBDA_DEPLOYMENT_PACKAGE_DIR, src_path)
@@ -23,6 +25,10 @@ def create_lambda_package(src_path: str) -> str:
     # in python, apparently has some issues that cause unexpected headaches
     subprocess.call(  # nosec: True
         ['cp', '-r', lambda_path, package_path], shell=False
+    )
+
+    subprocess.call(  # nosec: True
+        ['cp', '-r', common_path, package_path], shell=False
     )
 
     # Copy over __init__.py file

@@ -7,9 +7,8 @@
 import asyncio
 from typing import Dict, Any
 from dependency_injector.wiring import Provide, inject
-from producer.components.logger.service import LoggerService
+from common.components.logger.service import LoggerService
 from producer.components.queue.service import QueueService
-from producer.components.secrets.service import SecretsManagerService
 from producer.components.validator.service import ValidatorService
 from producer.components.application import ApplicationContainer
 
@@ -39,9 +38,6 @@ async def main(
     queue: QueueService = Provide[
         ApplicationContainer.queue_container.queue_service  # pylint: disable=no-member
     ],
-    secretsmanager: SecretsManagerService = Provide[
-        ApplicationContainer.secretsmanager_container.secretsmanager_service  # pylint: disable=no-member
-    ],
     validator: ValidatorService = Provide[
         ApplicationContainer.validator_container.validator_service  # pylint: disable=no-member
     ]
@@ -58,8 +54,7 @@ async def main(
     headers: Dict = event.get('headers', {})
     signature: str = headers.get('sentry-hook-signature', '')
 
-    key = await secretsmanager.get_key('SENTRY_CLIENT_SECRET')
-    valid = await validator.validate(body, signature, key)
+    valid = await validator.validate(body, signature)
     if not valid:
         raise ValueError('Signature mismatch')
 

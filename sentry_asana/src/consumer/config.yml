@@ -20,8 +20,8 @@ common:
   is_lambda: "${IS_LAMBDA}"
   debug: "${DEBUG}"
   development: "${DEVELOPMENT}"
+  dev_asana_sentry_project: "${DEV_ASANA_SENTRY_PROJECT}"
+  release_testing_portfolio: "${RELEASE_TESTING_PORTFOLIO}"
 services:
-  sqs:
-    queue_url: "${QUEUE_URL}"
   secrets:
     secret_name: "${SECRET_NAME}"

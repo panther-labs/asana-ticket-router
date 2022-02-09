@@ -1,25 +1,17 @@
 # pylint: disable=redefined-outer-name
-import os
 import pytest
 from unittest import mock
+from ..common.components.secrets.service import SecretsManagerService
+from ..common.components.secrets.containers import SecretsManagerContainer
+from ..common.components.serializer.service import SerializerService
+from ..common.components.serializer.containers import SerializerContainer
+from ..common.components.logger.service import LoggerService
+from ..common.components.logger.containers import LoggerContainer
 from ..producer.components.application import ApplicationContainer
 from ..producer.components.queue.service import QueueService
 from ..producer.components.queue.containers import QueueContainer
-from ..producer.components.secrets.service import SecretsManagerService
-from ..producer.components.secrets.containers import SecretsManagerContainer
-from ..producer.components.serializer.service import SerializerService
-from ..producer.components.serializer.containers import SerializerContainer
 from ..producer.components.validator.service import ValidatorService
 from ..producer.components.validator.containers import ValidatorContainer
-from ..producer.components.logger.service import LoggerService
-from ..producer.components.logger.containers import LoggerContainer
-
-# Set environment vars for the configs that are loaded at runtime
-os.environ['SECRET_NAME'] = 'SECRET_NAME'
-os.environ['QUEUE_URL'] = 'QUEUE_URL'
-os.environ['IS_LAMBDA'] = 'false'
-os.environ['DEBUG'] = 'false'
-os.environ['DEVELOPMENT'] = 'false'
 
 
 @pytest.fixture
@@ -27,43 +19,38 @@ def container() -> ApplicationContainer:
     """Application Container overrides"""
 
     logger_container = LoggerContainer()
-    logger_container.config.from_yaml(
-        'producer/config.yml',
-        required=True,
-        envs_required=True
-    )
     serializer_container = SerializerContainer()
-    validator_container = ValidatorContainer(
-        logger=logger_container.logger,
-        development=False
-    )
 
-    # Need to provide a mock client for SQS so it
-    # doesn't complain about boto3 region not set.
+    # Need to provide a mock client for SQS
     queue_container = QueueContainer(
-        config={"queue_url": os.environ['QUEUE_URL']},
+        config={'queue_url': 'QUEUE_URL'},
         logger=logger_container.logger
     )
     sqs_client_mock = mock.Mock()
     queue_container.sqs_client.override(sqs_client_mock)
 
-    # Need to provide a mock client for SecretsManager so it
-    # doesn't complain about boto3 region not set.
+    # Need to provide a mock client for SecretsManager
     secretsmanager_container = SecretsManagerContainer(
-        config={"secret_name": os.environ['SECRET_NAME']},
+        config={'secret_name': 'SECRET_NAME'},
         logger=logger_container.logger,
-        serializer=serializer_container.serializer_service(),
+        serializer=serializer_container.serializer_service,
     )
     secretsmanager_client_mock = mock.Mock()
+    # Need to provide mock value because creating a ValidatorContainer
+    # depends on these values to be provided asynchronously
+    secretsmanager_client_mock.get_secret_value.return_value = {
+        'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\"}'
+    }
     secretsmanager_container.secretsmanager_client.override(
         secretsmanager_client_mock)
 
-    container = ApplicationContainer()
-    container.config.from_yaml(
-        'producer/config.yml',
-        required=True,
-        envs_required=True
+    validator_container = ValidatorContainer(
+        logger=logger_container.logger,
+        development=False,
+        keys=secretsmanager_container.keys
     )
+
+    container = ApplicationContainer()
     container.validator_container.override(validator_container)
     container.queue_container.override(queue_container)
     container.secretsmanager_container.override(secretsmanager_container)
@@ -79,7 +66,9 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     queue_service = container.queue_container.queue_service()
     secretsmanager_service = container.secretsmanager_container.secretsmanager_service()
     serializer_service = container.serializer_container.serializer_service()
-    validator_service = container.validator_container.validator_service()
+    # Must await on the validator because it depends on an async initialization
+    # from the secretsmanager service
+    validator_service = await container.validator_container.validator_service()
     assert isinstance(logger_service, LoggerService)
     assert isinstance(queue_service, QueueService)
     assert isinstance(secretsmanager_service, SecretsManagerService)
@@ -91,7 +80,9 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     queue_service2 = container.queue_container.queue_service()
     secretsmanager_service2 = container.secretsmanager_container.secretsmanager_service()
     serializer_service2 = container.serializer_container.serializer_service()
-    validator_service2 = container.validator_container.validator_service()
+    # Must await on the validator because it depends on an async initialization
+    # from the secretsmanager service
+    validator_service2 = await container.validator_container.validator_service()
     assert logger_service == logger_service2
     assert queue_service == queue_service2
     assert secretsmanager_service == secretsmanager_service2

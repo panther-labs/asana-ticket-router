@@ -4,11 +4,15 @@
 # Panther Labs Inc ("Panther Commercial License") by contacting contact@runpanther.com.
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
-from enum import Enum
+from logging import Logger
 
 
-class AsanaPriority(Enum):
-    """Enum that represents possible enum values for the 'Priority' field in an Asana task."""
-    HIGH = '1159524604627933'
-    MEDIUM = '1159524604627934'
-    LOW = '1159524604627935'
+class LoggerService:
+    """Logger Service"""
+
+    def __init__(self, logger: Logger):
+        self._logger = logger
+
+    def get(self) -> Logger:
+        """Get a handle to the logger"""
+        return self._logger

@@ -10,12 +10,13 @@ from dependency_injector import containers, providers
 from common.components.logger.containers import LoggerContainer
 from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
-from .queue.containers import QueueContainer
-from .validator.containers import ValidatorContainer
+from .asana.containers import AsanaContainer
+from .sentry.containers import SentryContainer
 
 
 class ApplicationContainer(containers.DeclarativeContainer):
-    """Producer Application Container"""
+    """Consumer Application Container"""
+
     config = providers.Configuration(strict=True)
 
     # Logger
@@ -29,25 +30,27 @@ class ApplicationContainer(containers.DeclarativeContainer):
         SerializerContainer,
     )
 
-    # SQS
-    queue_container = providers.Container(
-        QueueContainer,
-        logger=logger_container.logger,
-        config=config.services.sqs
-    )
-
     # SecretsManager
     secretsmanager_container = providers.Container(
         SecretsManagerContainer,
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        config=config.services.secrets
+        config=config.services.secrets,
     )
 
-    # Payload Validator
-    validator_container = providers.Container(
-        ValidatorContainer,
+    # Sentry
+    sentry_container = providers.Container(
+        SentryContainer,
         logger=logger_container.logger,
+        serializer=serializer_container.serializer_service,
+        keys=secretsmanager_container.keys
+    )
+
+    # Asana
+    asana_container = providers.Container(
+        AsanaContainer,
         config=config.common,
+        logger=logger_container.logger,
+        serializer=serializer_container.serializer_service,
         keys=secretsmanager_container.keys
     )

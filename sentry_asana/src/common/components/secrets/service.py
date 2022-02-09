@@ -5,7 +5,7 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 from asyncio import AbstractEventLoop
-from typing import Optional, Dict, Callable
+from typing import Dict, Callable
 from logging import Logger
 from functools import partial
 from mypy_boto3_secretsmanager import SecretsManagerClient
@@ -25,35 +25,25 @@ class SecretsManagerService:
         secret_name: str,
         serializer: SerializerService
     ):
-        self.loop = loop
-        self.logger = logger
-        self.client = client
-        self.secret_name = secret_name
-        self.serializer = serializer
-        self.key: Optional[Dict[str, str]] = None
-
-    async def get_key(self, key: str) -> str:
-        """Get the secret key"""
-        if self.key is None:
-            self.logger.info("Fetching key")
-            self.key = await self.get_secret_string()
-        else:
-            self.logger.info("Returning cached key")
-        return self.key[key]
+        self._loop = loop
+        self._logger = logger
+        self._client = client
+        self._secret_name = secret_name
+        self._serializer = serializer
 
     async def get_secret_string(self) -> Dict[str, str]:
         """Get the SecretString from a secret"""
-        self.logger.info("Getting Sentry Client Secret")
-        response = await self.get_secret()
-        return self.serializer.parse(response['SecretString'])
+        self._logger.info("Getting SecretString")
+        response = await self._get_secret()
+        return self._serializer.parse(response['SecretString'])
 
-    async def get_secret(self) -> GetSecretValueResponseTypeDef:
+    async def _get_secret(self) -> GetSecretValueResponseTypeDef:
         """Get a secret"""
-        self.logger.info("Getting AWS Secret")
-        return await self.loop().run_in_executor(
+        self._logger.info("Getting AWS Secret")
+        return await self._loop().run_in_executor(
             None,
             partial(
-                self.client.get_secret_value,
-                SecretId=self.secret_name
+                self._client.get_secret_value,
+                SecretId=self._secret_name
             )
         )
