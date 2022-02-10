@@ -1,8 +1,11 @@
 # Linked to https://app.airplane.dev/t/remove_panther_deployment [do not edit this line]
+import glob
 import os
+import yaml
 
 from pyshared.aws_creds import get_credentialed_resource
 from pyshared.ddb_hosted_deploy_retriever import DdbHostedDeployAccountInfo
+from pyshared.git_ops import git_clone
 
 CUSTOMER_SUPPORT_ROLE_ARN = os.environ.get("CUSTOMER_SUPPORT_ROLE_ARN")
 DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
@@ -23,30 +26,43 @@ def get_account_info(fairytale_name):
     return region, arns
 
 
-def delete_deploy_stacks(cfn, fairytale_name, test_run):
-    delete_stacks = [stack for stack in cfn.stacks.all() if stack.name == "panther"]
-    if not delete_stacks:
-        raise RuntimeError(f"Could not find 'panther' stack to delete for {fairytale_name}")
+def get_stack_name(fairytale_name, hosted_deploy_dir):
+    default_stack = "panther"
 
-    delete_stack_names = [stack.name for stack in delete_stacks]
+    deployment_file = os.path.join(hosted_deploy_dir, "deployment-metadata", "deployment-targets",
+                                   f"{fairytale_name}.yml")
+    if os.path.exists(deployment_file):
+        with open(deployment_file, "r") as file_handler:
+            cfg = yaml.safe_load(file_handler)
+            return cfg.get("PantherStackName", default_stack)
+    return default_stack
+
+
+def delete_deploy_stacks(cfn, stack_name, test_run):
+    stack = cfn.Stack(stack_name)
+
     if test_run:
-        print(f"Test run, not deleting the following stacks: {delete_stack_names}")
+        print(f"Test run, not deleting the '{stack.name}' stack ")
     else:
-        for stack in delete_stacks:
-            stack.delete()
-        print(f"Deleted the following stacks: {delete_stack_names}")
+        stack.delete()
+        print(f"Deleted the '{stack.name}' stack")
 
 
-def remove_panther_deployment(fairytale_name, test_run):
+def remove_panther_deployment(fairytale_name, stack_name, test_run):
     region, arns = get_account_info(fairytale_name)
     cfn = get_credentialed_resource(service_name="cloudformation",
                                     arns=arns,
                                     desc=f"cfn_remove_{fairytale_name}_panther_deploy",
                                     region=region)
-    delete_deploy_stacks(cfn=cfn, fairytale_name=fairytale_name, test_run=test_run)
+    delete_deploy_stacks(cfn=cfn, stack_name=stack_name, test_run=test_run)
 
 
 def main(params):
     raise RuntimeError("This task is not yet ready for production use. Which role removes the stack? How does one "
                        "access that role?")
-    remove_panther_deployment(params["fairytale_name"], test_run=params["airplane_test_run"])
+    hosted_deploy_dir = (params["hosted_deploy_dir"]
+                         if "hosted_deploy_dir" in params else git_clone(repo="hosted-deployments", github_setup=True))
+    remove_panther_deployment(params["fairytale_name"],
+                              stack_name=get_stack_name(fairytale_name=params["fairytale_name"],
+                                                        hosted_deploy_dir=hosted_deploy_dir),
+                              test_run=params["airplane_test_run"])
