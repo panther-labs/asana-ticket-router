@@ -1,4 +1,3 @@
-import boto3
 import os
 import tenacity
 
@@ -25,14 +24,22 @@ def raise_exception_after_query_fails(retry_state):
     raise RuntimeError("Polling for DynamoDB query failed")
 
 
+def get_ddb_table(table_name, arn=None, region=None):
+    dynamo_db = get_credentialed_resource(service_name="dynamodb",
+                                          arns=arn,
+                                          desc="dynamo_db",
+                                          region=DYNAMO_REGION if region is None else region)
+    return dynamo_db.Table(table_name)
+
+
+def recursive_get_from_dynamodb_result(dynamodb_result, dynamodb_item_keys):
+    return reduce(lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}), dynamodb_item_keys, dynamodb_result)
+
+
 class DynamoDbSearch:
 
     def __init__(self, table_name, arn=None, region=None):
-        dynamo_db = get_credentialed_resource(service_name="dynamodb",
-                                              arns=arn,
-                                              desc="dynamo_db",
-                                              region=DYNAMO_REGION if region is None else region)
-        self.table = dynamo_db.Table(table_name)
+        self.table = get_ddb_table(table_name=table_name, arn=arn, region=region)
 
     @tenacity.retry(before=print_before_query,
                     retry=tenacity.retry_if_result(lambda desired_val: not bool(desired_val)),
@@ -40,8 +47,8 @@ class DynamoDbSearch:
                     stop=tenacity.stop_after_delay(POLL_TIMEOUT_SECS),
                     wait=tenacity.wait_fixed(POLL_FREQUENCY_SECS))
     def poll_until_available(self, partition_key, partition_value, query_result_keys):
-        return self._recursive_get_from_dynamodb_result(self._get_query_item(partition_key, partition_value),
-                                                        query_result_keys)
+        return recursive_get_from_dynamodb_result(self._get_query_item(partition_key, partition_value),
+                                                  query_result_keys)
 
     def scan_and_organize_result(self, scan_result_keys=None):
         """Scan the table and create a new dict result, with the keys being the value of query_result_keys."""
@@ -52,7 +59,7 @@ class DynamoDbSearch:
 
         organized_scan_result = {}
         for item in scan_result["Items"]:
-            key = self._recursive_get_from_dynamodb_result(item, scan_result_keys)
+            key = recursive_get_from_dynamodb_result(item, scan_result_keys)
             if key:
                 organized_scan_result[key] = item
         return organized_scan_result
@@ -66,8 +73,3 @@ class DynamoDbSearch:
                                f"{query_result}")
 
         return {} if query_result["Count"] == 0 else query_result["Items"][0]
-
-    @staticmethod
-    def _recursive_get_from_dynamodb_result(dynamodb_result, dynamodb_item_keys):
-        return reduce(lambda reduce_dict, reduce_key: reduce_dict.get(reduce_key, {}), dynamodb_item_keys,
-                      dynamodb_result)
