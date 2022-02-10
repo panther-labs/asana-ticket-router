@@ -1,17 +1,22 @@
 from notional import types
 from notional.orm import Property
 
-
-from notion.auth import page
+from pyshared.notion_auth import page
 
 
 def create_rtf_value(text, url=None):
     return types.RichText.parse_obj({
-        "type": "rich_text",
+        "type":
+        "rich_text",
         "rich_text": [{
             "type": "text",
             "plain_text": text,
-            "text": {"content": text, "link": {"url": url}},
+            "text": {
+                "content": text,
+                "link": {
+                    "url": url
+                }
+            },
         }]
     })
 

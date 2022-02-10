@@ -3,8 +3,8 @@ import yaml
 
 from pyshared.dynamo_db import DynamoDbSearch
 from pyshared.dynamo_db_tables import HOSTED_DEPLOYMENTS_METADATA, STAGING_DEPLOYMENTS_METADATA
-from notion.auth import notion_session
-from notion.databases import AccountsDatabase
+from pyshared.notion_auth import notion_session
+from pyshared.notion_databases import AccountsDatabase
 
 DYNAMO_RO_ROLE_ARN = os.environ.get("DYNAMO_RO_ROLE_ARN")
 ROOT_DYNAMO_RO_ROLE_ARN = os.environ.get("ROOT_DYNAMO_RO_ROLE_ARN")

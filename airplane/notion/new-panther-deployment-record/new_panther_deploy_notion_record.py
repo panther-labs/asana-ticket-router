@@ -2,13 +2,11 @@
 import datetime
 import pytz
 
-from notion.databases import AccountsDatabase
+from pyshared.notion_databases import AccountsDatabase
 
 
 def get_backend(backend):
-    return {
-        "Managed": "Managed SF"
-    }.get(backend, backend)
+    return {"Managed": "Managed SF"}.get(backend, backend)
 
 
 def main(params):
