@@ -47,4 +47,6 @@ def remove_panther_deployment(fairytale_name, test_run):
 
 
 def main(params):
+    raise RuntimeError("This task is not yet ready for production use. Which role removes the stack? How does one "
+                       "access that role?")
     remove_panther_deployment(params["fairytale_name"], test_run=params["airplane_test_run"])
