@@ -13,8 +13,8 @@ def main(params):
     print(f"Filtering from {date}")
 
     client = get_credentialed_client(service_name="stepfunctions",
-                                     arn=os.environ.get("HOSTED_ROOT_ROLE_ARN",
-                                                        "arn:aws:iam::255674391660:role/AirplaneStepFunctionReadOnly"),
+                                     arns=os.environ.get("HOSTED_ROOT_ROLE_ARN",
+                                                         "arn:aws:iam::255674391660:role/AirplaneStepFunctionReadOnly"),
                                      desc="deployment_statistics",
                                      region="us-west-2")
 
