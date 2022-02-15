@@ -32,17 +32,16 @@ def remove_expired_users(data):
         if value['Type'] != 'AWS::IAM::UserToGroupAddition':
             continue
 
+        # We iterate over a list copy of the members because iterating over and modifying `data` raises a
+        # CollectionChanged exception. This requires us to keep up with the count of previously removed members
+        # so we remove the correct entry.
+        previously_removed_user_count = 0
         for index, comment in list(value['Properties']['Users'].ca.items.items()):
-
-            # We iterate over a list copy of the members because iterating over and modifying `data` raises a
-            # CollectionChanged exception. This requires us to keep up with the count of previously removed members
-            # so we remove the correct entry.
-            previously_removed_user_count = 0
             if is_membership_expired(comment[0].value):
                 removed_memberships.append(
                     GroupUser(group=group_name_from_resource(data, value['Properties']['GroupName'].value),
                               user=get_cloudformation_export_value(
-                                  export_name=value['Properties']['Users'][index].value,
+                                  export_name=value['Properties']['Users'][index-previously_removed_user_count].value,
                                   role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)))
                 value['Properties']['Users'].pop(index - previously_removed_user_count)
                 print(f"Removing {removed_memberships[-1].user} from {removed_memberships[-1].group}")
