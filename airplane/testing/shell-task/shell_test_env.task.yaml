@@ -1,0 +1,5 @@
+name: Shell Test Env
+slug: shell_test_env
+shell:
+  entrypoint: main.sh
+timeout: 3600

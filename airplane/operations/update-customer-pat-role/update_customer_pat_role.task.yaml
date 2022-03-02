@@ -1,0 +1,29 @@
+name: update-customer-pat-role
+slug: update_customer_pat_role
+description: Updates a customer's PAT IAM Role AssumeRolePolicy to include the specified role(s).
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: Fairytale name for customer's AWS account
+  regex: ^[a-z]+-[a-z]+$
+- name: Source Accounts and ARNs
+  slug: source_accounts_and_arns
+  type: shorttext
+  description: |-
+    A comma separated list of account numbers and/or ARNs
+    (e.g. arn:aws:iam::123456789012:role/PantherAccess,210987654321)
+- name: AIRPLANE_TEST_RUN
+  slug: airplane_test_run
+  type: boolean
+  description: Git Push will not occur if true
+shell:
+  entrypoint: update_customer_pat_role.sh
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: hosted-aws-management
+    DYNAMO_RO_ROLE_ARN:
+      config: dynamo-ro-role-arn
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+timeout: 3600

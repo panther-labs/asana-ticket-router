@@ -1,0 +1,18 @@
+name: Move Account to Deactivated OU
+slug: move_account_to_deactivated_ou
+description: Move a customer account to the deactivated organizational unit
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: move_account_to_deactivated_ou.py
+  envVars:
+    DYNAMO_REGION:
+      value: us-west-2
+    DYNAMO_RO_ROLE_ARN:
+      config: dynamo-ro-role-arn
+timeout: 3600

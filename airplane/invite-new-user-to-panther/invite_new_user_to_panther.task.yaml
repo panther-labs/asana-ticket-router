@@ -1,0 +1,55 @@
+name: Invite User to Panther
+slug: invite_new_user_to_panther
+description: Invites new user to Panther. Can also resend an expired invite.
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: Customer's fairytale name
+  regex: ^[a-z]+-[a-z]+$
+- name: Email Address
+  slug: email_address
+  type: shorttext
+  description: User's email address
+  regex: "^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])$"
+- name: First Name
+  slug: first_name
+  type: shorttext
+  description: User's first name
+  regex: ^[A-Z].+$
+- name: Last Name
+  slug: last_name
+  type: shorttext
+  description: User's last name
+  regex: ^[A-Z].+$
+- name: Role
+  slug: role
+  type: shorttext
+  description: Panther role to assign to user.
+  default: AnalystReadOnly
+  options:
+  - label: ""
+    value: Admin
+  - label: ""
+    value: Analyst
+  - label: ""
+    value: AnalystReadOnly
+- name: Resend Invitation
+  slug: resend_invitation
+  type: boolean
+  description: This should be enabled to resend an expired invitation to the user
+  default: false
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  default: false
+shell:
+  entrypoint: invite_new_user_to_panther.sh
+  envVars:
+    CUSTOMER_SUPPORT_ROLE_ARN:
+      config: customer-support-role-arn
+    DYNAMO_RO_ROLE_ARN:
+      config: dynamo-ro-role-arn
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport
+timeout: 600

@@ -1,0 +1,73 @@
+name: Update Vault Config
+slug: update_vault_config
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+- name: Region
+  slug: region
+  type: shorttext
+  options:
+  - label: ""
+    value: us-east-1
+  - label: ""
+    value: us-east-2
+  - label: ""
+    value: us-west-1
+  - label: ""
+    value: us-west-2
+  - label: ""
+    value: af-south-1
+  - label: ""
+    value: ap-east-1
+  - label: ""
+    value: ap-south-1
+  - label: ""
+    value: ap-northeast-3
+  - label: ""
+    value: ap-northeast-2
+  - label: ""
+    value: ap-southeast-1
+  - label: ""
+    value: ap-southeast-2
+  - label: ""
+    value: ap-northeast-1
+  - label: ""
+    value: ca-central-1
+  - label: ""
+    value: eu-central-1
+  - label: ""
+    value: eu-west-1
+  - label: ""
+    value: eu-west-2
+  - label: ""
+    value: eu-south-1
+  - label: ""
+    value: eu-west-3
+  - label: ""
+    value: eu-north-1
+  - label: ""
+    value: me-south-1
+  - label: ""
+    value: sa-east-1
+- name: Service Type
+  slug: service_type
+  type: shorttext
+  default: SaaS
+  options:
+  - label: ""
+    value: SaaS
+  - label: ""
+    value: CPaaS
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+shell:
+  entrypoint: update_vault_config.sh
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: deploy-aws-vault-config
+timeout: 3600

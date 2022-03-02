@@ -1,0 +1,16 @@
+name: Remove Hosted Deployment Files
+slug: remove_hosted_deployment_files
+description: Remove an account from the hosted-deployments repo
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: remove_hosted_deployment_files.py
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: hosted-deployments
+timeout: 3600

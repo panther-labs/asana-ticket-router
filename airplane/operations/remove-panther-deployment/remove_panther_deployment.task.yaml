@@ -1,0 +1,22 @@
+name: Remove Panther Deployment
+slug: remove_panther_deployment
+description: Remove deployment stacks from account
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: remove_panther_deployment.py
+  envVars:
+    CUSTOMER_SUPPORT_ROLE_ARN:
+      config: customer-support-role-arn
+    DYNAMO_REGION:
+      value: us-west-2
+    DYNAMO_RO_ROLE_ARN:
+      config: dynamo-ro-role-arn
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport
+timeout: 3600

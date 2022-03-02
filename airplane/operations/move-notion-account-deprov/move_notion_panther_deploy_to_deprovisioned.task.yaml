@@ -1,0 +1,16 @@
+name: Move Notion Panther Deploy to Deprovisioned
+slug: move_notion_panther_deploy_to_deprovisioned
+description: Moves an account on the Panther Deploys Notion page to the Deprovisioned group.
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: move_notion_panther_deploy_to_deprovisioned.py
+  envVars:
+    NOTION_AUTH_TOKEN:
+      config: notion-productivity
+timeout: 3600

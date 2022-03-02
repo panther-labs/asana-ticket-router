@@ -1,0 +1,14 @@
+name: SE Automation
+slug: se_automation
+description: SE Automation
+parameters:
+- name: Task
+  slug: task
+  type: shorttext
+  description: Task name
+python:
+  entrypoint: main.py
+  envVars:
+    NOTION_API_KEY:
+      config: notion-productivity
+timeout: 3600

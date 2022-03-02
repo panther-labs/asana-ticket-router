@@ -1,0 +1,84 @@
+name: Create New Customer
+slug: add_pr_for_new_customer_skv
+parameters:
+- name: Account Name
+  slug: account_name
+  type: shorttext
+  description: |-
+    A unique account name (such as Google) to identify the account.
+    The domain will be "account_name.runpanther.net".
+- name: Customer Domain
+  slug: customer_domain
+  type: shorttext
+  description: The domain defaults to "account_name.runpanther.net". If another domain is desired, put it here, and the domain will be "[customer_domain].runpanther.net".
+  required: false
+  regex: ^[A-Za-z0-9-]+$
+- name: Service Type
+  slug: service_type
+  type: shorttext
+  description: Test https://notion.so/foobar
+  default: SaaS
+  options:
+  - label: ""
+    value: SaaS
+  - label: ""
+    value: CPaaS
+- name: Region
+  slug: region
+  type: shorttext
+  options:
+  - label: ""
+    value: ap-northeast-1
+  - label: ""
+    value: ap-south-1
+  - label: ""
+    value: ap-southeast-1
+  - label: ""
+    value: ap-southeast-2
+  - label: ""
+    value: eu-central-1
+  - label: ""
+    value: eu-west-1
+  - label: ""
+    value: eu-west-2
+  - label: ""
+    value: us-east-1
+  - label: ""
+    value: us-east-2
+  - label: ""
+    value: us-west-2
+- name: Backend
+  slug: backend
+  type: shorttext
+  default: Managed
+  options:
+  - label: ""
+    value: Managed
+  - label: ""
+    value: BYOSF
+  - label: ""
+    value: Customer
+- name: First Name
+  slug: first_name
+  type: shorttext
+- name: Last Name
+  slug: last_name
+  type: shorttext
+- name: Email Address
+  slug: email_address
+  type: shorttext
+  regex: "^\\S+@\\S+\\.\\S+$"
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  default: false
+shell:
+  entrypoint: create_new_customer.sh
+  envVars:
+    DEPLOY_GROUP:
+      value: N
+    DEPLOY_KEY_BASE64:
+      config: hosted-deployments
+    HOSTED_DEPLOYMENTS_BRANCH:
+      value: master
+timeout: 3600

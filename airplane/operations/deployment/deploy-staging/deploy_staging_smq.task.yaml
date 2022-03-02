@@ -1,0 +1,12 @@
+name: Deploy latest RC to Staging
+slug: deploy_staging_smq
+shell:
+  entrypoint: deploy_staging.sh
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: staging-deployments
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DeploymentArtifacts
+    HOSTED_DEPLOY_KEY_BASE64:
+      config: hosted-deployments
+timeout: 3600

@@ -1,0 +1,14 @@
+name: Load Customer Config
+slug: load_configuration
+description: Load the customer configuration from hosted-deployments
+parameters:
+- name: CustomerId
+  slug: customerid
+  type: shorttext
+  description: Fairytale name representing the customer, see https://www.notion.so/pantherlabs/Hosted-AWS-Accounts-Datasheet-cde236fc7f494402b8bfa4117695a0e8
+shell:
+  entrypoint: main.sh
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: hosted-deployments
+timeout: 3600

@@ -1,0 +1,25 @@
+name: Set PipLibraries
+slug: set_piplibraries
+description: Set the PipLibraries for a customer deployment
+parameters:
+- name: CustomerId
+  slug: customerid
+  type: shorttext
+  description: The fairy tale name of the customer
+- name: PipLibraries
+  slug: piplibraries
+  type: shorttext
+  description: "Comma-separated pip libraries to install in the Python rules-engine and policy-engine.\n\nboto3, jsonpath-ng, policyuniverse, requests, and sentry-sdk are included automatically.\n\nExample: arnparse~=0.0.2,awacs~=1.0"
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  description: For testing this airplane task. If this is a production run, always set to false.
+  default: false
+shell:
+  entrypoint: main.sh
+  envVars:
+    DEPLOY_KEY_BASE64:
+      config: hosted-deployments
+requireRequests: true
+allowSelfApprovals: false
+timeout: 3600

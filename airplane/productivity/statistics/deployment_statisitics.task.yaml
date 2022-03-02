@@ -1,0 +1,20 @@
+name: Deployment statistics
+slug: deployment_statisitics
+parameters:
+- name: Range
+  slug: range
+  type: shorttext
+  default: week
+  options:
+  - label: ""
+    value: week
+  - label: ""
+    value: month
+  - label: ""
+    value: quarter
+python:
+  entrypoint: main.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-StepFunctionReadOnly
+timeout: 3600

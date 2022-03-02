@@ -1,0 +1,46 @@
+name: New Panther Deploy Notion Record
+slug: new_panther_deploy_notion_record
+description: Adds a page to https://www.notion.so/pantherlabs/cc445b0819164efca9d281e8ea2efab7
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+- name: Version
+  slug: version
+  type: shorttext
+- name: Region
+  slug: region
+  type: shorttext
+- name: Backend
+  slug: backend
+  type: shorttext
+  default: Managed SF
+- name: Service Type
+  slug: service_type
+  type: shorttext
+  default: SaaS
+- name: PoC
+  slug: poc
+  type: boolean
+  default: true
+- name: Support Role
+  slug: support_role
+  type: shorttext
+- name: Email
+  slug: email
+  type: shorttext
+- name: Account Name
+  slug: account_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: new_panther_deploy_notion_record.py
+  envVars:
+    NOTION_AUTH_TOKEN:
+      config: notion-productivity
+timeout: 3600

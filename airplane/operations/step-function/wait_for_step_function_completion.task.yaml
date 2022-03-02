@@ -1,0 +1,19 @@
+name: Wait for Step Function Completion
+slug: wait_for_step_function_completion
+description: Wait for a customer account's state machine to finish executing. This means cloud formation has finished.
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: wait_for_step_function_completion.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-StepFunctionReadOnly
+    STATE_MACHINE_ARN:
+      value: arn:aws:states:us-west-2:255674391660:stateMachine:AutomatedDeploymentStateMachine-y5bh5L9a5z41
+    STEP_FUNCTION_REGION:
+      value: us-west-2
+    STEP_FUNCTION_RO_ROLE_ARN:
+      config: step-function-ro-role-arn
+timeout: 3600
