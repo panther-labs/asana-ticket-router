@@ -18,11 +18,9 @@ RUN rm -rf ~/.ssh && mkdir -p ~/.ssh
 
 COPY ./util /usr/local/bin
 
-### Start custom environment creation per task
+RUN /usr/local/bin/setup-github
 
-# The private SSH Github key in order to setup Github access
-ARG DEPLOY_KEY_BASE64
-RUN if test -n "${DEPLOY_KEY_BASE64}"; then echo "OK"; /usr/local/bin/setup-github; fi
+### Start custom environment creation per task
 
 # List of space-separated Ubuntu packages to include in environment
 ARG ENV_PACKAGES

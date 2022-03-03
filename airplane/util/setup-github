@@ -1,12 +1,9 @@
 #!/bin/sh -eu
 
-: ${DEPLOY_KEY_BASE64:?"DEPLOY_KEY_BASE64 required to setup-github"}
-
 mkdir -p ~/.ssh
 ssh-keyscan github.com > ~/.ssh/known_hosts
 
-echo ${DEPLOY_KEY_BASE64} | base64 -d > ~/.ssh/id_github
-
+touch ~/.ssh/id_github
 chmod 600 ~/.ssh/id_github
 
 cat << EOF > ~/.ssh/config
@@ -17,12 +14,3 @@ EOF
 
 git config --global user.email "github-service-account@runpanther.io"
 git config --global user.name "Airplane"
-
-set +e
-OUTPUT=$(ssh -T git@github.com 2>&1)
-set -e
-
-if ! $(echo ${OUTPUT} | grep -q "successfully") ; then
-  echo $OUTPUT >&2
-  exit 1
-fi

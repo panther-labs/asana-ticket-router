@@ -3,8 +3,6 @@ slug: echo
 shell:
   entrypoint: echo.sh
   envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-deployments
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-StepFunctionReadOnly
 timeout: 3600

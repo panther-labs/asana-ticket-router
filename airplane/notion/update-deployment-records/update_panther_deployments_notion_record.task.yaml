@@ -3,18 +3,12 @@ slug: update_panther_deployments_notion_record
 python:
   entrypoint: update_deployment_records.py
   envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-deployments
     DYNAMO_REGION:
       value: us-west-2
     DYNAMO_RO_ROLE_ARN:
       config: dynamo-ro-role-arn
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
-    NOTION_AUTH_TOKEN:
-      config: notion-productivity
     ROOT_DYNAMO_RO_ROLE_ARN:
       config: root-dynamo-ro-role-arn
-    STAGING_DEPLOY_KEY_BASE64:
-      config: staging-deployments
 timeout: 3600

@@ -2,6 +2,8 @@ import os
 import notional
 from notional.orm import connected_page
 
-auth_token = os.getenv("NOTION_AUTH_TOKEN")
+from pyshared.aws_secrets import get_secret_value
+
+auth_token = get_secret_value("airplane/notion-auth-token")
 notion_session = notional.connect(auth=auth_token)
 page = connected_page(session=notion_session)

@@ -17,9 +17,6 @@ parameters:
   default: false
 shell:
   entrypoint: main.sh
-  envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-deployments
 requireRequests: true
 allowSelfApprovals: false
 timeout: 3600

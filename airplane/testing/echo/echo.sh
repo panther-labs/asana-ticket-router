@@ -4,6 +4,20 @@
 # Setup
 
 PATH=$PATH:util # For running airplane locally
-REPOSITORY=hosted-deployments git-clone
 
+REPOSITORY=aws-vault-config git-clone
+echo "aws-vault-config"
+ls aws-vault-config
+
+REPOSITORY=hosted-aws-management git-clone
+echo "hosted-aws-management"
+ls hosted-aws-management
+
+REPOSITORY=hosted-deployments git-clone
+echo "hosted-deployments"
 ls hosted-deployments
+
+REPOSITORY=staging-deployments git-clone
+echo "staging-deployments"
+ls staging-deployments
+

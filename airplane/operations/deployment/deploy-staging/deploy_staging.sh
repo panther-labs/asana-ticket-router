@@ -47,10 +47,6 @@ export LATEST_RC
 
 ## hosted-deployment
 (
-    # setup extra deploy key
-    # NB re-using key location (see util/setup-github)
-    echo ${HOSTED_DEPLOY_KEY_BASE64} | base64 -d > ~/.ssh/id_github
-
     printf "\n\n=== Generating changes for hosted-deployments ===\n"
     REPOSITORY=hosted-deployments git-clone
     cd hosted-deployments

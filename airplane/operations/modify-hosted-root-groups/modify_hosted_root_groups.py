@@ -8,22 +8,16 @@ from ruamel.yaml.comments import TaggedScalar
 
 REPOSITORY = "hosted-aws-management"
 GROUPS_FILE_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
-CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get(
-    "CLOUDFORMATION_READ_ONLY_ROLE_ARN",
-    "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly"
-)
+CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get("CLOUDFORMATION_READ_ONLY_ROLE_ARN",
+                                                   "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly")
 
 
 def add_user_to_group(data, params):
     group_members = get_group_membership_list(data, params["group"])
 
-    user_import_value = TaggedScalar(
-        tag='!ImportValue',
-        value=get_cloudformation_export_name(
-            username=params["aws_username"],
-            role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN
-        )
-    )
+    user_import_value = TaggedScalar(tag='!ImportValue',
+                                     value=get_cloudformation_export_name(username=params["aws_username"],
+                                                                          role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN))
     group_members.append(user_import_value)
 
     if params["temporary"]:
@@ -34,10 +28,8 @@ def add_user_to_group(data, params):
 def remove_user_from_group(data, params):
     group = params["group"]
     username = params["aws_username"]
-    cloudformation_export_name = get_cloudformation_export_name(
-        username=username,
-        role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN
-    )
+    cloudformation_export_name = get_cloudformation_export_name(username=username,
+                                                                role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)
 
     group_members = get_group_membership_list(data, group)
 
@@ -52,8 +44,8 @@ def main(params):
     if (params["add_or_remove"] == "Add") and params.get("temporary", True) and (not params.get("expires")):
         raise Exception("Expiration must be set if access is temporary")
 
-    repository_dir = (params["hosted_aws_management_dir"] if "hosted_aws_management_dir" in params
-                      else git_clone(repo=REPOSITORY, github_setup=os.environ.get("DEPLOY_KEY_BASE64")))
+    repository_dir = (params["hosted_aws_management_dir"]
+                      if "hosted_aws_management_dir" in params else git_clone(repo=REPOSITORY, github_setup=True))
 
     data_path = os.path.join(repository_dir, GROUPS_FILE_PATH)
 

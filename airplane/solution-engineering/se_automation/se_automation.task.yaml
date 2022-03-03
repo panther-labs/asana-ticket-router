@@ -8,7 +8,4 @@ parameters:
   description: Task name
 python:
   entrypoint: main.py
-  envVars:
-    NOTION_API_KEY:
-      config: notion-productivity
 timeout: 3600

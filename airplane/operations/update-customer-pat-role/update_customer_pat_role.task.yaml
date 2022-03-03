@@ -20,8 +20,6 @@ parameters:
 shell:
   entrypoint: update_customer_pat_role.sh
   envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-aws-management
     DYNAMO_RO_ROLE_ARN:
       config: dynamo-ro-role-arn
     ECS_TASK_ROLE:

@@ -10,7 +10,4 @@ parameters:
   type: boolean
 python:
   entrypoint: remove_hosted_deployment_files.py
-  envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-deployments
 timeout: 3600

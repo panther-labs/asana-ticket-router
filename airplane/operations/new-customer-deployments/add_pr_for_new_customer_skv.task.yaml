@@ -77,8 +77,6 @@ shell:
   envVars:
     DEPLOY_GROUP:
       value: N
-    DEPLOY_KEY_BASE64:
-      config: hosted-deployments
     HOSTED_DEPLOYMENTS_BRANCH:
       value: master
 timeout: 3600

@@ -41,7 +41,7 @@ def remove_expired_users(data):
                 removed_memberships.append(
                     GroupUser(group=group_name_from_resource(data, value['Properties']['GroupName'].value),
                               user=get_cloudformation_export_value(
-                                  export_name=value['Properties']['Users'][index-previously_removed_user_count].value,
+                                  export_name=value['Properties']['Users'][index - previously_removed_user_count].value,
                                   role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)))
                 value['Properties']['Users'].pop(index - previously_removed_user_count)
                 print(f"Removing {removed_memberships[-1].user} from {removed_memberships[-1].group}")
@@ -50,8 +50,8 @@ def remove_expired_users(data):
 
 
 def main(params):
-    repository_dir = (params["hosted_aws_management_dir"] if "hosted_aws_management_dir" in params else git_clone(
-        repo=REPOSITORY, github_setup=os.environ.get("DEPLOY_KEY_BASE64")))
+    repository_dir = (params["hosted_aws_management_dir"]
+                      if "hosted_aws_management_dir" in params else git_clone(repo=REPOSITORY, github_setup=True))
 
     data_path = os.path.join(repository_dir, GROUPS_FILE_PATH)
 

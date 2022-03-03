@@ -67,7 +67,4 @@ parameters:
   type: boolean
 shell:
   entrypoint: update_vault_config.sh
-  envVars:
-    DEPLOY_KEY_BASE64:
-      config: deploy-aws-vault-config
 timeout: 3600

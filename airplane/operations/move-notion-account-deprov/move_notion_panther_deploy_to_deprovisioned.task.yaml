@@ -10,7 +10,4 @@ parameters:
   type: boolean
 python:
   entrypoint: move_notion_panther_deploy_to_deprovisioned.py
-  envVars:
-    NOTION_AUTH_TOKEN:
-      config: notion-productivity
 timeout: 3600

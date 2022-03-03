@@ -40,7 +40,4 @@ parameters:
   type: boolean
 python:
   entrypoint: new_panther_deploy_notion_record.py
-  envVars:
-    NOTION_AUTH_TOKEN:
-      config: notion-productivity
 timeout: 3600

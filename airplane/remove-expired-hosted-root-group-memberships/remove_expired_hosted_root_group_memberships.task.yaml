@@ -10,8 +10,6 @@ parameters:
 python:
   entrypoint: remove_expired_hosted_root_group_memberships.py
   envVars:
-    DEPLOY_KEY_BASE64:
-      config: hosted-aws-management
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-CloudFormationReadOnly
 timeout: 3600
