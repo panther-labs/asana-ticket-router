@@ -46,10 +46,6 @@ parameters:
 shell:
   entrypoint: invite_new_user_to_panther.sh
   envVars:
-    CUSTOMER_SUPPORT_ROLE_ARN:
-      config: customer-support-role-arn
-    DYNAMO_RO_ROLE_ARN:
-      config: dynamo-ro-role-arn
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport
 timeout: 600

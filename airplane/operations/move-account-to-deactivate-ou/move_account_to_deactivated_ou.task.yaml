@@ -10,9 +10,4 @@ parameters:
   type: boolean
 python:
   entrypoint: move_account_to_deactivated_ou.py
-  envVars:
-    DYNAMO_REGION:
-      value: us-west-2
-    DYNAMO_RO_ROLE_ARN:
-      config: dynamo-ro-role-arn
 timeout: 3600

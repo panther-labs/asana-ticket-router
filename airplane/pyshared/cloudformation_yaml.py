@@ -1,4 +1,3 @@
-import boto3
 import os
 from pyshared.aws_creds import get_credentialed_client
 

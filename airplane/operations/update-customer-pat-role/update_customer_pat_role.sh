@@ -6,13 +6,13 @@ pip3 install cfn-lint PyYAML
 
 export REPOSITORY="hosted-aws-management"
 BRANCH="${BRANCH_OVERRIDE:-master}"
-DEPLOYMENT_METADATA_TABLE="hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B"
 DIRECTORY_PREFIX="panther-hosted-"
 IAM_ROLES_FILENAME="iam-roles.yml"
 YAML_PRINCIPAL_PATH=".Resources.CustomerAccess.Properties.AssumeRolePolicyDocument.Statement[0].Principal.AWS"
 fairytale_name="${PARAM_FAIRYTALE_NAME}"
 account_directory="${DIRECTORY_PREFIX}${fairytale_name}"
 test_run="${PARAM_AIRPLANE_TEST_RUN}"
+export $(cat-aws-consts)
 
 # Source accounts are entered into Airplane comma separated. Splits them into the array `source_accounts_and_arns`
 IFS=',' read -ra source_accounts_and_arns <<< "${PARAM_SOURCE_ACCOUNTS_AND_ARNS}"
@@ -28,11 +28,11 @@ printf "\nWorking in hosted deployments branch (overridable by Airplane environm
   $(git branch --show-current)
 
 # assume the role if declared, should only run on ECS
-if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
+if [ -n "${HOSTED_DYNAMO_RO_ROLE_ARN:-}" ]; then
   # https://stackoverflow.com/a/67636523
   export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
     $(aws sts assume-role \
-    --role-arn "${DYNAMO_RO_ROLE_ARN}" \
+    --role-arn "${HOSTED_DYNAMO_RO_ROLE_ARN}" \
     --role-session-name Airplane \
     --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
     --output text))
@@ -40,7 +40,7 @@ fi
 
 # Retrieve the region and AWS account ID from DynamoDB
 account_info=$(aws dynamodb get-item \
-    --table-name "${DEPLOYMENT_METADATA_TABLE}" \
+    --table-name "${HOSTED_DEPLOYMENTS_METADATA}" \
     --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}')
 account_region=$(echo "${account_info}" | jq -r '.Item.GithubConfiguration.M.CustomerRegion.S')
 aws_account_id=$(echo "${account_info}" | jq -r '.Item.AWSConfiguration.M.AccountId.S')

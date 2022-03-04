@@ -2,7 +2,7 @@
 
 set -eu
 
-DEPLOYMENT_METADATA_TABLE="hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B"
+export $(cat-aws-consts)
 
 fairytale_name=""
 path="Item"
@@ -44,7 +44,7 @@ if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
 fi
 
 aws dynamodb get-item \
-  --table-name "${DEPLOYMENT_METADATA_TABLE}" \
+  --table-name "${HOSTED_DEPLOYMENTS_METADATA}" \
   --key '{"CustomerId": {"S": "'"${fairytale_name}"'"}}' \
   --query "${path}" \
   --output "${format}"

@@ -1,15 +1,16 @@
 # Linked to https://app.airplane.dev/t/se_automation [do not edit this line]
 
-# env - NOTION_API_KEY
-
-import logging, os, notional, sys
+import os, notional
 from notional import types
 from notional.orm import Property, connected_page
-from notional.query import SortDirection
+
+from pyshared.aws_secrets import get_secret_value
+
 
 def main(params):
     if params['task'] == 'customer-notes':
         custNotes()
+
 
 '''
 Prereqs: notional
@@ -22,12 +23,13 @@ You need to Share the database itself with the Notion Integration correlated wit
 You can extract the Database ID from the URL of the TABLE (NOT the Page that contains it)
 The custom class SEnote is an extension of Notional that allows for I/O to Notion
 '''
+
+
 def custNotes():
-    
 
     database_id = "089bbc04c4ed4297b5b72e5fecf8c860"
 
-    notion = notional.connect(auth=os.getenv("NOTION_API_KEY"))
+    notion = notional.connect(auth=get_secret_value("airplane/notion-auth-token"))
     CustomPage = connected_page(session=notion)
 
     # Custom SE Note class
@@ -48,10 +50,31 @@ def custNotes():
         Competitors = Property("Competitors", types.MultiSelect)
         Mood = Property("Customer Mood", types.SelectOne)
 
-    competitors = ['Chaos', 'Chronicle', 'Datadog', 'Demisto', 'Devo', 'Elastalert', 'Elastic', 'ELK', 'IBM', 'Loki', 'Obsidian', 'Phantom', 'Prisma', 'Splunk', 'Sumo']
-    destinations = ['Cydarm', 'Halp', 'PagerDuty', 'ServiceNow', 'Slack', 'SOAR', 'Socless', 'TheHive', 'Tines', 'Trello', 'Webhook']
-    features = ['Alert', 'API', 'Athena', 'BI', 'CICD', 'CloudFormation', 'Detection', 'DynamoDB', 'Enrichment', 'Indicator', 'Ingest', 'Integrations', 'JSON', 'MITRE', 'Monitoring', 'Normalization', 'Packs', 'PantherAnalysistool', 'PAT', 'Python', 'Query', 'RBAC', 'Roadmap', 'SaaS', 'Scheduled', 'Schema', 'Snowflake', 'Snowsight', 'SQL', 'Terraform', 'UI']
-    sources = ['ALB', 'AlienVault', 'Apache', 'Auditd', 'Aviatrix', 'AWS', 'Azure', 'Beacon', 'Box', 'Capsule8', 'Carbon', 'Cisco', 'CloudFlare', 'CloudFunnel', 'CloudTrail', 'CloudWatch', 'Code42', 'Cortex', 'Cribl', 'CrowdStrike', 'CSV', 'Custom', 'Cyberhaven', 'Defender', 'Docker', 'Dropbox', 'Duo', 'EC2', 'ECS', 'EDR', 'Egnyte', 'Egress', 'EKS', 'Exabeam', 'Falco', 'Falcon', 'Fastly', 'Fastmatch', 'FDR', 'Firehose', 'Firewalls', 'Fluentd', 'GCP', 'Git', 'GitHub', 'Gitlab', 'Greynoise', 'Gsuite', 'GuardDuty', 'Hive', 'IAM', 'IDS', 'Jenkins', 'JIRA', 'Kafka', 'Kasada', 'Kinesis', 'Kubernetes', 'Lacework', 'LastLine', 'LDAP', 'Linux', 'Mac', 'Meraki', 'MFA', 'Mimecast', 'MySQL', 'NAS', 'Netskope', 'Nginx', '365', 'Okta', 'OneLogin', 'OpsGenie', 'Osquery', 'Pager Duty', 'Palo', 'Proofpoint', 'Pulumi', 'RDS', 'S3', 'Safenet', 'Salesforce', 'SAML', 'Sentinel', 'SentinelOne', 'Sigma', 'Signal Sciences', 'SNS', 'Sophos', 'Spinnaker', 'SQS', 'Syslog', 'Teleport', 'Umbrella', 'VPC', 'VPN', 'WAF', 'Windows', 'Workday', 'Yes', 'Zendesk', 'Zoom']
+    competitors = [
+        'Chaos', 'Chronicle', 'Datadog', 'Demisto', 'Devo', 'Elastalert', 'Elastic', 'ELK', 'IBM', 'Loki', 'Obsidian',
+        'Phantom', 'Prisma', 'Splunk', 'Sumo'
+    ]
+    destinations = [
+        'Cydarm', 'Halp', 'PagerDuty', 'ServiceNow', 'Slack', 'SOAR', 'Socless', 'TheHive', 'Tines', 'Trello', 'Webhook'
+    ]
+    features = [
+        'Alert', 'API', 'Athena', 'BI', 'CICD', 'CloudFormation', 'Detection', 'DynamoDB', 'Enrichment', 'Indicator',
+        'Ingest', 'Integrations', 'JSON', 'MITRE', 'Monitoring', 'Normalization', 'Packs', 'PantherAnalysistool', 'PAT',
+        'Python', 'Query', 'RBAC', 'Roadmap', 'SaaS', 'Scheduled', 'Schema', 'Snowflake', 'Snowsight', 'SQL',
+        'Terraform', 'UI'
+    ]
+    sources = [
+        'ALB', 'AlienVault', 'Apache', 'Auditd', 'Aviatrix', 'AWS', 'Azure', 'Beacon', 'Box', 'Capsule8', 'Carbon',
+        'Cisco', 'CloudFlare', 'CloudFunnel', 'CloudTrail', 'CloudWatch', 'Code42', 'Cortex', 'Cribl', 'CrowdStrike',
+        'CSV', 'Custom', 'Cyberhaven', 'Defender', 'Docker', 'Dropbox', 'Duo', 'EC2', 'ECS', 'EDR', 'Egnyte', 'Egress',
+        'EKS', 'Exabeam', 'Falco', 'Falcon', 'Fastly', 'Fastmatch', 'FDR', 'Firehose', 'Firewalls', 'Fluentd', 'GCP',
+        'Git', 'GitHub', 'Gitlab', 'Greynoise', 'Gsuite', 'GuardDuty', 'Hive', 'IAM', 'IDS', 'Jenkins', 'JIRA', 'Kafka',
+        'Kasada', 'Kinesis', 'Kubernetes', 'Lacework', 'LastLine', 'LDAP', 'Linux', 'Mac', 'Meraki', 'MFA', 'Mimecast',
+        'MySQL', 'NAS', 'Netskope', 'Nginx', '365', 'Okta', 'OneLogin', 'OpsGenie', 'Osquery', 'Pager Duty', 'Palo',
+        'Proofpoint', 'Pulumi', 'RDS', 'S3', 'Safenet', 'Salesforce', 'SAML', 'Sentinel', 'SentinelOne', 'Sigma',
+        'Signal Sciences', 'SNS', 'Sophos', 'Spinnaker', 'SQS', 'Syslog', 'Teleport', 'Umbrella', 'VPC', 'VPN', 'WAF',
+        'Windows', 'Workday', 'Yes', 'Zendesk', 'Zoom'
+    ]
 
     # Query Notion using our custom class defined above
     # Notional allows for I/O using custom classes
@@ -64,7 +87,7 @@ def custNotes():
                     note.Competitors += c
                 except:
                     print('error')
-        
+
         for d in destinations:
             if d in note.Notes or d in note.FollowUps:
                 try:

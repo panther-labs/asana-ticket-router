@@ -20,8 +20,6 @@ parameters:
 shell:
   entrypoint: update_customer_pat_role.sh
   envVars:
-    DYNAMO_RO_ROLE_ARN:
-      config: dynamo-ro-role-arn
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
 timeout: 3600

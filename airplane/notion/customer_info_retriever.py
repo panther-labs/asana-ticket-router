@@ -1,13 +1,15 @@
 import os
 import yaml
 
+from pyshared.aws_consts import get_aws_const
 from pyshared.dynamo_db import DynamoDbSearch
-from pyshared.dynamo_db_tables import HOSTED_DEPLOYMENTS_METADATA, STAGING_DEPLOYMENTS_METADATA
 from pyshared.notion_auth import notion_session
 from pyshared.notion_databases import AccountsDatabase
 
-DYNAMO_RO_ROLE_ARN = os.environ.get("DYNAMO_RO_ROLE_ARN")
-ROOT_DYNAMO_RO_ROLE_ARN = os.environ.get("ROOT_DYNAMO_RO_ROLE_ARN")
+HOSTED_DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_ARN")
+HOSTED_DEPLOYMENTS_METADATA = get_aws_const(const_name="HOSTED_DEPLOYMENTS_METADATA")
+ROOT_DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="ROOT_DYNAMO_RO_ROLE_ARN")
+STAGING_DEPLOYMENTS_METADATA = get_aws_const(const_name="STAGING_DEPLOYMENTS_METADATA")
 
 
 class CustomerAccountInfo:
@@ -38,7 +40,7 @@ class AllCustomerAccountsInfo:
         results = {}
 
         for table_name, arn in (
-            (HOSTED_DEPLOYMENTS_METADATA, DYNAMO_RO_ROLE_ARN),
+            (HOSTED_DEPLOYMENTS_METADATA, HOSTED_DYNAMO_RO_ROLE_ARN),
             (STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN),
         ):
             db_search = DynamoDbSearch(table_name=table_name, arn=arn)

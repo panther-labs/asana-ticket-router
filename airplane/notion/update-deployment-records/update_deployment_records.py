@@ -1,6 +1,5 @@
 # Linked to https://app.airplane.dev/t/update_panther_deployments_notion_record [do not edit this line]
 import datetime
-import os
 import pytz
 import re
 import urllib.parse
@@ -117,7 +116,6 @@ def set_updated_field_to_false_for_ignored_accounts(all_accounts):
 def main(params):
     hosted_deploy_dir = (params["hosted_deploy_dir"]
                          if "hosted_deploy_dir" in params else git_clone(repo="hosted-deployments", github_setup=True))
-    os.environ["DEPLOY_KEY_BASE64"] = os.environ.get("STAGING_DEPLOY_KEY_BASE64", None)
     staging_deploy_dir = (params["staging_deploy_dir"] if "staging_deploy_dir" in params else git_clone(
         repo="staging-deployments", github_setup=True))
     all_accounts = AllCustomerAccountsInfo(hosted_deploy_dir=hosted_deploy_dir, staging_deploy_dir=staging_deploy_dir)

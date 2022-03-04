@@ -2,6 +2,7 @@
 from datetime import datetime
 import os
 import re
+from pyshared.aws_consts import get_aws_const
 from pyshared.cloudformation_yaml import group_name_from_resource, get_cloudformation_export_value
 from pyshared.git_ops import git_add, git_clone, git_commit, git_push
 from ruamel.yaml import YAML
@@ -9,8 +10,7 @@ from collections import namedtuple
 
 REPOSITORY = "hosted-aws-management"
 GROUPS_FILE_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
-CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get("CLOUDFORMATION_READ_ONLY_ROLE_ARN",
-                                                   "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly")
+CLOUDFORMATION_READ_ONLY_ROLE_ARN = get_aws_const("CLOUDFORMATION_READ_ONLY_ROLE_ARN")
 TEMP_COMMENT_REGEX = "^# Temporary: .+ Expires: (20\d{2}-\d{1,2}-\d{1,2})(\\n)*$"
 
 GroupUser = namedtuple('GroupUser', ['group', 'user'])

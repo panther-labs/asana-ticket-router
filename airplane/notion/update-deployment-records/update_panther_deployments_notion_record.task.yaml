@@ -3,12 +3,6 @@ slug: update_panther_deployments_notion_record
 python:
   entrypoint: update_deployment_records.py
   envVars:
-    DYNAMO_REGION:
-      value: us-west-2
-    DYNAMO_RO_ROLE_ARN:
-      config: dynamo-ro-role-arn
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
-    ROOT_DYNAMO_RO_ROLE_ARN:
-      config: root-dynamo-ro-role-arn
 timeout: 3600

@@ -1,6 +1,8 @@
 # Linked to https://app.airplane.dev/t/modify_hosted_root_groups_zav [do not edit this line]
 
 import os
+
+from aws_consts import get_aws_const
 from pyshared.cloudformation_yaml import get_cloudformation_export_name, get_group_membership_list
 from pyshared.git_ops import git_add, git_clone, git_commit, git_push
 from ruamel.yaml import YAML
@@ -8,8 +10,7 @@ from ruamel.yaml.comments import TaggedScalar
 
 REPOSITORY = "hosted-aws-management"
 GROUPS_FILE_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
-CLOUDFORMATION_READ_ONLY_ROLE_ARN = os.environ.get("CLOUDFORMATION_READ_ONLY_ROLE_ARN",
-                                                   "arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly")
+CLOUDFORMATION_READ_ONLY_ROLE_ARN = get_aws_const("CLOUDFORMATION_READ_ONLY_ROLE_ARN")
 
 
 def add_user_to_group(data, params):

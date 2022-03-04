@@ -1,8 +1,7 @@
 # Linked to https://app.airplane.dev/t/deployment_statisitics [do not edit this line]
-import boto3
-import os
 from datetime import datetime, timedelta
 
+from pyshared.aws_consts import get_aws_const
 from pyshared.aws_creds import get_credentialed_client
 
 
@@ -13,8 +12,7 @@ def main(params):
     print(f"Filtering from {date}")
 
     client = get_credentialed_client(service_name="stepfunctions",
-                                     arns=os.environ.get("HOSTED_ROOT_ROLE_ARN",
-                                                         "arn:aws:iam::255674391660:role/AirplaneStepFunctionReadOnly"),
+                                     arns=get_aws_const("STEP_FUNCTION_RO_ROLE_ARN"),
                                      desc="deployment_statistics",
                                      region="us-west-2")
 

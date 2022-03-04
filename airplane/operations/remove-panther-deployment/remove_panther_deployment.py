@@ -6,22 +6,23 @@ import yaml
 from pyshared.aws_creds import get_credentialed_resource
 from pyshared.ddb_hosted_deploy_retriever import DdbHostedDeployAccountInfo
 from pyshared.git_ops import git_clone
+from pyshared.aws_consts import get_aws_const
 
-CUSTOMER_SUPPORT_ROLE_ARN = os.environ.get("CUSTOMER_SUPPORT_ROLE_ARN")
-DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
-DYNAMO_RO_ROLE_ARN = os.environ.get("DYNAMO_RO_ROLE_ARN")
+CUSTOMER_SUPPORT_ROLE_ARN = get_aws_const(const_name="CUSTOMER_SUPPORT_ROLE_ARN")
+HOSTED_DYNAMO_REGION = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_REGION")
+HOSTED_DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_ARN")
 
 
 def get_account_info(fairytale_name):
     account_info = DdbHostedDeployAccountInfo(fairytale_name=fairytale_name,
-                                              ddb_arn=DYNAMO_RO_ROLE_ARN,
-                                              ddb_region=DYNAMO_REGION)
+                                              ddb_arn=HOSTED_DYNAMO_RO_ROLE_ARN,
+                                              ddb_region=HOSTED_DYNAMO_REGION)
 
     region = account_info.get_customer_attr(attr="region")
     aws_account_id = account_info.get_customer_attr(attr="aws_account_id")
 
     account_support_role_arn = f"arn:aws:iam::{aws_account_id}:role/PantherSupportRole-{region}"
-    arns = (CUSTOMER_SUPPORT_ROLE_ARN, account_support_role_arn) if CUSTOMER_SUPPORT_ROLE_ARN else None
+    arns = (CUSTOMER_SUPPORT_ROLE_ARN, account_support_role_arn)
 
     return region, arns
 

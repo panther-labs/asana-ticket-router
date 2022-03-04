@@ -4,13 +4,14 @@ import pprint
 import os
 import tenacity
 
+from pyshared.aws_consts import get_aws_const
 from pyshared.aws_creds import get_credentialed_client
 
-STATE_MACHINE_ARN = os.environ.get("STATE_MACHINE_ARN")
+STATE_MACHINE_ARN = get_aws_const(const_name="STATE_MACHINE_ARN")
 STATE_MACHINE_POLL_FREQUENCY_SECS = 60
 STATE_MACHINE_TIMEOUT_SECS = 3600
-STEP_FUNCTION_RO_ROLE_ARN = os.environ.get("STEP_FUNCTION_RO_ROLE_ARN")
-STEP_FUNCTION_REGION = os.environ.get("STEP_FUNCTION_REGION")
+STEP_FUNCTION_RO_ROLE_ARN = get_aws_const(const_name="STEP_FUNCTION_RO_ROLE_ARN")
+STEP_FUNCTION_REGION = get_aws_const(const_name="STEP_FUNCTION_RO_ROLE_REGION")
 
 
 def print_after_query(retry_state):

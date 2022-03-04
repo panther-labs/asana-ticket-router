@@ -1,11 +1,12 @@
 # Linked to https://app.airplane.dev/t/move_account_to_deactivated_ou [do not edit this line]
 import os
 
+from pyshared.aws_consts import get_aws_const
 from pyshared.aws_creds import get_credentialed_client
 from pyshared.ddb_hosted_deploy_retriever import DdbHostedDeployAccountInfo
 
-DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
-DYNAMO_RO_ROLE_ARN = os.environ.get("DYNAMO_RO_ROLE_ARN")
+DYNAMO_REGION = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_REGION")
+DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_ARN")
 ORG_ROLE_ARN = os.environ.get("ORG_ROLE_ARN")
 ORG_REGION = os.environ.get("ORG_ROLE_REGION")
 

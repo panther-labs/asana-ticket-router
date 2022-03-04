@@ -21,3 +21,5 @@ REPOSITORY=staging-deployments git-clone
 echo "staging-deployments"
 ls staging-deployments
 
+export $(cat-aws-consts)
+echo "Customer support role: ${CUSTOMER_SUPPORT_ROLE_ARN}"

@@ -4,9 +4,10 @@ import tenacity
 from boto3.dynamodb.conditions import Key
 from functools import reduce
 
+from pyshared.aws_consts import get_aws_const
 from pyshared.aws_creds import get_credentialed_resource
 
-DYNAMO_REGION = os.environ.get("DYNAMO_REGION", "us-west-2")
+DYNAMO_REGION = get_aws_const("HOSTED_DYNAMO_RO_ROLE_REGION")
 POLL_FREQUENCY_SECS = int(os.environ.get("POLL_FREQUENCY_SECONDS", 60))
 POLL_TIMEOUT_SECS = int(os.environ.get("POLL_TIMEOUT_SECONDS", 900))
 

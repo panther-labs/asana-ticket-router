@@ -10,10 +10,4 @@ python:
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-StepFunctionReadOnly
-    STATE_MACHINE_ARN:
-      value: arn:aws:states:us-west-2:255674391660:stateMachine:AutomatedDeploymentStateMachine-y5bh5L9a5z41
-    STEP_FUNCTION_REGION:
-      value: us-west-2
-    STEP_FUNCTION_RO_ROLE_ARN:
-      config: step-function-ro-role-arn
 timeout: 3600

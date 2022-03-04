@@ -10,14 +10,6 @@ parameters:
 python:
   entrypoint: aws_account_id_retriever.py
   envVars:
-    DYNAMO_AWS_ID:
-      value: "255674391660"
-    DYNAMO_REGION:
-      value: us-west-2
-    DYNAMO_ROLE_NAME:
-      value: AirplaneDynamoDBReadOnly
-    DYNAMO_RO_ROLE_ARN:
-      config: dynamo-ro-role-arn
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
     POLL_FREQUENCY_SECONDS:

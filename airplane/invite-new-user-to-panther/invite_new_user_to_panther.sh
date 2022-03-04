@@ -12,6 +12,7 @@ last_name="${PARAM_LAST_NAME}"
 resend_invitation="${PARAM_RESEND_INVITATION}"
 test_run="${PARAM_AIRPLANE_TEST_RUN}"
 user_role="${PARAM_ROLE}"
+export $(cat-aws-consts)
 
 # Retrieve deployment metadata
 deployment_metadata=$(ddb-get-deployment-metadata -f "${fairytale_name}" -p "Item")

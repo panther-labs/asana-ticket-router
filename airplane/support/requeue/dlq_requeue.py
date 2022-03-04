@@ -4,6 +4,8 @@ import boto3
 import os
 import json
 
+from pyshared.aws_consts import get_aws_const
+
 
 def main(params):
     account = params["aws_account_id"]
@@ -18,8 +20,7 @@ def main(params):
     hosted_root_sts_client = get_client(hosted_root_conn, "sts", region)
 
     # Assume role in saas account
-    customer_acc_conn = assume_customer_support_role(hosted_root_sts_client,
-                                                     account, region)
+    customer_acc_conn = assume_customer_support_role(hosted_root_sts_client, account, region)
 
     # Invoke ops-tool
     lambda_client = get_client(customer_acc_conn, "lambda", region)
@@ -29,9 +30,7 @@ def main(params):
 def assume_hosted_root_support_role():
     sts_conn = boto3.client("sts")
 
-    hosted_root_arn = os.environ.get(
-        "HOSTED_ROOT_SUPPORT_ROLE_ARN",
-        "arn:aws:iam::255674391660:role/CustomerSupport")
+    hosted_root_arn = get_aws_const(const_name="CUSTOMER_SUPPORT_ROLE_ARN")
 
     return sts_conn.assume_role(
         RoleArn=hosted_root_arn,
