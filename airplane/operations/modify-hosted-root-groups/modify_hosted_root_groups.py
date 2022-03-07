@@ -2,7 +2,7 @@
 
 import os
 
-from aws_consts import get_aws_const
+from pyshared.aws_consts import get_aws_const
 from pyshared.cloudformation_yaml import get_cloudformation_export_name, get_group_membership_list
 from pyshared.git_ops import git_add, git_clone, git_commit, git_push
 from ruamel.yaml import YAML
