@@ -170,6 +170,7 @@ class SERVICE(Enum):
     PIP_LAYER_BUILDER = 'panther-pip-layer-builder'
     POLICY_ENGINE = 'panther-policy-engine'
     REPLAY_API = 'panther-replay-api'
+    REPLAY_LOG_PUSHER = 'panther-replay-log-pusher'
     RESOURCES_API = 'panther-resources-api'
     RESOURCE_PROCESSOR = 'panther-resource-processor'
     RULES_ENGINE = 'panther-rules-engine'
@@ -198,6 +199,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.PIP_LAYER_BUILDER,
         SERVICE.POLICY_ENGINE,
         SERVICE.REPLAY_API,
+        SERVICE.REPLAY_LOG_PUSHER,
         SERVICE.RESOURCES_API,
         SERVICE.RESOURCE_PROCESSOR,
         SERVICE.SNAPSHOT_POLLERS,
