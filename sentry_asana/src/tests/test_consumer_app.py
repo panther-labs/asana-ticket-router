@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name
+import asyncio
 import pytest
 from unittest import mock
 
@@ -10,6 +11,7 @@ from ..common.components.logger.service import LoggerService
 from ..common.components.logger.containers import LoggerContainer
 from ..consumer.components.application import ApplicationContainer
 from ..consumer.components.sentry.containers import SentryContainer
+from ..consumer.components.requests.containers import RequestsContainer
 from ..consumer.components.sentry.service import SentryService
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
@@ -21,7 +23,7 @@ def container() -> ApplicationContainer:
 
     logger_container = LoggerContainer()
     serializer_container = SerializerContainer()
-
+    requests_container = RequestsContainer()
     # Need to provide a mock client for SecretsManager
     secretsmanager_container = SecretsManagerContainer(
         config={'secret_name': 'SECRET_NAME'},
@@ -40,6 +42,7 @@ def container() -> ApplicationContainer:
     sentry_container = SentryContainer(
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
+        requests=requests_container,
         keys=secretsmanager_container.keys
     )
 
@@ -65,7 +68,7 @@ def container() -> ApplicationContainer:
 
 @pytest.mark.asyncio
 async def test_application_instance(container: ApplicationContainer) -> None:
-    """Test application instances"""
+    """Test consumer application instances"""
     logger_service = container.logger_container.logger_service()
     secretsmanager_service = container.secretsmanager_container.secretsmanager_service()
     serializer_service = container.serializer_container.serializer_service()

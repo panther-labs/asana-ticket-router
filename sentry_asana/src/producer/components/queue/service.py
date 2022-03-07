@@ -23,7 +23,7 @@ class QueueService:
 
     async def put(self, message: str) -> SendMessageResultTypeDef:
         """Put a message onto a queue"""
-        self._logger.debug("Sending to queue")
+        self._logger.info("Sending to queue")
         return await self._loop().run_in_executor(
             None,
             partial(

@@ -49,6 +49,7 @@ class AsanaService:
 
     async def _get_projects_in_portfolio(self, portfolio_gid: str) -> List[Dict]:
         """Dispatch a call to find a Sentry issue details by its issue_id"""
+        self._logger.info('Getting projects in portfolio')
         return await self._loop().run_in_executor(
             None,
             partial(
@@ -64,6 +65,7 @@ class AsanaService:
 
         If a task has been deleted (Forbidden), returns None
         """
+        self._logger.info('Finding asana task')
         try:
             return await self._loop().run_in_executor(
                 None,
@@ -83,7 +85,7 @@ class AsanaService:
 
     async def _create_asana_task(self, task: Dict) -> Dict:
         """Dispatch a call to create a new Asana task"""
-        self._logger.debug("Creating asana task")
+        self._logger.info("Creating asana task")
         return await self._loop().run_in_executor(
             None,
             partial(
@@ -99,7 +101,7 @@ class AsanaService:
             prev_asana_link: Optional[str]
     ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task"""
-        self._logger.debug('Attempting to create an Asana task')
+        self._logger.info('Constructing an asana task')
         asana_fields = await self._extract_fields(sentry_event)
         notes = self._create_task_note(
             asana_fields,
@@ -161,7 +163,7 @@ class AsanaService:
         prev_asana_link: Optional[str]
     ) -> str:
         """Create the note for the asana task"""
-        self._logger.debug('Creating task notes')
+        self._logger.debug('Creating asana task notes')
         note = (
             f'Sentry Issue URL: {fields.url}\n\n'
             f'Event Datetime: {fields.event_datetime}\n\n'
@@ -227,7 +229,7 @@ class AsanaService:
 
     async def _get_project_ids(self, environment: str, level: str, owning_team: EngTeam) -> List[str]:
         """Returns a list of project ids to attach to an Asana task"""
-        self._logger.debug("Getting project ids")
+        self._logger.debug("Getting relevant project ids")
         # If we are in local dev mode for sentry-asana, or
         # if the issue is from local development (panther-enterprise),
         # we use sandbox project boards
@@ -316,7 +318,7 @@ class AsanaService:
 
     def _create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
         """Create an asana tasks details"""
-        self._logger.debug("Creating asana task details")
+        self._logger.debug("Building asana task body")
         return {
             'name': fields.title,
             'projects': fields.project_gids,

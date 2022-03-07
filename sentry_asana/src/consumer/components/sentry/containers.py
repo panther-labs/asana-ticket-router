@@ -9,7 +9,6 @@
 from typing import Awaitable, Callable, Dict
 from dependency_injector import containers, providers
 from . import service
-from ..requests.containers import RequestsContainer
 
 sentry_pat: Callable[[Dict], str] = lambda keys: keys['SENTRY_PAT']
 
@@ -19,17 +18,13 @@ class SentryContainer(containers.DeclarativeContainer):
 
     logger = providers.Dependency()
     serializer = providers.Dependency()
+    requests = providers.Dependency()
     keys = providers.Dependency()
-
-    requests_container = providers.Container(
-        RequestsContainer,
-        logger=logger,
-    )
 
     sentry_service: Callable[..., Awaitable[service.SentryService]] = providers.Singleton(
         service.SentryService,
         logger=logger,
-        client=requests_container.requests_service,
+        client=requests,
         serializer=serializer,
         bearer=providers.Resource(sentry_pat, keys)
     )

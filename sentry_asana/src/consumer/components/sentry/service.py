@@ -27,6 +27,7 @@ class SentryService:
 
     async def find_by_id(self, issue_id: str) -> Dict:
         """Find a Sentry issue details by its issue_id"""
+        self._logger.info('Fetching sentry issue details: %s', issue_id)
         response = await self._client.request(
             'GET',
             f'https://sentry.io/api/0/issues/{issue_id}/',
@@ -36,11 +37,11 @@ class SentryService:
             },
         )
         response.raise_for_status()
-        return response.json()
+        return await response.json(loads=self._serializer.parse)
 
     async def add_link(self, issue_id: str, asana_task_id: str) -> Dict:
         """Link an asana task Id to a Sentry issue"""
-        self._logger.debug('Adding asana link to issue: %s', issue_id)
+        self._logger.info('Adding asana link to issue: %s', issue_id)
         response = await self._client.request(
             'POST',
             f'https://sentry.io/api/0/issues/{issue_id}/plugins/asana/link/',
@@ -54,7 +55,7 @@ class SentryService:
             })
         )
         response.raise_for_status()
-        return response.json()
+        return await response.json(loads=self._serializer.parse)
 
     async def get_sentry_asana_link(self, issue_id: str) -> Optional[str]:
         """Gets an asana link from a sentry issue"""

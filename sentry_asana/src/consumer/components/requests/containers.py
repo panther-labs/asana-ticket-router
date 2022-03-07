@@ -6,21 +6,19 @@
 # falls under the Panther Commercial License to the extent it is permitted.
 # pylint: disable=no-member
 # mypy: ignore-errors
-import asyncio
-import requests
 from dependency_injector import containers, providers
 from . import service
 
 
 class RequestsContainer(containers.DeclarativeContainer):
-    """Sentry Container"""
+    """Requests Container"""
 
     logger = providers.Dependency()
-    requests_client = providers.Dependency(default=requests)
+    serializer = providers.Dependency()
+    session = providers.Dependency(default=None)
 
     requests_service = providers.Singleton(
         service.RequestsService,
-        loop=asyncio.get_event_loop,
         logger=logger,
-        client=requests_client
+        session=session
     )

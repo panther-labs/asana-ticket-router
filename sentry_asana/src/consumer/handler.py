@@ -6,12 +6,14 @@
 # falls under the Panther Commercial License to the extent it is permitted.
 # pylint: disable=no-member
 import asyncio
+from functools import partial
 import traceback
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Callable
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
 from consumer.components.sentry.service import SentryService
+from consumer.components.requests.containers import RequestsContainer
 from consumer.components.asana.service import AsanaService
 from consumer.components.application import ApplicationContainer
 
@@ -25,13 +27,34 @@ app.config.from_yaml(
 app.logger_container.configure_logger()
 
 
-def handler(event: Dict, _context: Any) -> Dict[str, int]:
+def handler(
+    *args: Any,
+    **kwargs: Any
+) -> Dict:
     """AWS Lambda entry point"""
     app.wire(modules=[__name__])
-    return asyncio.run(main(event, _context))
+    wrapped = use_session(callback=partial(main, *args, **kwargs))
+    return asyncio.run(wrapped)
 
 
-@inject
+@ inject
+async def use_session(
+    callback: Callable,
+    requests_container: RequestsContainer = Provide[ApplicationContainer.requests_container],
+) -> Dict[Any, Any]:
+    """Uses an HTTP Session via context"""
+    # Initialize a new singleton request service
+    requests_service = requests_container.requests_service()
+    # Use a session context. This mutates the service, but the other dependencies on the service
+    # need to be updated. Therefore, we override the service and reset the singleton which propagates
+    # automatically to the other containers.
+    async with requests_service.with_session():
+        requests_container.requests_service.override(requests_service)
+        requests_container.requests_service.reset()
+        return await callback()
+
+
+@ inject
 async def main(
     event: Dict,
     _context: Any,
@@ -42,6 +65,7 @@ async def main(
 
     # Extract the SQS records to process
     records: List[Dict] = event.get('Records', [])
+    log.info('Number of records to process: %d', len(records))
     tasks = list(map(process, records))
     status_tuples = await asyncio.gather(*tasks)
     statuses = list(status_tuples)
@@ -68,7 +92,7 @@ async def main(
     return response
 
 
-@inject
+@ inject
 async def process(
     record: Dict,
     logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
@@ -115,14 +139,14 @@ async def process(
             log.info('Linking success!')
             return {
                 'success': True,
-                'message': f'Asana task created ({new_task_gid})',
+                'message': f'asana task created ({new_task_gid})',
                 'message_id': message_id
             }
 
         log.error('Linking failed!')
         return {
             'success': False,
-            'message': f'Failed to link Sentry Issue ({issue_id}) with Asana Task ({new_task_gid})',
+            'message': f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})',
             'message_id': message_id
         }
 

@@ -32,7 +32,7 @@ class ValidatorContainer(containers.DeclarativeContainer):
 
     validator_service = providers.Singleton(
         service.ValidatorService,
-        loop=asyncio.get_event_loop,
+        loop=asyncio.get_running_loop,
         logger=logger,
         development=development,
         hmac=hmac.new,

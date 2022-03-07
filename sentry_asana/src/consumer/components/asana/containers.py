@@ -36,7 +36,7 @@ class AsanaContainer(containers.DeclarativeContainer):
 
     asana_service = providers.Singleton(
         service.AsanaService,
-        loop=asyncio.get_event_loop,
+        loop=asyncio.get_running_loop,
         development=development,
         dev_asana_sentry_project=config.dev_asana_sentry_project,
         release_testing_portfolio=config.release_testing_portfolio,

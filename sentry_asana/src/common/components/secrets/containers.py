@@ -32,7 +32,7 @@ class SecretsManagerContainer(containers.DeclarativeContainer):
 
     secretsmanager_service = providers.Singleton(
         service.SecretsManagerService,
-        loop=asyncio.get_event_loop,
+        loop=asyncio.get_running_loop,
         logger=logger,
         client=secretsmanager_client,
         secret_name=config.secret_name,

@@ -61,7 +61,7 @@ def container() -> ApplicationContainer:
 
 @pytest.mark.asyncio
 async def test_application_instance(container: ApplicationContainer) -> None:
-    """Test application instances"""
+    """Test producer application instances"""
     logger_service = container.logger_container.logger_service()
     queue_service = container.queue_container.queue_service()
     secretsmanager_service = container.secretsmanager_container.secretsmanager_service()

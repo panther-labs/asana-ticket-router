@@ -12,6 +12,7 @@ from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
 from .asana.containers import AsanaContainer
 from .sentry.containers import SentryContainer
+from .requests.containers import RequestsContainer
 
 
 class ApplicationContainer(containers.DeclarativeContainer):
@@ -30,6 +31,14 @@ class ApplicationContainer(containers.DeclarativeContainer):
         SerializerContainer,
     )
 
+    # HTTP client
+    requests_container = providers.Container(
+        RequestsContainer,
+        logger=logger_container.logger,
+        serializer=serializer_container.serializer_service,
+        session=None,
+    )
+
     # SecretsManager
     secretsmanager_container = providers.Container(
         SecretsManagerContainer,
@@ -43,6 +52,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         SentryContainer,
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
+        requests=requests_container.requests_service,
         keys=secretsmanager_container.keys
     )
 

@@ -1,9 +1,9 @@
 # pylint: disable=redefined-outer-name
+# mypy: ignore-errors
 
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 import pytest
-from requests import HTTPError, Response
-from functools import partial
+from aiohttp import ClientResponse, ClientResponseError
 
 from ..consumer.components.requests.containers import RequestsContainer
 from ..common.components.secrets.containers import SecretsManagerContainer
@@ -14,7 +14,7 @@ from ..consumer.components.sentry.service import SentryService
 
 
 def raise_except() -> Exception:
-    raise HTTPError('foobar')
+    raise ClientResponseError(request_info=None, history=None)  # type: ignore
 
 
 @pytest.fixture
@@ -51,17 +51,19 @@ def container() -> SentryContainer:
 async def test_find_by_id(container: SentryContainer) -> None:
     """Test find_by_id"""
 
-    requests_client_mock = Mock()
-    mock_response = Mock(Response)
-    mock_response.json.return_value = {'foo': 'bar'}
-    requests_client_mock.request.return_value = mock_response
+    response_mock = AsyncMock(ClientResponse)
+    response_mock.json.return_value = {'foo': 'bar'}
+    session_mock = AsyncMock()
+    session_mock.request.return_value = response_mock
 
     requests_container = RequestsContainer(
         logger=LoggerContainer.logger,
-        requests_client=requests_client_mock,
+        serializer=SerializerContainer.serializer_service,
+        session=session_mock,
     )
+    requests_service = requests_container.requests_service()
 
-    with container.requests_container.override(requests_container):
+    with container.requests.override(requests_service):
         service: SentryService = await container.sentry_service()
 
         response = await service.find_by_id('some task id')
@@ -72,21 +74,23 @@ async def test_find_by_id(container: SentryContainer) -> None:
 async def test_find_by_id_exception(container: SentryContainer) -> None:
     """Test find_by_id exception"""
 
-    requests_client_mock = Mock()
-    mock_response = Mock(Response)
-    mock_response.raise_for_status.side_effect = raise_except
-    requests_client_mock.request.return_value = mock_response
+    response_mock = AsyncMock(ClientResponse)
+    response_mock.raise_for_status.side_effect = raise_except
+    session_mock = AsyncMock()
+    session_mock.request.return_value = response_mock
 
     requests_container = RequestsContainer(
         logger=LoggerContainer.logger,
-        requests_client=requests_client_mock,
+        serializer=SerializerContainer.serializer_service,
+        session=session_mock,
     )
+    requests_service = requests_container.requests_service()
 
     # Test with exception
-    with container.requests_container.override(requests_container):
+    with container.requests.override(requests_service):
         service: SentryService = await container.sentry_service()
 
-        with pytest.raises(HTTPError):
+        with pytest.raises(ClientResponseError):
             response = await service.find_by_id('some task id')
             assert response is None
 
@@ -95,17 +99,19 @@ async def test_find_by_id_exception(container: SentryContainer) -> None:
 async def test_add_link(container: SentryContainer) -> None:
     """Test add_link"""
 
-    requests_client_mock = Mock()
-    mock_response = Mock(Response)
-    mock_response.json.return_value = {'foo': 'bar'}
-    requests_client_mock.request.return_value = mock_response
+    response_mock = AsyncMock(ClientResponse)
+    response_mock.json.return_value = {'foo': 'bar'}
+    session_mock = AsyncMock()
+    session_mock.request.return_value = response_mock
 
     requests_container = RequestsContainer(
         logger=LoggerContainer.logger,
-        requests_client=requests_client_mock,
+        serializer=SerializerContainer.serializer_service,
+        session=session_mock,
     )
+    requests_service = requests_container.requests_service()
 
-    with container.requests_container.override(requests_container):
+    with container.requests.override(requests_service):
         service: SentryService = await container.sentry_service()
 
         response = await service.add_link('issue_id', 'asana_task_id')
@@ -116,21 +122,23 @@ async def test_add_link(container: SentryContainer) -> None:
 async def test_add_link_exception(container: SentryContainer) -> None:
     """Test add_link exception"""
 
-    requests_client_mock = Mock()
-    mock_response = Mock(Response)
-    mock_response.raise_for_status.side_effect = raise_except
-    requests_client_mock.request.return_value = mock_response
+    response_mock = AsyncMock(ClientResponse)
+    response_mock.raise_for_status.side_effect = raise_except
+    session_mock = AsyncMock()
+    session_mock.request.return_value = response_mock
 
     requests_container = RequestsContainer(
         logger=LoggerContainer.logger,
-        requests_client=requests_client_mock,
+        serializer=SerializerContainer.serializer_service,
+        session=session_mock,
     )
+    requests_service = requests_container.requests_service()
 
     # Test with exception
-    with container.requests_container.override(requests_container):
+    with container.requests.override(requests_service):
         service: SentryService = await container.sentry_service()
 
-        with pytest.raises(HTTPError):
+        with pytest.raises(ClientResponseError):
             response = await service.add_link('issue_id', 'asana_task_id')
             assert response is None
 
@@ -139,18 +147,20 @@ async def test_add_link_exception(container: SentryContainer) -> None:
 async def test_get_sentry_asana_link(container: SentryContainer) -> None:
     """Test get_sentry_asana_link exception: no plugins"""
 
-    requests_client_mock = Mock()
-    mock_response = Mock(Response)
+    response_mock = AsyncMock(ClientResponse)
     # Set to a paylaod that triggers the first exception
-    mock_response.json.return_value = {'foo': 'bar'}
-    requests_client_mock.request.return_value = mock_response
+    response_mock.json.return_value = {'foo': 'bar'}
+    session_mock = AsyncMock()
+    session_mock.request.return_value = response_mock
 
     requests_container = RequestsContainer(
         logger=LoggerContainer.logger,
-        requests_client=requests_client_mock,
+        serializer=SerializerContainer.serializer_service,
+        session=session_mock,
     )
+    requests_service = requests_container.requests_service()
 
-    with container.requests_container.override(requests_container):
+    with container.requests.override(requests_service):
         service: SentryService = await container.sentry_service()
 
         with pytest.raises(ValueError):
@@ -160,7 +170,7 @@ async def test_get_sentry_asana_link(container: SentryContainer) -> None:
             assert response is None
 
     # Next exception
-    mock_response.json.return_value = {'pluginIssues': []}
+    response_mock.json.return_value = {'pluginIssues': []}
     with pytest.raises(ValueError):
         response = await service.get_sentry_asana_link('issue_id')
         assert str(
@@ -168,7 +178,7 @@ async def test_get_sentry_asana_link(container: SentryContainer) -> None:
         assert response is None
 
     # Test for no asana_link
-    mock_response.json.return_value = {
+    response_mock.json.return_value = {
         'pluginIssues': [
             {
                 'id': 'asana'
@@ -179,7 +189,7 @@ async def test_get_sentry_asana_link(container: SentryContainer) -> None:
     assert response is None
 
     # Test found asana_link
-    mock_response.json.return_value = {
+    response_mock.json.return_value = {
         'pluginIssues': [
             {
                 'id': 'asana',

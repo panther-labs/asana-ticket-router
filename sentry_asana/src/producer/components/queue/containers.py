@@ -26,7 +26,7 @@ class QueueContainer(containers.DeclarativeContainer):
 
     queue_service = providers.Singleton(
         service.QueueService,
-        loop=asyncio.get_event_loop,
+        loop=asyncio.get_running_loop,
         logger=logger,
         client=sqs_client,
         queue_url=config.queue_url,
