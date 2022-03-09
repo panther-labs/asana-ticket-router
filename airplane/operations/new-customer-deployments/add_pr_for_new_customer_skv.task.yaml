@@ -76,7 +76,7 @@ shell:
   entrypoint: create_new_customer.sh
   envVars:
     DEPLOY_GROUP:
-      value: N
+      value: L
     HOSTED_DEPLOYMENTS_BRANCH:
       value: master
 timeout: 3600
