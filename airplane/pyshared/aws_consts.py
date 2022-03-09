@@ -6,7 +6,7 @@ _aws_consts = {}
 with open(_ARN_FILE) as arn_file:
     for line in arn_file.readlines():
         key, val = line.split("=")
-        _aws_consts[key] = val.strip("\n").strip('"')
+        _aws_consts[key] = val.strip("\n")
 
 
 def get_aws_const(const_name: str) -> str:
