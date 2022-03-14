@@ -1,6 +1,8 @@
 name: Update Hosted Root Group Membership
 slug: modify_hosted_root_groups_zav
-description: Used to add/remove users from AWS groups in hosted-root
+description: >
+  Used to add/remove users from AWS groups in hosted-root. 
+  Once approved, confirmation of membership will appear in #eng-deployment-notifications.
 parameters:
 - name: Add or Remove
   slug: add_or_remove
