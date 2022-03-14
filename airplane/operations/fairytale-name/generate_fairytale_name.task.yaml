@@ -1,0 +1,4 @@
+name: Generate Fairytale Name
+slug: generate_fairytale_name
+python:
+  entrypoint: generate_fairytale_name.py

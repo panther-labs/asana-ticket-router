@@ -68,6 +68,11 @@ parameters:
   slug: email_address
   type: shorttext
   regex: "^\\S+@\\S+\\.\\S+$"
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: Fairytale name of the customer - can be left blank to autogenerate
+  required: false
 - name: Airplane Test Run
   slug: airplane_test_run
   type: boolean
