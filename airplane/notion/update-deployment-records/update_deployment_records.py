@@ -125,14 +125,13 @@ def main(params):
     set_updated_field_to_false_for_ignored_accounts(all_accounts=all_accounts)
 
     for account_info in all_accounts:
-        changed = False
         expected_attrs = get_expected_customer_attributes(account_info)
         for attr in expected_attrs:
             current_val, = getattr(account_info.notion_info, attr),
             update_val = expected_attrs[attr]
             if needs_update(attr, current_val, update_val, account_info.notion_info.page):
                 print(f"{attr} will be updated for {account_info.fairytale_name}:\n{current_val} -> {update_val}\n\n")
+                # Attribute changes to Notional automatically update the page as of version 0.1.0:
+                # https://github.com/jheddings/notional/commit/d3725b1bd7b283e7269645fb59a178440e1a4fd1
+                # Notion pages no longer have a commit function
                 setattr(account_info.notion_info, attr, update_val)
-                changed = True
-        if changed:
-            account_info.notion_info.commit()

@@ -10,11 +10,8 @@ def get_backend(backend):
 
 
 def main(params):
-    print("parameters:", params)
-
     customer = params["account_name"]
     fairytale = params["fairytale_name"]
-    email = f'panther-hosted+{fairytale}@runpanther.io'
     region = params["region"]
     aws_account_id = params["aws_account_id"]
     support_role = params["support_role"]
@@ -39,8 +36,6 @@ def main(params):
 
     if params["airplane_test_run"]:
         task.Service_Type = "Airplane Testing"
-
-    task.commit()
 
     # Return output https://docs.airplane.dev/tasks/outputs
     return params
