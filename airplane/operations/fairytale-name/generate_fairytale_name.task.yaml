@@ -5,7 +5,7 @@ parameters:
   slug: fairytale_name
   type: shorttext
   description: |-
-    Fairytale name of the customer. Useful is this task is being used as a pass-through to standardize an already
+    Fairytale name of the customer. Useful if this task is being used as a pass-through to standardize an already
     existing fairytale name in an Airplane runbook.
   required: false
 python:
