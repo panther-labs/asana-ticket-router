@@ -324,9 +324,10 @@ class AsanaService:
             'projects': fields.project_gids,
             'custom_fields': {
                 CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
-                CUSTOMFIELD.IMPACTED.value: CUSTOMFIELD.ONE_CUSTOMER.value,
+                # CUSTOMFIELD.IMPACTED.value: CUSTOMFIELD.ONE_CUSTOMER.value,
                 CUSTOMFIELD.PRIORITY.value: fields.priority.value,
                 CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
+                # TODO: replace with "TYPE: ON_CALL" when they're defined in Asana
                 CUSTOMFIELD.TASK_TYPE.value: CUSTOMFIELD.INVESTIGATE.value,
                 CUSTOMFIELD.TEAM.value: fields.assigned_team.team_id,
             },

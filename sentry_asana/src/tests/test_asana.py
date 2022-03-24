@@ -383,7 +383,6 @@ async def test_create_task_body(container: AsanaContainer, asana_fields: AsanaFi
             CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
             CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
-            CUSTOMFIELD.IMPACTED.value: CUSTOMFIELD.ONE_CUSTOMER.value,
         },
         'notes': 'some notes'
     }
@@ -403,7 +402,6 @@ async def test_create_asana_task(container: AsanaContainer, asana_fields: AsanaF
             CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
             CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
-            CUSTOMFIELD.IMPACTED.value: CUSTOMFIELD.ONE_CUSTOMER.value,
         },
         'notes': 'some notes'
     }
