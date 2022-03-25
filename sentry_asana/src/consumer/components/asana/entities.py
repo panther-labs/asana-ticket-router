@@ -154,6 +154,7 @@ class SERVICE(Enum):
     DATA_ARCHIVER = 'panther-data-archiver'
     DETECTIONS_ENGINE = 'panther-detections-engine'
     GRAPH_API = 'panther-graph-api'
+    GREYNOISE_PROCESSOR = 'panther-greynoise-processor'
     HOLDING_TANK = 'panther-holding-tank'
     LAYER_MANAGER = 'panther-layer-manager'
     LOGTYPES_API = 'panther-logtypes-api'
@@ -227,6 +228,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.DATACATALOG_COMPACTOR_CALLBACKS,
         SERVICE.DATACATALOG_COMPACTOR_REAPER,
         SERVICE.DATACATALOG_UPDATER,
+        SERVICE.GREYNOISE_PROCESSOR,
         SERVICE.LOG_ALERT_FORWARDER,
         SERVICE.LOOKUP_TABLES_API,
         SERVICE.OUTPUTS_API,
