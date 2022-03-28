@@ -289,7 +289,7 @@ async def test_get_owning_team(container: AsanaContainer) -> None:
     assert team is ENG_TEAMS[TEAM.INGESTION], 'Should route to INGESTION'
 
     team = service._get_owning_team(
-        SERVICE.SNAPSHOT_SCHEDULER.value, None)
+        SERVICE.DETECTIONS_ENGINE.value, None)
     assert team is ENG_TEAMS[TEAM.DETECTIONS], 'Should route to DETECTIONS'
 
     team = service._get_owning_team(
