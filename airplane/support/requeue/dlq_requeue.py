@@ -1,85 +1,85 @@
 # Linked to https://app.airplane.dev/t/dlq_requeue [do not edit this line]
 
-import boto3
-import os
 import json
 
 from pyshared.aws_consts import get_aws_const
+from pyshared.aws_creds import get_credentialed_client
 
 
 def main(params):
-    account = params["aws_account_id"]
+    account_id = params["aws_account_id"]
     from_queue = params["from_queue"]
-    to_queue = params["to_queue"]
+    to_queue = params.get("to_queue")
     region = params["region"]
 
-    # Auditing - AIRPLANE_RUNNER_EMAIL
+    client_kwargs = {
+        "arns":
+        (get_aws_const("CUSTOMER_SUPPORT_ROLE_ARN"), f"arn:aws:iam::{account_id}:role/PantherSupportRole-{region}"),
+        "region": region,
+        "desc": "airplane_dlq"
+    }
 
-    # Assume role in hosted-root
-    hosted_root_conn = assume_hosted_root_support_role()
-    hosted_root_sts_client = get_client(hosted_root_conn, "sts", region)
-
-    # Assume role in saas account
-    customer_acc_conn = assume_customer_support_role(hosted_root_sts_client, account, region)
+    if to_queue is None:
+        to_queue = get_to_queue(from_queue, client_kwargs)
+        print(f"Using to_queue '{to_queue}'")
 
     # Invoke ops-tool
-    lambda_client = get_client(customer_acc_conn, "lambda", region)
-    invoke(lambda_client, from_queue, to_queue)
+    lambda_client = get_credentialed_client(service_name="lambda", **client_kwargs)
+    response_payload = invoke(lambda_client, from_queue, to_queue)
+
+    if "errorMessage" in response_payload:
+        raise RuntimeError(f"The DQL lambda response had an error: {response_payload}")
 
 
-def assume_hosted_root_support_role():
-    sts_conn = boto3.client("sts")
+def get_to_queue(from_queue, client_kwargs):
+    sqs_client = get_credentialed_client(service_name="sqs", **client_kwargs)
+    dlq_url = sqs_client.get_queue_url(QueueName=from_queue)["QueueUrl"]
+    queue_urls = sqs_client.list_dead_letter_source_queues(QueueUrl=dlq_url)["queueUrls"]
+    if len(queue_urls) != 1:
+        raise RuntimeError(f"""Could not find the to queue!
+There was not exactly one source queue from this DLQ.
+Source queues found: {queue_urls}""")
 
-    hosted_root_arn = get_aws_const(const_name="CUSTOMER_SUPPORT_ROLE_ARN")
-
-    return sts_conn.assume_role(
-        RoleArn=hosted_root_arn,
-        RoleSessionName="airplane_support",
-    )
+    return _get_queue_name_from_queue_url(queue_urls[0])
 
 
-def assume_customer_support_role(conn, account_id, region):
-    role_name = f"PantherSupportRole-{region}"
-
-    customer_role_arn = f"arn:aws:iam::{account_id}:role/{role_name}"
-    print("customer_role_arn: ", customer_role_arn)
-
-    return conn.assume_role(
-        RoleArn=customer_role_arn,
-        RoleSessionName="support",
-    )
+def _get_queue_name_from_queue_url(url):
+    return url.rsplit("/", 1)[1]
 
 
 def invoke(client, from_queue, to_queue):
-    payload = {'requeue': {'fromQueue': from_queue, 'toQueue': to_queue}}
+    request_payload = {'requeue': {'fromQueue': from_queue, 'toQueue': to_queue}}
+    print("payload: ", request_payload)
 
-    print("payload: ", payload)
+    response_payload = None
+    while not _is_finished(response_payload):
+        response = client.invoke(
+            FunctionName="panther-ops-tools",
+            Payload=json.dumps(request_payload),
+            InvocationType="RequestResponse",
+        )
+        response_payload = json.loads(response.get("Payload").read().decode())
+        print(response_payload)
 
-    response = client.invoke(
-        FunctionName="panther-ops-tools",
-        Payload=json.dumps(payload),
-        InvocationType="RequestResponse",
-    )
-
-    print(response.get('Payload').read().decode())
+    return response_payload
 
 
-def get_client(conn, client, region):
-    return boto3.client(
-        client,
-        aws_access_key_id=conn["Credentials"]["AccessKeyId"],
-        aws_secret_access_key=conn["Credentials"]["SecretAccessKey"],
-        aws_session_token=conn["Credentials"]["SessionToken"],
-        region_name=region,
-    )
+def _is_finished(response_payload):
+    if (response_payload is None) or _is_batch_request_too_long(response_payload):
+        return False
+    return True
+
+
+def _is_batch_request_too_long(response_payload):
+    return "BatchRequestTooLong" in response_payload.get("errorMessage", "")
 
 
 if __name__ == "__main__":
-    params = {
+    args = {
         # gainful-wapiti
         'aws_account_id': "335415977059",
         'from_queue': "panther-alerts-queue-dlq",
         'to_queue': "panther-alerts-queue",
         'region': "us-east-2",
     }
-    main(params)
+    main(args)

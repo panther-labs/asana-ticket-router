@@ -8,9 +8,12 @@ parameters:
 - name: From Queue
   slug: from_queue
   type: shorttext
+  description: The dead letter queue
 - name: To Queue
   slug: to_queue
   type: shorttext
+  description: Skip this parameter to have Airplane figure out the right "to" queue for you
+  required: false
 - name: Region
   slug: region
   type: shorttext
