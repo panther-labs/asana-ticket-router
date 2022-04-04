@@ -1,4 +1,5 @@
-name: Deploy latest RC to Staging
+name: Deploy latest RC and GA
+description: Deploys latest RC to staging and internal and latest GA to alpha
 slug: deploy_staging_smq
 shell:
   entrypoint: deploy_staging.sh

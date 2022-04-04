@@ -1,81 +1,91 @@
 #!/bin/sh -eu
 # Linked to https://app.airplane.dev/t/deploy_staging_smq [do not edit this line]
 
-# Find latest RC artifact
+check_if_published() {
+    VERSION_STR="${1}"
+    VERSION_TYPE="${2}"
+
+    PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-enterprise-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
+    if [ "${PUBLISH_TIME}" = "" ]; then
+        echo "${VERSION_TYPE} ${VERSION_STR} publish is not complete"
+        exit 1
+    fi
+
+    echo "Found latest ${VERSION_TYPE}: ${VERSION_STR}"
+}
+
+# Find latest artifacts
 LATEST_RC=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep RC | grep -v 'RC/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
+LATEST_GA=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep '[0-9]\+\.[0-9]\+\.[0-9]\+/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
 
-PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-enterprise-us-west-2/${LATEST_RC}/panther.yml | awk '{print $1"T"$2}')
-if [ "${PUBLISH_TIME}" = "" ]; then
-    echo "RC ${LATEST_RC} publish is not complete"
-    exit 1
-fi
+check_if_published "${LATEST_RC}" "RC"
+check_if_published "${LATEST_GA}" "GA"
 
-echo "Found latest RC: ${LATEST_RC}"
-export LATEST_RC
+update_version_in_repo() {
+    REPO_NAME="${1}"
+    DEFAULT_BRANCH="${2}"
+    CONFIG_FILE="${3}"
+    VERSION="${4}"
+    COMMIT_MSG="${5}"
+
+    printf "\n\n=== Generating changes for ${REPO_NAME} ===\n"
+
+    if [ ! -d "${REPO_NAME}" ]; then
+        REPOSITORY="${REPO_NAME}" git-clone
+    fi
+
+    (
+        cd "${REPO_NAME}"
+        echo "$(pwd)"
+        git checkout "${DEFAULT_BRANCH}"
+        echo "pip3 install --quiet -r automation-scripts/requirements.txt"
+        pip3 install --quiet -r automation-scripts/requirements.txt
+
+        export VERSION
+        yq e -i '.Version = strenv(VERSION)' "${CONFIG_FILE}"
+
+        if $(git diff --quiet deployment-metadata); then
+            echo "No changes made"
+            exit 0
+        fi
+
+        # Generate and lint
+        python3 automation-scripts/generate.py
+        python3 automation-scripts/lint.py
+
+        #echo "Changes"
+        git diff deployment-metadata
+        git add deployment-metadata
+
+        echo "Staged changes"
+        git status
+
+        TITLE="Updating staging to '${LATEST_RC}'" git-commit
+        TEST_RUN=false git-push
+    )
+}
+
 
 ## staging-deployment
 (
-    printf "\n\n=== Generating changes for staging-deployments ===\n"
-    REPOSITORY=staging-deployments git-clone
-    cd staging-deployments
-    git checkout main
-
-    pip3 install --quiet -r automation-scripts/requirements.txt
-
     CONFIG_FILE="deployment-metadata/deployment-groups/staging.yml"
-    yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
-
-    if $(git diff --quiet deployment-metadata); then
-        echo "No changes made"
-        exit 0
-    fi
-
-    # Generate and lint
-    python3 automation-scripts/generate.py
-    python3 automation-scripts/lint.py
-
-    echo "Changes"
-    git diff deployment-metadata
-    git add deployment-metadata
-
-    echo "Staged changes"
-    git status
-
-    TITLE="Updating staging to '${LATEST_RC}'" git-commit
-    TEST_RUN=false git-push
+    MSG="Updating staging to '${LATEST_RC}'"
+    update_version_in_repo "staging-deployments" "main" "${CONFIG_FILE}" "${LATEST_RC}" "${MSG}"
 )
 
-## hosted-deployment
+## hosted-deployment internal
 (
-    printf "\n\n=== Generating changes for hosted-deployments ===\n"
-    REPOSITORY=hosted-deployments git-clone
-    cd hosted-deployments
-    git checkout master
-
-    pip3 install --quiet -r automation-scripts/requirements.txt
-
     CONFIG_FILE="deployment-metadata/deployment-groups/internal.yml"
-    yq e -i '.Version = strenv(LATEST_RC)' "${CONFIG_FILE}"
+    MSG="Updating internal group to '${LATEST_RC}'"
+    update_version_in_repo "hosted-deployments" "master" "${CONFIG_FILE}" "${LATEST_RC}" "${MSG}"
+)
 
-    if $(git diff --quiet deployment-metadata); then
-        echo "No changes made"
-        exit 0
-    fi
-
-    # Generate and lint
-    python3 automation-scripts/generate.py
-    python3 automation-scripts/lint.py
-
-    echo "Changes"
-    git diff deployment-metadata
-    git add deployment-metadata
-
-    echo "Staged changes"
-    git status
-
-    TITLE="Updating internal group to '${LATEST_RC}'" git-commit
-    TEST_RUN=false git-push
+## hosted-deployment alpha
+(
+    CONFIG_FILE="deployment-metadata/deployment-groups/alpha.yml"
+    MSG="Updating alpha group to '${LATEST_GA}'"
+    update_version_in_repo "hosted-deployments" "master" "${CONFIG_FILE}" "${LATEST_GA}" "${MSG}"
 )
 
 ## Airplane output
-echo "airplane_output_set {\"version\": \"${LATEST_RC}\"}"
+echo "airplane_output_set {\"rc_version\": \"${LATEST_RC}\", \"ga_version\": \"${LATEST_GA}\"}"
