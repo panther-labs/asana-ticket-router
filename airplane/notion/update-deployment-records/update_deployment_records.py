@@ -4,7 +4,7 @@ import pytz
 import re
 import urllib.parse
 
-from notion.customer_info_retriever import AllCustomerAccountsInfo
+from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.notion_databases import are_rtf_values_equal, create_date_time_value, create_rtf_value
 from pyshared.git_ops import git_clone
 

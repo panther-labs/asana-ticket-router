@@ -26,7 +26,10 @@ def git_checkout(branch, create=False):
     _run_cmd(f"BRANCH={branch} CREATE={str(create).lower()} {_UTIL_PATH}/git-checkout")
 
 
-def git_clone(repo, github_setup=False):
+def git_clone(repo, github_setup=False, existing_dir=None):
+    if existing_dir:
+        return existing_dir
+
     if github_setup:
         setup_github()
 

@@ -23,11 +23,14 @@ class CustomerAccountInfo:
 
 class AllCustomerAccountsInfo:
 
-    def __init__(self, hosted_deploy_dir, staging_deploy_dir):
+    def __init__(self, hosted_deploy_dir=None, staging_deploy_dir=None):
         self.dynamo_accounts = self.get_dynamo_results()
         self.notion_accounts = self.get_notion_results()
-        self.deploy_yml_accounts = self.get_deploy_yml_accounts(hosted_deploy_dir)
-        self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(staging_deploy_dir)}
+        self.deploy_yml_accounts = {}
+        if hosted_deploy_dir is not None:
+            self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(hosted_deploy_dir)}
+        if staging_deploy_dir is not None:
+            self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(staging_deploy_dir)}
         self.common_fairytale_names, self.uncommon_fairytale_names = self._get_common_and_uncommon_fairytale_names()
 
     def __iter__(self):
