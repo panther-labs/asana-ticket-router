@@ -172,7 +172,10 @@ class SERVICE(Enum):
     POLICY_ENGINE = 'panther-policy-engine'
     RBAC_DATALAKE_SYNC = 'panther-rbac-datalake-sync'
     REPLAY_API = 'panther-replay-api'
+    REPLAY_RESULTS_PROCESSOR = 'panther-replay-results-processor'
+    REPLAY_RESULTS_API = 'panther-replay-results-api'
     REPLAY_LOG_PUSHER = 'panther-replay-log-pusher'
+    REPLAY_DETECTIONS_ENGINE = 'panther-replay-detections-engine'
     RESOURCES_API = 'panther-resources-api'
     RESOURCE_PROCESSOR = 'panther-resource-processor'
     RULES_ENGINE = 'panther-rules-engine'
@@ -200,7 +203,10 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.PIP_LAYER_BUILDER,
         SERVICE.POLICY_ENGINE,
         SERVICE.REPLAY_API,
+        SERVICE.REPLAY_DETECTIONS_ENGINE,
         SERVICE.REPLAY_LOG_PUSHER,
+        SERVICE.REPLAY_RESULTS_API,
+        SERVICE.REPLAY_RESULTS_PROCESSOR,
         SERVICE.RESOURCES_API,
         SERVICE.RESOURCE_PROCESSOR,
         SERVICE.RULES_ENGINE,
