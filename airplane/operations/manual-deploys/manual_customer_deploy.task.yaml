@@ -1,0 +1,16 @@
+name: Manual Customer Deploy
+slug: manual_customer_deploy
+description: Redeploy a customer without making configuration changes
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  description: Only use for Airplane development testing purposes
+  default: false
+python:
+  entrypoint: manual_customer_deploy.py
+requireRequests: true
+allowSelfApprovals: false
