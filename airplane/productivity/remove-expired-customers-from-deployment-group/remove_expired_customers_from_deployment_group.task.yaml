@@ -1,0 +1,15 @@
+name: Remove Expired Customers From Deployment Group
+slug: remove_expired_customers_from_deployment_group
+description: Cron task that will remove any temporary Deployment group assignments that have expired.
+parameters:
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  description: Do not push to GitHub
+  default: false
+python:
+  entrypoint: remove_expired_customers_from_deployment_group.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CloudFormationReadOnly
+timeout: 3600
