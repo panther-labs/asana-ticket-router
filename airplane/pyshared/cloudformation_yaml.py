@@ -1,4 +1,5 @@
 import os
+
 from pyshared.aws_creds import get_credentialed_client
 
 REGION = os.environ.get("AWS_REGION", "us-west-2")
@@ -55,3 +56,16 @@ def get_cloudformation_export_value(export_name, role_arn):
         if export['Name'] == export_name:
             return export['Value']
     raise Exception(f'No Cloudformation export found for "{export_name}"')
+
+
+def get_group_policies(data, resourse):
+    for key, value in data['Resources'].items():
+        if value['Type'] == 'AWS::IAM::Group' and key == resourse:
+            return value['Properties']['Policies']
+
+
+def get_group_policy_statements(data, resource, policy_name):
+    policies = get_group_policies(data, resource)
+    for policy in policies:
+        if policy['PolicyName'] == policy_name:
+            return policy['PolicyDocument']['Statement']

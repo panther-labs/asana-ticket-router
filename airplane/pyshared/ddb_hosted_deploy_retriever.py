@@ -10,7 +10,9 @@ class DdbHostedDeployAccountInfo:
         table = get_ddb_table(table_name=get_aws_const(const_name="HOSTED_DEPLOYMENTS_METADATA"),
                               arn=ddb_arn,
                               region=ddb_region)
-        self.account_info = table.get_item(Key={"CustomerId": fairytale_name})["Item"]
+        self.account_info = table.get_item(Key={"CustomerId": fairytale_name}).get("Item")
+        if not self.account_info:
+            raise ValueError(f"Customer '{fairytale_name}' was not found")
 
     def get_customer_attr(self, attr):
         query_result_keys = {

@@ -1,0 +1,48 @@
+name: Add/Remove Customer To/From Deployment Group
+slug: add_remove_customer_to_from_deployment_group
+description: Used to add/remove customers to/from the Deployment group
+parameters:
+- name: Add or Remove
+  slug: add_or_remove
+  type: shorttext
+  description: Add or remove a customer to/from the Deployment group.
+  default: Add
+  options:
+  - label: ""
+    value: Add
+  - label: ""
+    value: Remove
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: |-
+    Customer's fairytale name. Required if AWS Account ID is not set.
+    Example: valiant-owl
+  regex: ^([a-z][a-z]*)(-[a-z]+)*$
+- name: Reason
+  slug: reason
+  type: shorttext
+  description: Reason for adding a customer the Deployment group.
+  regex: ^.{10,}$
+- name: Temporary
+  slug: temporary
+  type: boolean
+  description: Is access temporary?
+  default: true
+- name: Expires
+  slug: expires
+  type: date
+  description: |-
+    Date to automatically remove temporary access.
+    Required if Temporary is true.
+  required: false
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  description: Do not push to GitHub
+python:
+  entrypoint: add_remove_customer_to_from_deployment_group.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+timeout: 3600
