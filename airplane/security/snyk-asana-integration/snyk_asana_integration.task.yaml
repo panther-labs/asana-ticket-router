@@ -1,0 +1,7 @@
+slug: snyk_asana_integration
+name: Snyk Asana Integration
+description: "Pull Snyk findings into Asana for tracking"
+
+python:
+  entrypoint: main.py
+
