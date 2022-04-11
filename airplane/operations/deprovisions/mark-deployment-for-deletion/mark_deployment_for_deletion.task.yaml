@@ -1,0 +1,17 @@
+name: Mark Deployment for Deletion
+slug: mark_deployment_for_deletion
+description: Make edits to a deployment file that automation will see for scheduled deletions
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+  description: Only use for Airplane development testing purposes
+  default: false
+python:
+  entrypoint: mark_deployment_for_deletion.py
+requireRequests: true
+allowSelfApprovals: false
+
