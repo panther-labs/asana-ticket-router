@@ -24,7 +24,8 @@ class CustomerAccountInfo:
 class AllCustomerAccountsInfo:
 
     def __init__(self, hosted_deploy_dir=None, staging_deploy_dir=None):
-        self.dynamo_accounts = self.get_dynamo_results()
+        self.dynamo_accounts = self.get_dynamo_results(get_hosted=(hosted_deploy_dir is not None),
+                                                       get_staging=(staging_deploy_dir is not None))
         self.notion_accounts = self.get_notion_results()
         self.deploy_yml_accounts = {}
         if hosted_deploy_dir is not None:
@@ -39,13 +40,16 @@ class AllCustomerAccountsInfo:
             yield self.get_account_info(fairytale_name=fairytale_name)
 
     @staticmethod
-    def get_dynamo_results() -> dict[str, dict]:
+    def get_dynamo_results(get_hosted, get_staging) -> dict[str, dict]:
         results = {}
 
-        for table_name, arn in (
-            (HOSTED_DEPLOYMENTS_METADATA, HOSTED_DYNAMO_RO_ROLE_ARN),
-            (STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN),
-        ):
+        tables_and_arns = []
+        if get_hosted:
+            tables_and_arns.append((HOSTED_DEPLOYMENTS_METADATA, HOSTED_DYNAMO_RO_ROLE_ARN))
+        if get_staging:
+            tables_and_arns.append((STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN))
+
+        for table_name, arn in tables_and_arns:
             db_search = DynamoDbSearch(table_name=table_name, arn=arn)
             results = {**results, **db_search.scan_and_organize_result(scan_result_keys=("CustomerId", ))}
 
