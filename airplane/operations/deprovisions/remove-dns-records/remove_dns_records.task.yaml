@@ -1,0 +1,13 @@
+name: Remove DNS Records
+slug: remove_dns_records
+description: Remove a customer account's DNS records from the hosted-root stack
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: remove_dns_records.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CloudFormationDeleteStack
+timeout: 3600

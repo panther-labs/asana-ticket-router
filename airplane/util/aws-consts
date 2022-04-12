@@ -1,4 +1,5 @@
 CLOUDFORMATION_READ_ONLY_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly
+CLOUDFORMATION_DELETE_STACK_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationDeleteStack
 CUSTOMER_SUPPORT_ROLE_ARN=arn:aws:iam::255674391660:role/CustomerSupport
 HOSTED_DEPLOYMENTS_METADATA=hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B
 HOSTED_DYNAMO_RO_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneDynamoDBReadOnly
