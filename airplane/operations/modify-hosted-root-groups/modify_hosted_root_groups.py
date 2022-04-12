@@ -1,5 +1,5 @@
 # Linked to https://app.airplane.dev/t/modify_hosted_root_groups_zav [do not edit this line]
-
+import datetime
 import os
 
 from pyshared.aws_consts import get_aws_const
@@ -43,7 +43,7 @@ def remove_user_from_group(data, params):
 
 def main(params):
     if (params["add_or_remove"] == "Add") and params.get("temporary", True) and (not params.get("expires")):
-        raise Exception("Expiration must be set if access is temporary")
+        params["expires"] = datetime.date.today() + datetime.timedelta(days=1)  # default to tomorrow
 
     repository_dir = (params["hosted_aws_management_dir"]
                       if "hosted_aws_management_dir" in params else git_clone(repo=REPOSITORY, github_setup=True))

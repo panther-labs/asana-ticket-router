@@ -1,5 +1,6 @@
 # Linked to https://app.airplane.dev/t/add_remove_customer_to_from_deployment_group [do not edit this line]
 
+import datetime
 import os
 
 from ruamel.yaml import YAML, comments
@@ -60,7 +61,7 @@ def main(params: dict) -> None:
 
     if params["add_or_remove"] == "Add" and params.get("temporary", True):
         if not params.get("expires"):
-            raise ValueError("Expiration must be set if access is temporary")
+            params["expires"] = datetime.date.today() + datetime.timedelta(days=1)  # default to tomorrow
         params["reason"] = f'Temporary: {params["reason"]} Expires: {params["expires"]}'
 
     repository_dir = (params["hosted_aws_management_dir"]
