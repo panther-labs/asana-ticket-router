@@ -45,4 +45,6 @@ python:
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+requireRequests: true
+allowSelfApprovals: false
 timeout: 3600
