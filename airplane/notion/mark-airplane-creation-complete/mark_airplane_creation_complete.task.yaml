@@ -1,0 +1,10 @@
+name: Mark Airplane Creation Complete
+slug: mark_airplane_creation_complete
+description: Mark the Airplane Creation Completed attribute to True in the Panther Deploys Notion page
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: mark_airplane_creation_complete.py
+timeout: 3600

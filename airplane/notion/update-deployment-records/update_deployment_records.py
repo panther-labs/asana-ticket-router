@@ -1,4 +1,3 @@
-# Linked to https://app.airplane.dev/t/update_panther_deployments_notion_record [do not edit this line]
 import datetime
 import pytz
 import re
@@ -43,10 +42,7 @@ def get_company_name(account_info):
 
         notes = notes[after_name_index:]
         return notes.split(",")[0]
-    try:
-        return account_info.dynamo_info["CompanyDisplayName"]
-    except KeyError:
-        return account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
+    return account_info.dynamo_info["CompanyDisplayName"]
 
 
 def get_notion_value(attr, account_info):

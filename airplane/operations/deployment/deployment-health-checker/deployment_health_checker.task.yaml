@@ -1,0 +1,5 @@
+name: Deployment Health Checker
+slug: deployment_health_checker
+description: Runs validation checks against deployments
+python:
+  entrypoint: deployment_health_checker.py

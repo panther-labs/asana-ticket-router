@@ -59,7 +59,7 @@ class AllCustomerAccountsInfo:
     def get_notion_results() -> dict[str, AccountsDatabase]:
         return {
             account.Fairytale_Name: account
-            for account in notion_session.databases.query(AccountsDatabase).execute()
+            for account in notion_session.databases.query(AccountsDatabase).execute() if account.Fairytale_Name
         }
 
     @staticmethod
@@ -83,6 +83,7 @@ class AllCustomerAccountsInfo:
 
         common = deploy.intersection(dynamo.intersection(notion))
         uncommon = deploy.difference(common) | dynamo.difference(common) | notion.difference(common)
+
         return common, uncommon
 
     def get_account_info(self, fairytale_name) -> CustomerAccountInfo:
@@ -90,3 +91,12 @@ class AllCustomerAccountsInfo:
                                    deploy_yml_info=self.deploy_yml_accounts[fairytale_name],
                                    dynamo_info=self.dynamo_accounts[fairytale_name],
                                    notion_info=self.notion_accounts[fairytale_name])
+
+
+def retrieve_notion_account(fairytale_name):
+    notion_entries = AllCustomerAccountsInfo.get_notion_results()
+
+    try:
+        return notion_entries[fairytale_name]
+    except KeyError:
+        raise ValueError(f"Panther Deploy in Notion with fairytale name '{fairytale_name}' does not exist")

@@ -1,4 +1,3 @@
-# Linked to https://app.airplane.dev/t/new_panther_deploy_notion_record [do not edit this line]
 import datetime
 import pytz
 
