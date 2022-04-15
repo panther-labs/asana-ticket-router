@@ -42,7 +42,10 @@ def get_company_name(account_info):
 
         notes = notes[after_name_index:]
         return notes.split(",")[0]
-    return account_info.dynamo_info["CompanyDisplayName"]
+    try:
+        return account_info.dynamo_info["CompanyDisplayName"]
+    except KeyError:
+        return account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
 
 
 def get_notion_value(attr, account_info):
