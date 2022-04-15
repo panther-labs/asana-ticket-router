@@ -11,3 +11,5 @@ parameters:
 python:
   entrypoint: remove_hosted_deployment_files.py
 timeout: 3600
+requireRequests: true
+allowSelfApprovals: false

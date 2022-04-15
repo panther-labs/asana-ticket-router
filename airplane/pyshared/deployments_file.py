@@ -23,8 +23,11 @@ def gen_cfgs():
     generate_mod.generate_configs()
 
 
-def alter_deployment_file(deployments_repo: DeploymentsRepo, ap_params: Dict[str, str], alter_callable: Callable[str],
-                          commit_title: str):
+def alter_deployment_file(deployments_repo: DeploymentsRepo,
+                          ap_params: Dict[str, str],
+                          alter_callable: Callable[str],
+                          commit_title: str,
+                          apply_to_generated_file: bool = False):
     """Alter a deployment file in some way. The alter_callable is a function that, given the deployment file, will
     alter it."""
     deploy_dir = git_clone(repo=deployments_repo.value,
@@ -32,6 +35,9 @@ def alter_deployment_file(deployments_repo: DeploymentsRepo, ap_params: Dict[str
                            existing_dir=ap_params.get(deployments_repo.value))
     with tmp_change_dir(change_dir=deploy_dir):
         alter_callable(get_deployment_filepath(fairytale_name=ap_params["fairytale_name"]))
+        if apply_to_generated_file:
+            alter_callable(
+                get_deployment_filepath(fairytale_name=ap_params["fairytale_name"], get_generated_filepath=True))
         gen_cfgs()
         git_add_commit_push(files=("deployment-metadata", ),
                             title=commit_title,
