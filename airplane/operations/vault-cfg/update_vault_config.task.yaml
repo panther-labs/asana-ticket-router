@@ -1,15 +1,28 @@
 name: Update Vault Config
 slug: update_vault_config
+description: All parameters required for add, only name is required for a remove
 parameters:
+- name: Add or Remove
+  slug: add_or_remove
+  type: shorttext
+  description: Add or remove customer from vault config
+  default: Add
+  options:
+  - label: ""
+    value: Add
+  - label: ""
+    value: Remove
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
 - name: AWS Account ID
   slug: aws_account_id
   type: shorttext
+  required: false
 - name: Region
   slug: region
   type: shorttext
+  required: false
   options:
   - label: ""
     value: us-east-1
@@ -56,6 +69,7 @@ parameters:
 - name: Service Type
   slug: service_type
   type: shorttext
+  required: false
   default: SaaS
   options:
   - label: ""
