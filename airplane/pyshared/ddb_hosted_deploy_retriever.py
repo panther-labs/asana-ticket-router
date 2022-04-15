@@ -1,12 +1,10 @@
-import os
-
 from pyshared.aws_consts import get_aws_const
 from pyshared.dynamo_db import get_ddb_table, recursive_get_from_dynamodb_result
 
 
 class DdbHostedDeployAccountInfo:
 
-    def __init__(self, fairytale_name, ddb_arn, ddb_region):
+    def __init__(self, fairytale_name, ddb_arn, ddb_region=None):
         table = get_ddb_table(table_name=get_aws_const(const_name="HOSTED_DEPLOYMENTS_METADATA"),
                               arn=ddb_arn,
                               region=ddb_region)

@@ -1,0 +1,20 @@
+name: Get Customer Account Information
+slug: get_customer_account_information
+description: Get the customer's fairytale name, AWS account ID, and region by fairytale name or AWS account ID (do not provide both).
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: Required if the AWS Account ID is not set
+  required: false
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+  description: Required if the Fairytale Name is not set
+  required: false
+python:
+  entrypoint: get_customer_account_information.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport
+timeout: 3600
