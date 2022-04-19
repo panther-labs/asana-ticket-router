@@ -1,0 +1,27 @@
+name: Move Hosted Account To OU
+slug: move_hosted_account_to_ou
+description: Used to move hosted accounts between Customer and Terminated OU's
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+- name: Target OU
+  slug: target_ou
+  type: shorttext
+  options:
+  - label: Customer OU
+    value: customer
+  - label: Terminated OU
+    value: terminated
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: shorttext
+python:
+  entrypoint: move_hosted_account_to_ou.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-OrganizationsMoveAccount
+timeout: 3600
