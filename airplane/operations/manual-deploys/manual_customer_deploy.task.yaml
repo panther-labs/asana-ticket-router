@@ -13,4 +13,4 @@ parameters:
 python:
   entrypoint: manual_customer_deploy.py
 requireRequests: true
-allowSelfApprovals: false
+allowSelfApprovals: true
