@@ -18,7 +18,7 @@ parameters:
     value: terminated
 - name: Airplane Test Run
   slug: airplane_test_run
-  type: shorttext
+  type: boolean
 python:
   entrypoint: move_hosted_account_to_ou.py
   envVars:
