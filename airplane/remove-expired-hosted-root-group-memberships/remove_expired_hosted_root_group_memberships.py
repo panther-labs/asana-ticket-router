@@ -1,27 +1,27 @@
-# Linked to https://app.airplane.dev/t/remove_expired_hosted_root_group_memberships [do not edit this line]
-from datetime import datetime
 import os
 import re
-from pyshared.aws_consts import get_aws_const
-from pyshared.cloudformation_yaml import group_name_from_resource, get_cloudformation_export_value
-from pyshared.git_ops import git_add, git_clone, git_commit, git_push
-from ruamel.yaml import YAML
 from collections import namedtuple
 
+from pyshared.aws_consts import get_aws_const
+from pyshared.cloudformation_yaml import group_name_from_resource, get_cloudformation_export_value
+from pyshared.date_utils import is_past_date, parse_date_str, get_today_str
+from pyshared.git_ops import git_clone, git_add_commit_push
+from pyshared.os_utils import tmp_change_dir
+from pyshared.yaml_utils import load_yaml_cfg, save_yaml_cfg
+
 REPOSITORY = "hosted-aws-management"
-GROUPS_FILE_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
+GROUPS_FILE_REL_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups.yml"
 CLOUDFORMATION_READ_ONLY_ROLE_ARN = get_aws_const("CLOUDFORMATION_READ_ONLY_ROLE_ARN")
 TEMP_COMMENT_REGEX = "^# Temporary: .+ Expires: (20\d{2}-\d{1,2}-\d{1,2})(\\n)*$"
 
 GroupUser = namedtuple('GroupUser', ['group', 'user'])
 
 
-def is_membership_expired(comment):
+def is_membership_expired(comment: str) -> bool:
     re_result = re.match(TEMP_COMMENT_REGEX, comment)
     if re_result:
-        expiration_date = datetime.strptime(re_result.group(1), '%Y-%m-%d')
-        if expiration_date < datetime.now():
-            return True
+        expiration_date = parse_date_str(re_result.group(1))
+        return is_past_date(expiration_date)
     return False
 
 
@@ -50,30 +50,27 @@ def remove_expired_users(data):
 
 
 def main(params):
-    repository_dir = (params["hosted_aws_management_dir"]
-                      if "hosted_aws_management_dir" in params else git_clone(repo=REPOSITORY, github_setup=True))
+    repository_dir = git_clone(repo=REPOSITORY,
+                               github_setup=True,
+                               existing_dir=params.get("hosted_aws_management_dir"))
 
-    data_path = os.path.join(repository_dir, GROUPS_FILE_PATH)
-
-    yaml = YAML(pure=True)
-    yaml.indent(mapping=2, sequence=4, offset=2)
-    with open(data_path, 'r') as file:
-        cfn_yaml = yaml.load(file)
+    groups_file_abs_path = os.path.join(repository_dir, GROUPS_FILE_REL_PATH)
+    cfn_yaml = load_yaml_cfg(cfg_filepath=groups_file_abs_path,
+                             error_msg=f"Groups file not found: '{groups_file_abs_path}'")
 
     removed_memberships = remove_expired_users(cfn_yaml)
-
     if not removed_memberships:
         return
 
-    with open(data_path, 'w') as file:
-        yaml.dump(cfn_yaml, file)
+    save_yaml_cfg(groups_file_abs_path, cfn_yaml)
 
-    commit_title = f'removes expired hosted-root group memberships {datetime.now().strftime("%Y-%m-%d")}'
+    commit_title = f'removes expired hosted-root group memberships {get_today_str()}'
     commit_description = ''
     for membership in removed_memberships:
         commit_description += f"{membership.user} removed from {membership.group}\n"
 
-    os.chdir(repository_dir)
-    git_add([GROUPS_FILE_PATH])
-    git_commit(title=commit_title, description=commit_description)
-    git_push(test_run=params["airplane_test_run"])
+    with tmp_change_dir(change_dir=repository_dir):
+        git_add_commit_push(files=[GROUPS_FILE_REL_PATH],
+                            title=commit_title,
+                            description=commit_description,
+                            test_run=params["airplane_test_run"])
