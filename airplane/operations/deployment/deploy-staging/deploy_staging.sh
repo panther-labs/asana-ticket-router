@@ -73,6 +73,13 @@ update_version_in_repo() {
     update_version_in_repo "staging-deployments" "main" "${CONFIG_FILE}" "${LATEST_RC}" "${MSG}"
 )
 
+## staging-deployment GA
+{
+    CONFIG_FILE="deployment-metadata/deployment-groups/ga.yml"
+    MSG="Updating staging GA to '${LATEST_GA}'"
+    update_version_in_repo "staging-deployments" "main" "${CONFIG_FILE}" "${LATEST_GA}" "${MSG}"
+}
+
 ## hosted-deployment internal
 (
     CONFIG_FILE="deployment-metadata/deployment-groups/internal.yml"
