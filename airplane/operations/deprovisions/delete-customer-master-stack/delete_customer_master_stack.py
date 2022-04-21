@@ -16,9 +16,13 @@ def get_customer_teardown_role_arns(aws_account_id: str) -> tuple[str, str]:
 
 def get_master_stack_name(fairytale_name: str, repo_dir: str) -> str:
     deployment_file = get_deployment_filepath(fairytale_name=fairytale_name, repo_dir=repo_dir)
-    cfn_yaml = load_yaml_cfg(cfg_filepath=deployment_file,
-                             error_msg=f"Customer deployment file not found: '{deployment_file}'")
-    return cfn_yaml.get("PantherStackName", DEFAULT_MASTER_STACK_NAME)
+    try:
+        cfn_yaml = load_yaml_cfg(cfg_filepath=deployment_file,
+                                 error_msg=f"Customer deployment file not found: '{deployment_file}'")
+        return cfn_yaml.get("PantherStackName", DEFAULT_MASTER_STACK_NAME)
+    except ValueError as e:
+        print(e)
+        return DEFAULT_MASTER_STACK_NAME
 
 
 def delete_master_stack(params: dict, stack_name: str, test_run: bool) -> None:
