@@ -42,15 +42,16 @@ def delete_master_stack(params: dict, stack_name: str, test_run: bool) -> None:
     stack.delete()
     print(f"Initiated '{stack_name}' stack deletion.")
 
-    # The waiter will make at most 60 attempts with 60s interval in between
-    waiter_cfg = {"MaxAttempts": 60, "Delay": 60}
-
-    # Wait for status 'stack_delete_complete'
-    get_credentialed_client(**cfn_kwargs) \
-        .get_waiter("stack_delete_complete") \
-        .wait(StackName=stack_name, WaiterConfig=waiter_cfg)
-
-    print(f"Deleted the '{stack_name}' stack")
+    # Temporary: Disable waiter for shorter execution times
+    # # The waiter will make at most 60 attempts with 60s interval in between
+    # waiter_cfg = {"MaxAttempts": 60, "Delay": 60}
+    #
+    # # Wait for status 'stack_delete_complete'
+    # get_credentialed_client(**cfn_kwargs) \
+    #     .get_waiter("stack_delete_complete") \
+    #     .wait(StackName=stack_name, WaiterConfig=waiter_cfg)
+    #
+    # print(f"Deleted the '{stack_name}' stack")
 
 
 def main(params: dict) -> None:
