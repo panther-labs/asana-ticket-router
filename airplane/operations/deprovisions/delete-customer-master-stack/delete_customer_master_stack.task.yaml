@@ -21,4 +21,4 @@ python:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerTeardown
 requireRequests: true
 allowSelfApprovals: false
-timeout: 3600
+timeout: 7200
