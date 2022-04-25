@@ -1,10 +1,12 @@
-from os.path import dirname
 from typing import List
+import os
 import subprocess
 
+from pyshared.airplane_utils import AirplaneTask
 from pyshared.aws_secrets import get_secret_value
+from pyshared.os_utils import tmp_change_dir
 
-_UTIL_PATH = f"{dirname(__file__)}/../util"
+_UTIL_PATH = f"{os.path.dirname(__file__)}/../util"
 
 
 def _run_cmd(cmd: str) -> str:
@@ -54,3 +56,33 @@ def git_add_commit_push(files: List[str], title, description="", test_run=False)
     git_add(files=files)
     git_commit(title=title, description=description)
     git_push(test_run=test_run)
+
+
+class AirplaneGitTask(AirplaneTask):
+
+    def __init__(self, params, git_repo):
+        self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=self.get_existing_dir(git_repo))
+
+    def get_git_title(self):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_existing_dir(repo: str):
+        return os.environ.get(repo, None)
+
+    def change_files(self) -> List[str]:
+        """Will be called between a git clone and a git push, and execution of this function will take place within the
+        cloned directory.
+
+        return: A list of git paths to be committed (e.g. ["my/dir1", "my/dir2/myfile"])
+        """
+        raise NotImplementedError
+
+    def main(self):
+        """Make a change to files in a repo then commit them (if the environment is staging or prod)."""
+        with tmp_change_dir(change_dir=self.git_dir):
+            self.change_files()
+
+            git_add_commit_push(files=("deployment-metadata", ),
+                                title=self.get_git_title(),
+                                test_run=self.is_test_run())

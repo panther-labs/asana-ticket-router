@@ -1,0 +1,22 @@
+name: Upgrade Deployment Groups
+slug: upgrade_deployment_groups
+description: |-
+  Upgrade one or more deployment groups.
+  This task will monitor all accounts in the group until every one is finished.
+  If all pass, the task will pass. If one or more have a non-successful status, it will fail.
+parameters:
+- name: Deployment Groups
+  slug: deployment_groups
+  type: shorttext
+  description: |-
+    A comma-separated list of groups to upgrade.
+    e.g. a, c, e, legacy-sf
+    Available groups (excluding auto deploys): a, c, cpaas, e, g, j, l, legacy-sf, n, p, z
+- name: Version
+  slug: version
+  type: shorttext
+  description: Panther upgrade version
+python:
+  entrypoint: upgrade_deployment_groups.py
+requireRequests: true
+allowSelfApprovals: false
