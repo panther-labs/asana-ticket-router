@@ -67,10 +67,14 @@ if [ "${test_run}" = "true" ]; then
   printf "\n\n=== This is a test run! ===\n"
   aws --region "${account_region}" lambda list-functions | jq .Functions[].FunctionName
 else
+  resend=''
+  if [ "${resend_invitation}" = "true" ]; then
+    resend='-resend'
+  fi
   "${opslambda_file}" invite \
     -email "${email_address}" \
     -first "${first_name}" \
     -last "${last_name}" \
     -role "${user_role}" \
-    -resend "${resend_invitation}"
+    "${resend}"
 fi
