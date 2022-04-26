@@ -33,11 +33,11 @@ if [ -z "${fairytale_name}" ]; then
 fi
 
 # assume the role if declared, should only run on ECS
-if [ -n "${DYNAMO_RO_ROLE_ARN:-}" ]; then
+if [ -n "${HOSTED_DYNAMO_RO_ROLE_ARN:-}" ]; then
   # https://stackoverflow.com/a/67636523
   export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
     $(aws sts assume-role \
-    --role-arn "${DYNAMO_RO_ROLE_ARN}" \
+    --role-arn "${HOSTED_DYNAMO_RO_ROLE_ARN}" \
     --role-session-name Airplane \
     --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
     --output text))
