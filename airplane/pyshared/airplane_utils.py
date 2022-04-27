@@ -1,7 +1,15 @@
 import os
 
+from pyshared.local_aws_role_exec import input_mfa
+
 
 class AirplaneTask:
+    test_roles = {}
+
+    def __init__(self):
+        for role in AirplaneTask.test_roles.values():
+            # For getting all user input necessary for assuming roles at the beginning of task execution
+            input_mfa(aws_profile=role)
 
     @staticmethod
     def is_test_run():
@@ -9,6 +17,18 @@ class AirplaneTask:
 
     def main(self):
         raise NotImplementedError
+
+    @staticmethod
+    def add_test_role(role_key, role_value):
+        AirplaneTask.test_roles[role_key] = role_value
+
+
+def set_local_run():
+    os.environ["local_run"] = "true"
+
+
+def is_local_run():
+    return os.environ.get("local_run", "") == "true"
 
 
 def is_test_run(ap_params):
@@ -25,20 +45,3 @@ def is_test_run(ap_params):
     if test_run:
         print("*** THIS IS A TEST RUN ***")
     return test_run
-
-
-def _get_task(params):
-    subclasses = AirplaneTask.__subclasses__()
-    num_subs = len(subclasses)
-    if num_subs != 1:
-        raise RuntimeError(f"Exactly one class must inherit from AirplaneTask in your task. {num_subs} found")
-
-    subclass = subclasses[0]
-    while subclass.__subclasses__():
-        subclass = subclass.__subclasses__()[0]
-    return subclass(params)
-
-
-def main(params):
-    task = _get_task(params)
-    task.main()

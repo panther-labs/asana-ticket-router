@@ -1,5 +1,31 @@
 import boto3
 
+from pyshared.airplane_utils import is_local_run
+from pyshared.local_aws_role_exec import aws_vault_exec
+
+
+def _get_creds(arns, test_role=None, desc="task"):
+    if is_local_run():
+        if arns and (test_role is None):
+            raise RuntimeError("Assuming roles with a local_run requires test roles to be set when getting "
+                               "credentialed resources or clients")
+        return _get_creds_from_aws_vault(aws_profile=test_role)
+    else:
+        return _get_assumed_role_creds(arns=arns, desc=desc)
+
+
+def _get_creds_from_aws_vault(aws_profile):
+    output = aws_vault_exec(aws_profile=aws_profile, cmd="env")
+    env_vars = {key: value for key, value in (line.split("=", 1) for line in output.split("\n") if line)}
+
+    return {
+        "Credentials": {
+            "AccessKeyId": env_vars["AWS_ACCESS_KEY_ID"],
+            "SecretAccessKey": env_vars["AWS_SECRET_ACCESS_KEY"],
+            "SessionToken": env_vars["AWS_SESSION_TOKEN"]
+        }
+    }
+
 
 def _get_assumed_role_creds(arns, desc="task", creds=None):
     """Recursively assume roles, starting the first in the arns tuple. Each consecutive call will use credentials from
@@ -36,7 +62,7 @@ def _convert_arns_to_tuple(arns):
     return {str: (arns, ), None: tuple()}.get(type(arns), arns)
 
 
-def get_credentialed_client(service_name, arns, desc, region=None):
+def get_credentialed_client(service_name, arns, desc, region=None, test_role=None):
     """Get a client to a service that has assumed a role.
 
     :param service_name: Name of service to assume, such as "lambda"
@@ -44,14 +70,13 @@ def get_credentialed_client(service_name, arns, desc, region=None):
                  Roles will be assumed sequentially, so order matters
     :param desc: The sescription to give the AWS client
     :param region: Region of the service
+    :param test_role: The role to use from aws-vault (instead of the ARNs) for testing purposes
     :return: Client for an AWS service
     """
-    return boto3.client(**_get_kwargs(service_name=service_name,
-                                      region=region,
-                                      creds=_get_assumed_role_creds(arns=_convert_arns_to_tuple(arns), desc=desc)))
+    creds = _get_creds(arns=arns, test_role=test_role, desc=desc)
+    return boto3.client(**_get_kwargs(service_name=service_name, region=region, creds=creds))
 
 
-def get_credentialed_resource(service_name, arns, desc, region=None):
-    return boto3.resource(**_get_kwargs(service_name=service_name,
-                                        region=region,
-                                        creds=_get_assumed_role_creds(arns=_convert_arns_to_tuple(arns), desc=desc)))
+def get_credentialed_resource(service_name, arns, desc, region=None, test_role=None):
+    creds = _get_creds(arns=arns, test_role=test_role, desc=desc)
+    return boto3.resource(**_get_kwargs(service_name=service_name, region=region, creds=creds))

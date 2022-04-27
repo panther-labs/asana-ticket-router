@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from ruamel.yaml import YAML, comments
 
 
@@ -20,3 +21,10 @@ def load_yaml_cfg(cfg_filepath: str, error_msg: str = None) -> comments.Commente
 def save_yaml_cfg(cfg_filepath: str, cfg: comments.CommentedMap):
     with open(cfg_filepath, 'w') as cfg_file:
         _yaml_instance().dump(cfg, cfg_file)
+
+
+@contextmanager
+def change_yaml_file(cfg_filepath: str, error_msg: str = None):
+    cfg = load_yaml_cfg(cfg_filepath=cfg_filepath, error_msg=error_msg)
+    yield cfg
+    save_yaml_cfg(cfg_filepath=cfg_filepath, cfg=cfg)

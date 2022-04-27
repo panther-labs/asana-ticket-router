@@ -6,7 +6,9 @@
 airplanesdk
 boto3>=1.20.20
 coolname>=1.1.0
+GitPython
 notional
+pytest
 pytz
 pyyaml>=6.0
 tenacity>=8.0.1

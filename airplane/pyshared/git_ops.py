@@ -2,7 +2,9 @@ from typing import List
 import os
 import subprocess
 
-from pyshared.airplane_utils import AirplaneTask
+from git import Repo
+
+from pyshared.airplane_utils import AirplaneTask, is_local_run
 from pyshared.aws_secrets import get_secret_value
 from pyshared.os_utils import tmp_change_dir
 
@@ -32,6 +34,10 @@ def git_clone(repo, github_setup=False, existing_dir=None):
     if existing_dir:
         return existing_dir
 
+    if is_local_run():
+        raise RuntimeError(f"Existing directory for {repo} is not setup. "
+                           "Stopping execution to prevent overriding GitHub credentials with Airplane credentials")
+
     if github_setup:
         setup_github()
 
@@ -46,29 +52,44 @@ def git_commit(title, description=""):
     _run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" {_UTIL_PATH}/git-commit')
 
 
-def git_push(test_run=False):
-    output = _run_cmd(f'TEST_RUN="{str(test_run).lower()}" {_UTIL_PATH}/git-push')
+def git_push():
+    output = _run_cmd(f'TEST_RUN="false" {_UTIL_PATH}/git-push')
     if output:
         print(output)
 
 
 def git_add_commit_push(files: List[str], title, description="", test_run=False):
-    git_add(files=files)
-    git_commit(title=title, description=description)
-    git_push(test_run=test_run)
+    if not test_run:
+        git_add(files=files)
+        git_commit(title=title, description=description)
+        git_push()
+    else:
+        print(Repo(".").git.diff())
+        print("\n\n\nYour filesystem has been changed. You may want to undo those local changes listed above")
 
 
-class AirplaneGitTask(AirplaneTask):
+class AirplaneCloneGitTask(AirplaneTask):
 
     def __init__(self, params, git_repo):
         self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=self.get_existing_dir(git_repo))
-
-    def get_git_title(self):
-        raise NotImplementedError
+        super().__init__()
 
     @staticmethod
     def get_existing_dir(repo: str):
         return os.environ.get(repo, None)
+
+    def main_within_cloned_dir(self):
+        raise NotImplementedError
+
+    def main(self):
+        with tmp_change_dir(change_dir=self.git_dir):
+            self.main_within_cloned_dir()
+
+
+class AirplaneModifyGitTask(AirplaneCloneGitTask):
+
+    def get_git_title(self):
+        raise NotImplementedError
 
     def change_files(self) -> List[str]:
         """Will be called between a git clone and a git push, and execution of this function will take place within the
@@ -78,11 +99,7 @@ class AirplaneGitTask(AirplaneTask):
         """
         raise NotImplementedError
 
-    def main(self):
+    def main_within_cloned_dir(self):
         """Make a change to files in a repo then commit them (if the environment is staging or prod)."""
-        with tmp_change_dir(change_dir=self.git_dir):
-            self.change_files()
-
-            git_add_commit_push(files=("deployment-metadata", ),
-                                title=self.get_git_title(),
-                                test_run=self.is_test_run())
+        self.change_files()
+        git_add_commit_push(files=("deployment-metadata", ), title=self.get_git_title(), test_run=self.is_test_run())

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from typing import List
 
-from pyshared.airplane_utils import main
 from pyshared.deployments_file import (DeploymentsRepo, gen_cfgs, get_deployment_group_choices,
                                        get_deployment_group_filepath)
-from pyshared.git_ops import AirplaneGitTask
+from pyshared.git_ops import AirplaneModifyGitTask
 from pyshared.os_utils import tmp_change_dir
 from pyshared.yaml_utils import load_yaml_cfg, save_yaml_cfg
 
@@ -22,7 +21,7 @@ class ParsedParams:
     version: str
 
 
-class UpgradeDeploymentGroups(AirplaneGitTask):
+class UpgradeDeploymentGroups(AirplaneModifyGitTask):
 
     def __init__(self, params):
         super().__init__(params=params, git_repo=DeploymentsRepo.HOSTED)
@@ -54,3 +53,7 @@ class UpgradeDeploymentGroups(AirplaneGitTask):
             cfg["Version"] = self.parsed_params.version
             save_yaml_cfg(cfg_filepath=filepath, cfg=cfg)
         gen_cfgs()
+
+
+def main(params):
+    UpgradeDeploymentGroups(params).main()
