@@ -179,6 +179,7 @@ class SERVICE(Enum):
     RESOURCES_API = 'panther-resources-api'
     RESOURCE_PROCESSOR = 'panther-resource-processor'
     RULES_ENGINE = 'panther-rules-engine'
+    SLOW_RULE_DETECTOR = 'panther-slow-rule-detector'
     SNAPSHOT_POLLERS = 'panther-snapshot-pollers'
     SNAPSHOT_SCHEDULER = 'panther-snapshot-scheduler'
     SNOWFLAKE_ADMIN_API = 'panther-snowflake-admin-api'
@@ -210,6 +211,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.RESOURCES_API,
         SERVICE.RESOURCE_PROCESSOR,
         SERVICE.RULES_ENGINE,
+        SERVICE.SLOW_RULE_DETECTOR
     ],
     TEAM.INGESTION: [
         SERVICE.CLOUD_PULLER,
