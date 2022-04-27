@@ -73,10 +73,10 @@ def get_credentialed_client(service_name, arns, desc, region=None, test_role=Non
     :param test_role: The role to use from aws-vault (instead of the ARNs) for testing purposes
     :return: Client for an AWS service
     """
-    creds = _get_creds(arns=arns, test_role=test_role, desc=desc)
+    creds = _get_creds(arns=_convert_arns_to_tuple(arns), test_role=test_role, desc=desc)
     return boto3.client(**_get_kwargs(service_name=service_name, region=region, creds=creds))
 
 
 def get_credentialed_resource(service_name, arns, desc, region=None, test_role=None):
-    creds = _get_creds(arns=arns, test_role=test_role, desc=desc)
+    creds = _get_creds(arns=_convert_arns_to_tuple(arns), test_role=test_role, desc=desc)
     return boto3.resource(**_get_kwargs(service_name=service_name, region=region, creds=creds))
