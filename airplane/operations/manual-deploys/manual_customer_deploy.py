@@ -2,7 +2,8 @@ import datetime
 
 from dataclasses import asdict, dataclass
 
-from pyshared.deployments_file import DeploymentsRepo, get_deployment_filepath
+from pyshared.date_utils import get_today_str
+from pyshared.deployments_file import DeploymentsRepo, get_deployment_filepath, gen_cfgs
 from pyshared.git_ops import AirplaneModifyGitTask
 from pyshared.yaml_utils import change_yaml_file
 
@@ -21,7 +22,8 @@ class ManualCustomerDeploy(AirplaneModifyGitTask):
     def change_files(self):
         with change_yaml_file(cfg_filepath=get_deployment_filepath(
                 fairytale_name=self.airplane_params.fairytale_name)) as cfg:
-            cfg["ManualDeploy"] = str(datetime.datetime.now())
+            cfg["ManualDeploy"] = get_today_str()
+        gen_cfgs()
 
     def get_git_title(self):
         return f"Manually redeploy {self.airplane_params.fairytale_name}"
