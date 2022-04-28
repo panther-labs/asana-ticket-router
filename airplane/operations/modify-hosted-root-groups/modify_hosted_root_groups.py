@@ -1,6 +1,6 @@
 import os
 
-from ruamel.yaml.comments import TaggedScalar
+from ruamel.yaml import comments
 
 from pyshared.aws_consts import get_aws_const
 from pyshared.cloudformation_yaml import get_cloudformation_export_name, get_group_membership_list
@@ -14,32 +14,42 @@ GROUPS_FILE_REL_PATH = "panther-hosted-root/us-west-2/panther-hosted-root-groups
 CLOUDFORMATION_READ_ONLY_ROLE_ARN = get_aws_const("CLOUDFORMATION_READ_ONLY_ROLE_ARN")
 
 
-def add_user_to_group(data, params):
-    group_members = get_group_membership_list(data, params["group"])
-
-    user_import_value = TaggedScalar(tag='!ImportValue',
-                                     value=get_cloudformation_export_name(username=params["aws_username"],
-                                                                          role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN))
-    group_members.append(user_import_value)
-    group_members.yaml_add_eol_comment(params["reason"], len(group_members) - 1)
-
-
-def remove_user_from_group(data, params):
-    group = params["group"]
-    username = params["aws_username"]
-    cloudformation_export_name = get_cloudformation_export_name(username=username,
-                                                                role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)
-
-    group_members = get_group_membership_list(data, group)
-
+def find_user_in_group(group_members: comments.CommentedMap, cfn_export_name: str) -> comments.TaggedScalar or None:
     for member in group_members:
-        if member.value == cloudformation_export_name:
-            group_members.remove(member)
-            return
-    raise Exception(f'Error: user "{username}" not found in group "{group}"')
+        if member.value == cfn_export_name:
+            return member
 
 
-def main(params):
+def add_user_to_group(cfn: comments.CommentedMap, params: dict) -> bool:
+    group_members = get_group_membership_list(cfn, params["group"])
+    cfn_export_name = get_cloudformation_export_name(username=params["aws_username"],
+                                                     role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)
+
+    if find_user_in_group(group_members, cfn_export_name):
+        print(f"Warning: user '{params['aws_username']}' is already a part of '{params['group']}' group.")
+        return False
+
+    user_import_value = comments.TaggedScalar(tag='!ImportValue', value=cfn_export_name)
+    group_members.insert(0, user_import_value)
+    group_members.yaml_add_eol_comment(params["reason"], 0)
+    return True
+
+
+def remove_user_from_group(cfn: comments.CommentedMap, params: dict) -> bool:
+    group_members = get_group_membership_list(cfn, params["group"])
+    cfn_export_name = get_cloudformation_export_name(username=params["aws_username"],
+                                                     role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)
+
+    member = find_user_in_group(group_members, cfn_export_name)
+    if not member:
+        print(f"Warning: user '{params['aws_username']}' not found in group '{params['group']}'")
+        return False
+
+    group_members.remove(member)
+    return True
+
+
+def main(params: dict) -> None:
     if params["add_or_remove"] == "Add" and params.get("temporary"):
         if not params.get("expires"):
             params["expires"] = get_tomorrow_str()
@@ -55,11 +65,15 @@ def main(params):
 
     operation = params["add_or_remove"]
     if operation == "Add":
-        add_user_to_group(cfn_yaml, params)
+        is_group_modified = add_user_to_group(cfn_yaml, params)
     elif operation == "Remove":
-        remove_user_from_group(cfn_yaml, params)
+        is_group_modified = remove_user_from_group(cfn_yaml, params)
     else:
         raise Exception(f'Unexpected value for operation: ${operation}')
+
+    if not is_group_modified:
+        print("Exiting without modifying group membership.")
+        return
 
     save_yaml_cfg(groups_file_abs_path, cfn_yaml)
 
