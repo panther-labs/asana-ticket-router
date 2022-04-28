@@ -4,10 +4,12 @@ from pyshared.aws_consts import get_aws_const
 class HostedOrgs:
     CUSTOMER = get_aws_const("HOSTED_CUSTOMER_OU_ID")
     TERMINATED = get_aws_const("HOSTED_TERMINATED_OU_ID")
+    SUSPENDED = get_aws_const("HOSTED_SUSPENDED_OU_ID")
 
     _OU_NAME_DICT = {
         "customer": CUSTOMER,
         "terminated": TERMINATED,
+        "suspended": SUSPENDED,
     }
 
     @classmethod

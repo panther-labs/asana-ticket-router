@@ -16,6 +16,8 @@ parameters:
     value: customer
   - label: Terminated OU
     value: terminated
+  - label: Suspended OU
+    value: suspended
 - name: Airplane Test Run
   slug: airplane_test_run
   type: boolean
