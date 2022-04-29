@@ -3,7 +3,7 @@ import pytz
 import re
 import urllib.parse
 
-from notional import types as notional_types
+from notional import schema, types as notional_types
 
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.deployments_file import DeploymentsRepo
@@ -56,7 +56,8 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             return False
 
         if (attr == "Upgraded") and str(notion_val) and str(update_val):
-            return str(notion_val) != str(update_val)
+            return UpdateDeploymentRecords.get_display_value(notion_val) != UpdateDeploymentRecords.get_display_value(
+                update_val)
         if isinstance(notion_val, notional_types.RichText):
             return not are_rtf_values_equal(notion_val, update_val)
 
@@ -112,6 +113,10 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
     def get_display_value(value):
         if isinstance(value, notional_types.RichText):
             return get_display_rtf_value(value)
+        elif isinstance(value, notional_types.Date):
+            return str(value)
+        elif isinstance(value, schema.Date):
+            return str(value.date["start"])
         return value
 
     @staticmethod

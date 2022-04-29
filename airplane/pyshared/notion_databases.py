@@ -34,7 +34,7 @@ def are_rtf_values_equal(notion_val: schema.RichText, update_val: schema.RichTex
 
 
 def create_date_time_value(updated_datetime):
-    return schema.Date(date={"start": str(updated_datetime)})
+    return schema.Date(date={"start": updated_datetime})
 
 
 class AccountsDatabaseSchema:
