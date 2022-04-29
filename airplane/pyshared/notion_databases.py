@@ -1,4 +1,4 @@
-from notional import schema
+from notional import schema, types
 from notional.orm import Property
 
 from pyshared.notion_auth import NotionSession
@@ -34,7 +34,7 @@ def are_rtf_values_equal(notion_val: schema.RichText, update_val: schema.RichTex
 
 
 def create_date_time_value(updated_datetime):
-    return schema.Date(date={"start": updated_datetime})
+    return types.Date(date={"start": str(updated_datetime)})
 
 
 class AccountsDatabaseSchema:

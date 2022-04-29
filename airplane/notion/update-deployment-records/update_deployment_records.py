@@ -113,10 +113,6 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
     def get_display_value(value):
         if isinstance(value, notional_types.RichText):
             return get_display_rtf_value(value)
-        elif isinstance(value, notional_types.Date):
-            return str(value)
-        elif isinstance(value, schema.Date):
-            return str(value.date["start"])
         return value
 
     @staticmethod
