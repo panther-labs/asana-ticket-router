@@ -48,7 +48,7 @@ class DeleteCustomerMasterStack(AirplaneCloneGitTask):
             "arns": self.get_customer_teardown_role_arns(self.airplane_params.aws_account_id),
             "desc": f"cfn_remove_{self.airplane_params.fairytale_name}_master_stack",
             "region": self.airplane_params.region,
-            "test_role": self.test_roles["customer_support_role"]
+            "test_role": self.test_roles.get("customer_support_role")
         }
         stack = get_credentialed_resource(**cfn_kwargs).Stack(stack_name)
 
