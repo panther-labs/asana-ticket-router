@@ -1,10 +1,10 @@
 # Linked to https://app.airplane.dev/t/move_notion_panther_deploy_to_deprovisioned [do not edit this line]
-from pyshared.notion_auth import notion_session
-from pyshared.notion_databases import AccountsDatabase
+from pyshared.notion_auth import NotionSession
+from pyshared.notion_databases import get_accounts_database
 
 
 def move_notion_deploy_entry_to_deprovision(fairytale_name, test_run):
-    account = next((account for account in notion_session.databases.query(AccountsDatabase).execute()
+    account = next((account for account in NotionSession.session.databases.query(get_accounts_database()).execute()
                     if account.Fairytale_Name == fairytale_name), None)
     if account:
         if test_run:

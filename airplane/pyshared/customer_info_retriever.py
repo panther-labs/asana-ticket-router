@@ -3,8 +3,8 @@ import yaml
 
 from pyshared.aws_consts import get_aws_const
 from pyshared.dynamo_db import DynamoDbSearch
-from pyshared.notion_auth import notion_session
-from pyshared.notion_databases import AccountsDatabase
+from pyshared.notion_auth import NotionSession
+from pyshared.notion_databases import AccountsDatabaseSchema, get_accounts_database
 
 HOSTED_DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_ARN")
 HOSTED_DEPLOYMENTS_METADATA = get_aws_const(const_name="HOSTED_DEPLOYMENTS_METADATA")
@@ -14,7 +14,8 @@ STAGING_DEPLOYMENTS_METADATA = get_aws_const(const_name="STAGING_DEPLOYMENTS_MET
 
 class CustomerAccountInfo:
 
-    def __init__(self, fairytale_name: str, deploy_yml_info: dict, dynamo_info: dict, notion_info: AccountsDatabase):
+    def __init__(self, fairytale_name: str, deploy_yml_info: dict, dynamo_info: dict,
+                 notion_info: AccountsDatabaseSchema):
         self.deploy_yml_info = deploy_yml_info
         self.dynamo_info = dynamo_info
         self.fairytale_name = fairytale_name
@@ -23,9 +24,10 @@ class CustomerAccountInfo:
 
 class AllCustomerAccountsInfo:
 
-    def __init__(self, hosted_deploy_dir=None, staging_deploy_dir=None):
+    def __init__(self, hosted_deploy_dir=None, staging_deploy_dir=None, test_roles={}):
         self.dynamo_accounts = self.get_dynamo_results(get_hosted=(hosted_deploy_dir is not None),
-                                                       get_staging=(staging_deploy_dir is not None))
+                                                       get_staging=(staging_deploy_dir is not None),
+                                                       test_roles=test_roles)
         self.notion_accounts = self.get_notion_results()
         self.deploy_yml_accounts = {}
         if hosted_deploy_dir is not None:
@@ -40,26 +42,26 @@ class AllCustomerAccountsInfo:
             yield self.get_account_info(fairytale_name=fairytale_name)
 
     @staticmethod
-    def get_dynamo_results(get_hosted, get_staging) -> dict[str, dict]:
+    def get_dynamo_results(get_hosted, get_staging, test_roles) -> dict[str, dict]:
         results = {}
 
         tables_and_arns = []
         if get_hosted:
-            tables_and_arns.append((HOSTED_DEPLOYMENTS_METADATA, HOSTED_DYNAMO_RO_ROLE_ARN))
+            tables_and_arns.append((HOSTED_DEPLOYMENTS_METADATA, HOSTED_DYNAMO_RO_ROLE_ARN, test_roles.get("hosted")))
         if get_staging:
-            tables_and_arns.append((STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN))
+            tables_and_arns.append((STAGING_DEPLOYMENTS_METADATA, ROOT_DYNAMO_RO_ROLE_ARN, test_roles.get("staging")))
 
-        for table_name, arn in tables_and_arns:
-            db_search = DynamoDbSearch(table_name=table_name, arn=arn)
+        for table_name, arn, test_role in tables_and_arns:
+            db_search = DynamoDbSearch(table_name=table_name, arn=arn, test_role=test_role)
             results = {**results, **db_search.scan_and_organize_result(scan_result_keys=("CustomerId", ))}
 
         return results
 
     @staticmethod
-    def get_notion_results() -> dict[str, AccountsDatabase]:
+    def get_notion_results() -> dict[str, AccountsDatabaseSchema]:
         return {
             account.Fairytale_Name: account
-            for account in notion_session.databases.query(AccountsDatabase).execute() if account.Fairytale_Name
+            for account in get_accounts_database().query().execute() if account.Fairytale_Name
         }
 
     @staticmethod

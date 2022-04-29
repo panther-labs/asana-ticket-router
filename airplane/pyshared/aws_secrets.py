@@ -9,11 +9,12 @@ def _get_env_var(secret_name: str) -> str:
     Example of variable name: airplane/notion-auth-token would be NOTION_AUTH_TOKEN as an environment variable
     """
     env_var_name = secret_name.replace("airplane/", "").upper().replace("-", "_")
-    return os.getenv(env_var_name)
+    return os.environ.get(env_var_name)
 
 
 def get_secret_value(secret_name: str) -> str:
     """Get the first value from an AWS key-value pair."""
+    # TODO: Make this a part of the AirplaneTask class and fail if a local run and it doesn't get env var
     secret = _get_env_var(secret_name=secret_name)
     if secret:
         return secret

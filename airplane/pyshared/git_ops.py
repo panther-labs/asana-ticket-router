@@ -58,6 +58,10 @@ def git_push():
         print(output)
 
 
+def _get_existing_dir(repo):
+    return os.environ.get(repo, None)
+
+
 def git_add_commit_push(files: List[str], title, description="", test_run=False):
     if not test_run:
         git_add(files=files)
@@ -68,15 +72,24 @@ def git_add_commit_push(files: List[str], title, description="", test_run=False)
         print("\n\n\nYour filesystem has been changed. You may want to undo those local changes listed above")
 
 
+class AirplaneMultiCloneGitTask(AirplaneTask):
+
+    def __init__(self, git_repos):
+        self.git_dirs = {
+            repo: git_clone(repo=repo, github_setup=True, existing_dir=_get_existing_dir(repo))
+            for repo in git_repos
+        }
+        super().__init__()
+
+    def main(self):
+        raise NotImplementedError
+
+
 class AirplaneCloneGitTask(AirplaneTask):
 
     def __init__(self, params, git_repo):
-        self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=self.get_existing_dir(git_repo))
+        self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=_get_existing_dir(git_repo))
         super().__init__()
-
-    @staticmethod
-    def get_existing_dir(repo: str):
-        return os.environ.get(repo, None)
 
     def main_within_cloned_dir(self):
         raise NotImplementedError

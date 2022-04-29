@@ -25,11 +25,12 @@ def raise_exception_after_query_fails(retry_state):
     raise RuntimeError("Polling for DynamoDB query failed")
 
 
-def get_ddb_table(table_name, arn=None, region=None):
+def get_ddb_table(table_name, arn=None, region=None, test_role=None):
     dynamo_db = get_credentialed_resource(service_name="dynamodb",
                                           arns=arn,
                                           desc="dynamo_db",
-                                          region=DYNAMO_REGION if region is None else region)
+                                          region=DYNAMO_REGION if region is None else region,
+                                          test_role=test_role)
     return dynamo_db.Table(table_name)
 
 
@@ -39,8 +40,8 @@ def recursive_get_from_dynamodb_result(dynamodb_result, dynamodb_item_keys):
 
 class DynamoDbSearch:
 
-    def __init__(self, table_name, arn=None, region=None):
-        self.table = get_ddb_table(table_name=table_name, arn=arn, region=region)
+    def __init__(self, table_name, arn=None, region=None, test_role=None):
+        self.table = get_ddb_table(table_name=table_name, arn=arn, region=region, test_role=test_role)
 
     @tenacity.retry(before=print_before_query,
                     retry=tenacity.retry_if_result(lambda desired_val: not bool(desired_val)),

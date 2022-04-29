@@ -1,15 +1,17 @@
 import os
 
 from pyshared.local_aws_role_exec import input_mfa
+from pyshared import onepass
 
 
 class AirplaneTask:
     test_roles = {}
 
     def __init__(self):
-        for role in AirplaneTask.test_roles.values():
-            # For getting all user input necessary for assuming roles at the beginning of task execution
-            input_mfa(aws_profile=role)
+        pass
+        #for role, region in AirplaneTask.test_roles.values():
+        ## For getting all user input necessary for assuming roles at the beginning of task execution
+        #input_mfa(aws_profile=role, region=region)
 
     @staticmethod
     def is_test_run():
@@ -19,8 +21,15 @@ class AirplaneTask:
         raise NotImplementedError
 
     @staticmethod
-    def add_test_role(role_key, role_value):
-        AirplaneTask.test_roles[role_key] = role_value
+    def add_test_role(role_key, role_value, region=None):
+        """Only for testing - don't use as part of an Airplane run, it will fail!"""
+        AirplaneTask.test_roles[role_key] = (role_value, region)
+
+    @staticmethod
+    def set_env_var_from_onepass_item(env_var_name, onepass_item_name):
+        """Only for testing - don't use as part of an Airplane run, it will fail!"""
+        if env_var_name not in os.environ:
+            os.environ[env_var_name] = onepass.get_item(onepass_item_name)
 
 
 def set_local_run():

@@ -1,7 +1,7 @@
 import datetime
 import pytz
 
-from pyshared.notion_databases import AccountsDatabase
+from pyshared.notion_databases import get_accounts_database
 
 
 def get_backend(backend):
@@ -17,7 +17,7 @@ def main(params):
     support_link = f'https://{region}.signin.aws.amazon.com/switchrole?roleName={support_role}&account={aws_account_id}&displayName={customer}%20Support'
     support_value = f'[{support_role}]({support_link})'
 
-    task = AccountsDatabase.create(
+    task = get_accounts_database().create(
         Fairytale_Name=fairytale,
         AWS_Account_ID=params["aws_account_id"],
         Backend=get_backend(params["backend"]),

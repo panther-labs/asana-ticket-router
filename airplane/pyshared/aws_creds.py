@@ -1,7 +1,7 @@
 import boto3
 
 from pyshared.airplane_utils import is_local_run
-from pyshared.local_aws_role_exec import aws_vault_exec
+from pyshared.local_aws_role_exec import aws_vault_exec, input_mfa
 
 
 def _get_creds(arns, test_role=None, desc="task"):
@@ -9,13 +9,14 @@ def _get_creds(arns, test_role=None, desc="task"):
         if arns and (test_role is None):
             raise RuntimeError("Assuming roles with a local_run requires test roles to be set when getting "
                                "credentialed resources or clients")
-        return _get_creds_from_aws_vault(aws_profile=test_role)
+        return _get_creds_from_aws_vault(aws_profile=test_role[0], region=test_role[1])
     else:
         return _get_assumed_role_creds(arns=arns, desc=desc)
 
 
-def _get_creds_from_aws_vault(aws_profile):
-    output = aws_vault_exec(aws_profile=aws_profile, cmd="env")
+def _get_creds_from_aws_vault(aws_profile, region):
+    input_mfa(aws_profile=aws_profile, region=region)
+    output = aws_vault_exec(aws_profile=aws_profile, region=region, cmd="env")
     env_vars = {key: value for key, value in (line.split("=", 1) for line in output.split("\n") if line)}
 
     return {

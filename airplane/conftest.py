@@ -18,8 +18,8 @@ repos_parent_dir = "{repos_parent_dir}"
 
 def _load_environ_vars():
     set_local_run()
-    for repo_name in ("hosted-deployments", ):
-        os.environ[repo_name] = os.path.join(local_env.repos_parent_dir, repo_name)
+    for repo_name in ("hosted-deployments", "staging-deployments"):
+        os.environ[repo_name] = getattr(local_env, repo_name, os.path.join(local_env.repos_parent_dir, repo_name))
 
 
 @pytest.fixture(scope="session", autouse=True)
