@@ -1,21 +1,23 @@
 import os
 
-from pyshared.local_aws_role_exec import input_mfa
 from pyshared import onepass
 
 
 class AirplaneTask:
+    AIRPLANE_BASE_URL = "https://app.airplane.dev"
     test_roles = {}
-
-    def __init__(self):
-        pass
-        #for role, region in AirplaneTask.test_roles.values():
-        ## For getting all user input necessary for assuming roles at the beginning of task execution
-        #input_mfa(aws_profile=role, region=region)
 
     @staticmethod
     def is_test_run():
         return is_test_run(ap_params={})
+
+    @staticmethod
+    def get_run_url():
+        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "runs", os.environ["AIRPLANE_RUN_ID"])
+
+    @staticmethod
+    def get_task_url():
+        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "tasks", os.environ["AIRPLANE_TASK_ID"])
 
     def main(self):
         raise NotImplementedError
