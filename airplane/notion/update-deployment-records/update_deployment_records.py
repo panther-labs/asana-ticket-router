@@ -34,7 +34,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         for fairytale_name, notion_info in self.all_accounts.notion_accounts.items():
             if fairytale_name in self.all_accounts.uncommon_fairytale_names:
                 if notion_info.Account_Info_Auto_Updated:
-                    print(f"Set {notion_info.fairytale_name} to not be auto updated")
+                    print(f"Set {fairytale_name} to not be auto updated")
                     if not self.is_test_run():
                         notion_info.Account_Info_Auto_Updated = False
 
@@ -56,8 +56,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             return False
 
         if (attr == "Upgraded") and str(notion_val) and str(update_val):
-            return UpdateDeploymentRecords.get_display_value(notion_val) != UpdateDeploymentRecords.get_display_value(
-                update_val)
+            return str(notion_val) != str(update_val)
         if isinstance(notion_val, notional_types.RichText):
             return not are_rtf_values_equal(notion_val, update_val)
 
