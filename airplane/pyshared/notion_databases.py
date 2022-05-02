@@ -5,7 +5,7 @@ from pyshared.notion_auth import NotionSession
 
 
 def create_rtf_value(text, url=None):
-    return schema.RichText.parse_obj({
+    return types.RichText.parse_obj({
         "type":
         "rich_text",
         "rich_text": [{
