@@ -1,0 +1,26 @@
+name: Grant Customer Access to Paid GreyNoise
+slug: grant_paid_greynoise_acces
+description: This task grants a customer access to the paid version of the GreyNoise IP enrichment data
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+- name: Region
+  slug: region
+  type: shorttext
+- name: Dry Run
+  slug: dry_run
+  description: Dry run, do not update the customer's access to GreyNoise content
+  type: boolean
+  default: false
+python:
+  entrypoint: update_greynoise_access.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-ConduitReadOnly
+timeout: 3600
+requireRequests: true
+allowSelfApprovals: false

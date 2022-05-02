@@ -1,0 +1,15 @@
+StackName: panther-conduit
+TemplateUrl: https://panther-enterprise-conduit-cfn-us-west-2.s3.us-west-2.amazonaws.com/v0.0.0-INTERNAL/cfn/panther-conduit.yml
+CloudFormationParameters:
+  CloudWatchLogRetentionDays: '60'
+  Debug: 'false'
+  ExternalDefaultAccessARNs: ''
+  #  - arn:aws:iam::210768072910:role/panther-log-analysis-LookupTablesApiFunctionRole-5L4Y5VFFOF4Y
+  GreyNoiseFullAccessARNs:
+    - arn:aws:iam::084640883527:role/panther-LogAnalysis-1HD8Z-LookupTablesApiFunctionR-1NRHHYRKMZRVO
+    - arn:aws:iam::964675078129:role/panther-LogAnalysis-12XR7-LookupTablesApiFunctionR-1HMTGULSDFGKM
+  PantherCorpOrgID: o-wyibehgf3h
+  PantherSaaSOrgID: o-he117ni5su
+  SentryEnvironment: prod
+  TracingMode: ''
+
