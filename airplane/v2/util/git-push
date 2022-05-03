@@ -1,0 +1,26 @@
+#!/bin/sh -eu
+
+: "${TEST_RUN:?Must specify whether this is a test run}"
+
+if [ "${TEST_RUN}" = "true" ]; then
+  printf "\n\n=== This is a test run! Files should already be committed, but no files will be pushed. ===\n\n"
+  printf "=== Files changed ===\n\n"
+  git diff HEAD^ HEAD --stat
+  printf "\n\n=== git diff ===\n\n"
+  git diff HEAD^ HEAD
+else
+  # Robust pushing to git to prevent merge conflicts
+  MAX_ATTEMPTS=3
+  attempts=1
+
+  while ! git push; do
+    attempts=$((attempts+1))
+    if [ "${attempts}" -gt "${MAX_ATTEMPTS}" ]; then
+      echo "Could not push to Git repo! Exiting script..."
+      exit 1
+    fi
+
+    sleep 2
+    git pull --rebase
+  done
+fi

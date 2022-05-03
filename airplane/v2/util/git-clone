@@ -1,0 +1,14 @@
+#!/bin/sh -eu
+
+: "${REPOSITORY:?Must specify a repository to clone}"
+deploy_key_base64="${DEPLOY_KEY_BASE64:-}"
+
+SCRIPT_DIR=$(dirname "$0")
+
+if [ -z "$deploy_key_base64" ]; then
+  SECRET_NAME="$(${SCRIPT_DIR}/get-deploy-key-secret-name)" . "${SCRIPT_DIR}/get-secret-value"
+  deploy_key_base64="${secret_value}"
+fi
+
+echo ${deploy_key_base64} | base64 -d > ~/.ssh/id_github
+git clone git@github.com:panther-labs/${REPOSITORY}
