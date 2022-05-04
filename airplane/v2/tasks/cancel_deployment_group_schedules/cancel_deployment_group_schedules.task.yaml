@@ -1,0 +1,54 @@
+name: Cancel Deployment Group Schedules
+slug: cancel_deployment_group_schedules
+parameters:
+- name: All Groups
+  slug: all_groups
+  type: boolean
+  default: false
+- name: Group A
+  slug: group_a
+  type: boolean
+  default: false
+- name: Group C
+  slug: group_c
+  type: boolean
+  default: false
+- name: Group E
+  slug: group_e
+  type: boolean
+  default: false
+- name: Group G
+  slug: group_g
+  type: boolean
+  default: false
+- name: Group J
+  slug: group_j
+  type: boolean
+  default: false
+- name: Group L
+  slug: group_l
+  type: boolean
+  default: false
+- name: Group N
+  slug: group_n
+  type: boolean
+  default: false
+- name: Group P
+  slug: group_p
+  type: boolean
+  default: false
+- name: Group Z
+  slug: group_z
+  type: boolean
+  default: false
+- name: Group CPaaS
+  slug: group_cpaas
+  type: boolean
+  default: false
+- name: Group Legacy-SF
+  slug: group_legacy_sf
+  type: boolean
+  default: false
+python:
+  entrypoint: cancel_deployment_group_schedules.py
+timeout: 3600

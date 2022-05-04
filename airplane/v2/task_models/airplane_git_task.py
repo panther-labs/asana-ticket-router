@@ -1,9 +1,10 @@
 from v2.util.cmd_runner import run_cmd
 from v2.task_models.airplane_task import AirplaneTask
 from v2.pyshared.aws_secrets import get_secret_value
-from v2.pyshared.os_util import join_paths, get_cur_dir_abs_path
 from v2.pyshared.airplane_logger import logger
+from v2.pyshared.os_util import get_cwd, join_paths
 from v2.consts.airplane_env import AirplaneEnv
+from v2.consts.util_scripts import UtilScript
 
 from git import Repo
 
@@ -24,7 +25,7 @@ class AirplaneGitTask(AirplaneTask):
         :return: None
         """
         if not AirplaneEnv.is_local_env():
-            run_cmd("util/setup-github")
+            run_cmd(script_name=UtilScript.SETUP_GITHUB)
         else:
             logger.warning("Skipping git SSH keys setup due to local execution.")
 
@@ -34,7 +35,7 @@ class AirplaneGitTask(AirplaneTask):
         :param repo_name: Git repo to clone
         :return: Deploy key required to clone repositories withing Panther organization
         """
-        secret_name = run_cmd(f"REPOSITORY={repo_name} get-deploy-key-secret-name").strip()
+        secret_name = run_cmd(script_name=UtilScript.GET_DEPLOY_KEY_SECRET_NAME, cmd=f"REPOSITORY={repo_name}").strip()
         return get_secret_value(secret_name=secret_name)
 
     @classmethod
@@ -45,18 +46,15 @@ class AirplaneGitTask(AirplaneTask):
         :return: Absolute path of the cloned repo
         """
         deploy_key_base64 = cls._get_deploy_key_base64(repo_name)
-        run_cmd(f"REPOSITORY={repo_name} DEPLOY_KEY_BASE64={deploy_key_base64} git-clone")
-        return join_paths(get_cur_dir_abs_path(), repo_name)
+        run_cmd(script_name=UtilScript.GIT_CLONE, cmd=f"REPOSITORY={repo_name} DEPLOY_KEY_BASE64={deploy_key_base64}")
+        return join_paths(get_cwd(), repo_name)
 
     @staticmethod
-    def _git_diff() -> None:
+    def _git_diff() -> str:
         """
-        Logs 'git diff' output
-        :return: None
+        :return: 'git diff' output
         """
-        git_diff = Repo().git.diff()
-        if git_diff:
-            logger.info(git_diff)
+        return Repo().git.diff()
 
     @staticmethod
     def _git_add(filepaths: list[str]) -> None:
@@ -65,7 +63,7 @@ class AirplaneGitTask(AirplaneTask):
         :param filepaths: List of absolute paths of files to add
         :return: None
         """
-        run_cmd(f'git-add {" ".join(filepaths)}')
+        run_cmd(script_name=UtilScript.GIT_ADD, cmd=" ".join(filepaths))
 
     @staticmethod
     def _git_commit(title: str, description: str = "") -> None:
@@ -75,7 +73,7 @@ class AirplaneGitTask(AirplaneTask):
         :param description: Commit description
         :return: None
         """
-        run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" git-commit')
+        run_cmd(script_name=UtilScript.GIT_COMMIT, cmd=f'TITLE="{title}" DESCRIPTION="{description}"')
 
     @staticmethod
     def _git_push() -> None:
@@ -83,7 +81,7 @@ class AirplaneGitTask(AirplaneTask):
         Run 'git push' command
         :return: None
         """
-        output = run_cmd(f'TEST_RUN="false" git-push')
+        output = run_cmd(script_name=UtilScript.GIT_PUSH, cmd=f'TEST_RUN="false"')
         if output:
             logger.info(output)
 
@@ -105,17 +103,22 @@ class AirplaneGitTask(AirplaneTask):
 
     def git_add_commit_and_push(self, filepaths: list[str], title: str, description: str = "") -> None:
         """
-        Adds, commits, and pushes files to a specified repository in a single run.
+        If file changes were made, the method adds, commits, and pushes the files to a repo in a single run.
         The method must be called from within the repo directory.
         :param filepaths: Filepaths to commit
         :param title: Commit title
         :param description: Commit description
         :return: None
         """
-        if self.is_dry_run or AirplaneEnv.is_local_env():
-            logger.info("Dry run: the files will not be committed, running 'git diff' instead.")
-            self._git_diff()
-            logger.warning('Your filesystem has been changed. You may want to undo those local changes listed above.')
+        git_diff_output = self._git_diff()
+        if git_diff_output:
+            logger.info(f"Git diff: {git_diff_output}")
+        else:
+            logger.warning("Git diff: no changes. No files will be committed.")
+            return
+
+        if AirplaneEnv.is_local_env() or self.is_dry_run:
+            logger.info("Dry run: no files will be committed.")
         else:
             self._git_add(filepaths)
             self._git_commit(title, description)
