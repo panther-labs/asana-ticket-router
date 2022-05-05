@@ -176,6 +176,8 @@ class SERVICE(Enum):
     REPLAY_RESULTS_API = 'panther-replay-results-api'
     REPLAY_LOG_PUSHER = 'panther-replay-log-pusher'
     REPLAY_DETECTIONS_ENGINE = 'panther-replay-detections-engine'
+    REPORTS_API = 'panther-reports-api'
+    REPORTS_PROCESSOR = 'panther-reports-processor'
     RESOURCES_API = 'panther-resources-api'
     RESOURCE_PROCESSOR = 'panther-resource-processor'
     RULES_ENGINE = 'panther-rules-engine'
@@ -208,6 +210,8 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.REPLAY_LOG_PUSHER,
         SERVICE.REPLAY_RESULTS_API,
         SERVICE.REPLAY_RESULTS_PROCESSOR,
+        SERVICE.REPORTS_API,
+        SERVICE.REPORTS_PROCESSOR,
         SERVICE.RESOURCES_API,
         SERVICE.RESOURCE_PROCESSOR,
         SERVICE.RULES_ENGINE,
