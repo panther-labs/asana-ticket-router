@@ -18,19 +18,20 @@ def get_deployment_filepath(fairytale_name: str, repo_dir: str = "", get_generat
     return os.path.join(repo_dir, "deployment-metadata", parent_dir, f"{fairytale_name}.yml")
 
 
-def get_deployment_group_dir(repo_dir: str = ""):
+def get_deployment_groups_dir(repo_dir: str = ""):
     return os.path.join(repo_dir, "deployment-metadata", "deployment-groups")
 
-def get_deployment_target_dir(repo_dir: str = ""):
+
+def get_deployment_targets_dir(repo_dir: str = ""):
     return os.path.join(repo_dir, "deployment-metadata", "deployment-targets")
 
 
 def get_deployment_group_filepath(group_name: str, repo_dir: str = ""):
-    return os.path.join(os.path.join(get_deployment_group_dir(repo_dir=repo_dir), f"{group_name}.yml"))
+    return os.path.join(os.path.join(get_deployment_groups_dir(repo_dir=repo_dir), f"{group_name}.yml"))
 
 
 def get_deployment_group_choices(repo_dir: str = ""):
-    return [group.removesuffix(".yml") for group in os.listdir(get_deployment_group_dir(repo_dir=repo_dir))]
+    return [group.removesuffix(".yml") for group in os.listdir(get_deployment_groups_dir(repo_dir=repo_dir))]
 
 
 def gen_cfgs():
@@ -54,4 +55,4 @@ def alter_deployment_file(deployments_repo: str,
                 get_deployment_filepath(fairytale_name=ap_params["fairytale_name"], get_generated_filepath=True))
         gen_cfgs()
 
-        git_add_commit_push(files=("deployment-metadata", ), title=commit_title, test_run=is_test_run(ap_params))
+        git_add_commit_push(files=("deployment-metadata",), title=commit_title, test_run=is_test_run(ap_params))
