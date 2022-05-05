@@ -17,8 +17,21 @@ def get_current_directory(__file__: str) -> str:
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def get_user_directory() -> str:
+    """
+    :return: user directory, i.e. '~' path
+    """
+    return os.path.expanduser("~")
+
+
 def join_paths(path: str, *paths: str) -> str:
     return os.path.join(path, *paths)
+
+
+def write_to_file(filepath: str, text: str, is_append: bool = True) -> None:
+    mode = 'a' if is_append else 'w'
+    with open(filepath, mode) as f:
+        f.write(text)
 
 
 @contextmanager

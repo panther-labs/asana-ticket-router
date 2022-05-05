@@ -5,6 +5,7 @@ parameters:
   - name: Deployment Version
     slug: deployment_version
     type: shorttext
+    regex: ^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$
   # Group A
   - name: Group A - Deployment Date
     slug: group_a_deployment_date
@@ -667,4 +668,6 @@ parameters:
         value: "05:00 AM"
 python:
   entrypoint: update_deployment_group_schedules.py
+requireRequests: true
+allowSelfApprovals: false
 timeout: 3600

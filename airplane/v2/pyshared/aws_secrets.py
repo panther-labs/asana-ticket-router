@@ -1,6 +1,6 @@
-import boto3
-import json
 import os
+import json
+import boto3
 
 
 def _get_env_var(secret_name: str) -> str:

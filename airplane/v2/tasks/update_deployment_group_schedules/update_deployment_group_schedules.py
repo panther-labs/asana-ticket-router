@@ -83,9 +83,8 @@ class UpdateDeploymentGroupSchedules(AirplaneGitTask):
                     f"Version: {deployment_version} Deployment Time: {deployment_datetime} (PDT)")
                 logger.info(f"Group '{group}' will be upgraded to '{deployment_version}' on {deployment_datetime}")
 
-        with tmp_change_dir(change_dir=repo_abs_path):
-            self.git_add_commit_and_push(filepaths=[repo_abs_path],
-                                         title=f'Update deployment schedules for groups {group_names}')
+        with tmp_change_dir(repo_abs_path):
+            self.git_add_commit_and_push(title=f'Update deployment schedules for groups {group_names}')
 
 
 def main(params: dict) -> None:

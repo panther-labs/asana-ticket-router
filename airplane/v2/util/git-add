@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-set -eu
-
-# Pretty useless script, but we have one for everything else
-git add "$@"

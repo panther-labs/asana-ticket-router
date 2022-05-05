@@ -1,0 +1,7 @@
+name: Airplane Git Task Test
+slug: airplane_git_task_test_ngd
+python:
+  entrypoint: airplane_git_task_test.py
+requireRequests: true
+allowSelfApprovals: false
+timeout: 3600

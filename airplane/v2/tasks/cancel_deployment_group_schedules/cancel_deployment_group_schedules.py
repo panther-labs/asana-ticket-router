@@ -40,9 +40,8 @@ class CancelDeploymentGroupSchedules(AirplaneGitTask):
                 # Remove top level comment
                 cfg_yaml.ca.comment = None
 
-        with tmp_change_dir(change_dir=repo_abs_path):
-            self.git_add_commit_and_push(filepaths=[repo_abs_path],
-                                         title=f'Cancel deployment schedules for groups {groups_to_cancel}')
+        with tmp_change_dir(repo_abs_path):
+            self.git_add_commit_and_push(title=f'Cancel deployment schedules for groups {groups_to_cancel}')
 
 
 def main(params: dict) -> None:
