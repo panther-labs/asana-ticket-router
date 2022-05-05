@@ -3,7 +3,7 @@ import pytz
 import re
 import urllib.parse
 
-from notional import schema, types as notional_types
+from notional import types as notional_types
 
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.deployments_file import DeploymentsRepo
@@ -130,6 +130,10 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         expected_attrs = {
             "Account_Info_Auto_Updated":
             True,
+            "Account_Name":
+            create_rtf_value(
+                text=company_name,
+                url=f"https://{account_info.dynamo_info['GithubCloudFormationParameters']['CustomDomain']}/sign-in"),
             # Ignoring AWS_Organization
             # Ignoring Backend
             "Deploy_Group":
@@ -137,11 +141,8 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             # Ignoring Deploy Type
             "Email":
             f"panther-hosted+{account_info.fairytale_name}@panther.io",
+
             # Ignoring Legacy_Stacks
-            "Account_Name":
-            create_rtf_value(
-                text=company_name,
-                url=f"https://{account_info.dynamo_info['GithubCloudFormationParameters']['CustomDomain']}/sign-in"),
             # Ignoring PoC
             "Region":
             region,
@@ -161,6 +162,12 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
                 url=(f"https://{region}.signin.aws.amazon.com/switchrole?roleName={role_name}&account={aws_account_id}&"
                      f"displayName={url_support_name}"))
 
+        actual_version = account_info.dynamo_info.get("ActualVersion")
+        expected_version = account_info.dynamo_info.get("ExpectedVersion")
+        if actual_version:
+            expected_attrs["Actual_Version"] = actual_version.replace("v", "")
+        if expected_version:
+            expected_attrs["Expected_Version"] = expected_version.replace("v", "")
         return expected_attrs
 
 

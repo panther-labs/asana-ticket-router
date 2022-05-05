@@ -3,7 +3,6 @@ import yaml
 
 from pyshared.aws_consts import get_aws_const
 from pyshared.dynamo_db import DynamoDbSearch
-from pyshared.notion_auth import NotionSession
 from pyshared.notion_databases import AccountsDatabaseSchema, get_accounts_database
 
 HOSTED_DYNAMO_RO_ROLE_ARN = get_aws_const(const_name="HOSTED_DYNAMO_RO_ROLE_ARN")
