@@ -21,6 +21,9 @@ def get_deployment_filepath(fairytale_name: str, repo_dir: str = "", get_generat
 def get_deployment_group_dir(repo_dir: str = ""):
     return os.path.join(repo_dir, "deployment-metadata", "deployment-groups")
 
+def get_deployment_target_dir(repo_dir: str = ""):
+    return os.path.join(repo_dir, "deployment-metadata", "deployment-targets")
+
 
 def get_deployment_group_filepath(group_name: str, repo_dir: str = ""):
     return os.path.join(os.path.join(get_deployment_group_dir(repo_dir=repo_dir), f"{group_name}.yml"))
