@@ -25,14 +25,14 @@ def get_aws_account_id(fairytale_name: str) -> str:
 
 
 def create_customer_policy_statement(params: dict) -> comments.CommentedMap:
-    deployment_role = comments.CommentedSeq([f"arn:aws:iam::{params['aws_account_id']}:role/PantherDeploymentRole*"])
-    deployment_role.yaml_add_eol_comment("Panther Deployment Role - Used to manage panther deployments\n\n", 0, 0)
-    deployment_role.yaml_set_comment_before_after_key(0, f"Customer: {params['fairytale_name']}", 18)
-    deployment_role.yaml_set_comment_before_after_key(0, params["reason"], 18)
+    role = comments.CommentedSeq([params['role_arn']])
+    role.yaml_add_eol_comment(params['comment'], 0, 0)
+    role.yaml_set_comment_before_after_key(0, f"Customer: {params['fairytale_name']}", 18)
+    role.yaml_set_comment_before_after_key(0, params["reason"], 18)
     return comments.CommentedMap({
         "Effect": "Allow",
         "Action": "sts:AssumeRole",
-        "Resource": deployment_role
+        "Resource": role
     })
 
 
@@ -44,22 +44,22 @@ def find_customer_policy_statement(policy_statements: comments.CommentedMap,
                 return policy_statement
 
 
-def add_customer_to_deployment_group(cfn_yaml: comments.CommentedMap, params: dict) -> None:
-    policy_statements = get_group_policy_statements(cfn_yaml, "Deployment", "AssumeDeployRoles")
+def add_customer_to_group(cfn_yaml: comments.CommentedMap, params: dict) -> None:
+    policy_statements = get_group_policy_statements(cfn_yaml, params['group_name'], params['policy_name'])
 
     if find_customer_policy_statement(policy_statements, params["aws_account_id"]):
-        raise Exception(f"Customer '{params['fairytale_name']}' is already added to the deployment group")
+        raise Exception(f"Customer '{params['fairytale_name']}' is already added to the {params['group_name']} group")
 
     customer_policy_statement = create_customer_policy_statement(params)
     policy_statements.append(customer_policy_statement)
 
 
-def remove_customer_from_deployment_group(cfn_yaml: comments.CommentedMap, params: dict) -> None:
-    policy_statements = get_group_policy_statements(cfn_yaml, "Deployment", "AssumeDeployRoles")
+def remove_customer_from_group(cfn_yaml: comments.CommentedMap, params: dict) -> None:
+    policy_statements = get_group_policy_statements(cfn_yaml, params['group_name'], params['policy_name'])
 
     customer_policy_statement = find_customer_policy_statement(policy_statements, params["aws_account_id"])
     if not customer_policy_statement:
-        raise Exception(f"Customer '{params['fairytale_name']}' not found in the deployment group")
+        raise Exception(f"Customer '{params['fairytale_name']}' not found in the {params['group_name']} group")
 
     policy_statements.remove(customer_policy_statement)
 
@@ -80,11 +80,27 @@ def main(params: dict) -> None:
     cfn_yaml = load_yaml_cfg(cfg_filepath=groups_file_abs_path,
                              error_msg=f"Groups file not found: '{groups_file_abs_path}'")
 
+    group = params["group"]
+
+    if group == "Deployment":
+        params["group_name"] = "Deployment"
+        params["policy_name"] = "AssumeDeployRoles"
+        params["role_arn"] = f"arn:aws:iam::{params['aws_account_id']}:role/PantherDeploymentRole*"
+        params["comment"] = "Panther Deployment Role - Used to manage panther deployments\n\n"
+
+    elif group == "DataAccess":
+        params["group_name"] = "DataAccessGroup"
+        params["policy_name"] = "AssumeDataAccessRole"
+        params["role_arn"] = f"arn:aws:iam::{params['aws_account_id']}:role/PantherDataAccessRole*"
+        params["comment"] = "Panther Data Access Role - Used for on-call support to Panther instances\n\n"
+    else:
+        raise Exception(f'Unexpected value for group: ${group}')
+
     operation = params["add_or_remove"]
     if operation == "Add":
-        add_customer_to_deployment_group(cfn_yaml, params)
+        add_customer_to_group(cfn_yaml, params)
     elif operation == "Remove":
-        remove_customer_from_deployment_group(cfn_yaml, params)
+        remove_customer_from_group(cfn_yaml, params)
     else:
         raise Exception(f'Unexpected value for operation: ${operation}')
 
@@ -92,5 +108,5 @@ def main(params: dict) -> None:
 
     with tmp_change_dir(change_dir=repository_dir):
         git_add_commit_push(files=[GROUPS_FILE_REL_PATH],
-                            title=f"{operation}s {params['fairytale_name']} to/from deployment group",
+                            title=f"{operation}s {params['fairytale_name']} to/from {params['group_name']} group",
                             test_run=params["airplane_test_run"])

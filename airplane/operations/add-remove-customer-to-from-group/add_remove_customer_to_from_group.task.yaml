@@ -1,11 +1,11 @@
-name: Add/Remove Customer To/From Deployment Group
-slug: add_remove_customer_to_from_deployment_group
-description: Used to add/remove customers to/from the Deployment group
+name: Add/Remove Customer To/From Group
+slug: add_remove_customer_to_from_group
+description: Used to add/remove customers to/from the high privilege groups
 parameters:
 - name: Add or Remove
   slug: add_or_remove
   type: shorttext
-  description: Add or remove a customer to/from the Deployment group.
+  description: Add or remove a customer to/from a high priv group.
   default: Add
   options:
   - label: ""
@@ -19,10 +19,20 @@ parameters:
     Customer's fairytale name. Required if AWS Account ID is not set.
     Example: valiant-owl
   regex: ^([a-z][a-z]*)(-[a-z]+)*$
+- name: Group
+  slug: group
+  type: shorttext
+  description: Group to add account to
+  default: DataAccess
+  options:
+  - label: ""
+    value: Deployment
+  - label: ""
+    value: DataAccess
 - name: Reason
   slug: reason
   type: shorttext
-  description: Reason for adding a customer the Deployment group.
+  description: Reason for adding a customer the high priv group.
   regex: ^.{10,}$
 - name: Temporary
   slug: temporary
@@ -41,7 +51,7 @@ parameters:
   type: boolean
   description: Do not push to GitHub
 python:
-  entrypoint: add_remove_customer_to_from_deployment_group.py
+  entrypoint: add_remove_customer_to_from_group.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
