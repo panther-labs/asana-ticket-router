@@ -224,8 +224,8 @@ class AsanaService:
         if url is not None:
             return self._get_owning_team_from_fe_service(url)
 
-        # If both a `url` and a `server_name` are missing, fallback to the Core Product team
-        return ENG_TEAMS[TEAM.CORE_PRODUCT]
+        # If both a `url` and a `server_name` are missing, fallback to the Observability team
+        return ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
 
     async def _get_project_ids(self, environment: str, level: str, owning_team: EngTeam) -> List[str]:
         """Returns a list of project ids to attach to an Asana task"""
@@ -266,9 +266,9 @@ class AsanaService:
         project_ids = list(ids)
         filtered = [i for i in project_ids if i is not None]
 
-        # Ensure we have at least 1 project to assign (CORE_PRODUCT backlog)
+        # Ensure we have at least 1 project to assign
         if len(filtered) == 0:
-            filtered.append(ENG_TEAMS[TEAM.CORE_PRODUCT].backlog_id)
+            filtered.append(ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id)
         return filtered
 
     async def _get_production_project_ids(self, portfolio_id: str) -> List[str]:
@@ -277,9 +277,9 @@ class AsanaService:
         sprint_id = await self._get_latest_project_id(portfolio_id)
         project_ids = [sprint_id]
         filtered = [i for i in project_ids if i is not None]
-        # Ensure we have at least 1 project to assign (CORE_PRODUCT backlog)
+        # Ensure we have at least 1 project to assign
         if len(filtered) == 0:
-            filtered.append(ENG_TEAMS[TEAM.CORE_PRODUCT].backlog_id)
+            filtered.append(ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id)
         return filtered
 
     async def _get_latest_project_id(self, portfolio_id: str) -> Optional[str]:
@@ -335,19 +335,19 @@ class AsanaService:
     @staticmethod
     def _get_owning_team_from_service(service: str) -> EngTeam:
         """Return the team that owns the specified service by service name.
-        Defaults to CORE_PRODUCT if none found"""
+        Defaults to OBSERVABILITY_PERF if none found"""
         team = SERVICE_TO_TEAM.get(
             service,
-            TEAM.CORE_PRODUCT
+            TEAM.OBSERVABILITY_PERF
         )
         return ENG_TEAMS[team]
 
     @staticmethod
     def _get_owning_team_from_fe_service(url: str) -> EngTeam:
         """Return the team that owns the specified service by partial url match.
-        Defaults to CORE_PRODUCT if none found."""
+        Defaults to OBSERVABILITY_PERF if none found."""
         team = next((val for key, val in FE_SERVICE_TO_TEAM.items()
-                     if key in url), TEAM.CORE_PRODUCT)
+                     if key in url), TEAM.OBSERVABILITY_PERF)
         return ENG_TEAMS[team]
 
     @ staticmethod

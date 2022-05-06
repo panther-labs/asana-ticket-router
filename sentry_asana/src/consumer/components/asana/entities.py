@@ -22,7 +22,7 @@ class PRIORITY(Enum):
 
 class TEAM(Enum):
     """Mapping of all engineering teams"""
-    CORE_PRODUCT = 'CORE_PRODUCT'
+    ADOPTION = 'ADOPTION'
     DATA_PLATFORM = 'DATA_PLATFORM'
     DETECTIONS = 'DETECTIONS'
     INGESTION = 'INGESTION'
@@ -62,7 +62,7 @@ class AsanaFields:  # pylint: disable=too-many-instance-attributes
 
 # A mapping of all engineering teams to their Asana IDs
 ENG_TEAMS: Dict[TEAM, EngTeam] = {
-    TEAM.CORE_PRODUCT: EngTeam(
+    TEAM.ADOPTION: EngTeam(
         team_id='1201305154831714',
         backlog_id='1201267919523621',
         sprint_portfolio_id='1201675315244004',
@@ -251,7 +251,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.SNOWFLAKE_ADMIN_API,
         SERVICE.SNOWFLAKE_API
     ],
-    TEAM.CORE_PRODUCT: [
+    TEAM.ADOPTION: [
         SERVICE.APITOKEN_AUTHORIZER,
         SERVICE.CFN_CUSTOM_RESOURCES,
         SERVICE.CN_ROUTER,

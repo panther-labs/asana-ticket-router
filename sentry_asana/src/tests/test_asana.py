@@ -203,10 +203,10 @@ async def test_get_staging_project_ids(container: AsanaContainer) -> None:
     assert project_ids == ['sprint_gid_3', 'release_gid_1']
 
     # Test if all API calls returned nothing, that we at least assign
-    # CORE_PRODUCT backlog
+    # OBSERVABILITY_PERF backlog
     service._release_testing_portfolio = 'none'
     project_ids = await service._get_staging_project_ids('none')
-    assert project_ids == [ENG_TEAMS[TEAM.CORE_PRODUCT].backlog_id]
+    assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
 
 
 @ pytest.mark.asyncio
@@ -218,7 +218,7 @@ async def test_get_production_project_ids(container: AsanaContainer) -> None:
     assert project_ids == ['sprint_gid_3']
 
     project_ids = await service._get_production_project_ids('none')
-    assert project_ids == [ENG_TEAMS[TEAM.CORE_PRODUCT].backlog_id]
+    assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
 
 
 @ pytest.mark.asyncio
@@ -257,7 +257,7 @@ async def test_get_owning_team_from_service(container: AsanaContainer) -> None:
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team_from_service('not a valid service')
-    assert team is ENG_TEAMS[TEAM.CORE_PRODUCT], 'Should route to default core product'
+    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
 
     team = service._get_owning_team_from_service(
         SERVICE.ALERT_DELIVERY_API.value)
@@ -270,7 +270,7 @@ async def test_get_owning_team_from_fe_service(container: AsanaContainer) -> Non
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team_from_fe_service('not a valid FE service')
-    assert team is ENG_TEAMS[TEAM.CORE_PRODUCT], 'Should route to default core product'
+    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
 
     team = service._get_owning_team_from_fe_service(
         f'https://foo.bar{FE_SERVICE.DATA_SCHEMAS.value}param?key=val')
@@ -283,7 +283,7 @@ async def test_get_owning_team(container: AsanaContainer) -> None:
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team(None, None)
-    assert team is ENG_TEAMS[TEAM.CORE_PRODUCT], 'Should route to default core product'
+    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
 
     team = service._get_owning_team(None, FE_SERVICE.DATA_SCHEMAS.value)
     assert team is ENG_TEAMS[TEAM.INGESTION], 'Should route to INGESTION'
