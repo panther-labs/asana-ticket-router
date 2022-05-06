@@ -170,6 +170,7 @@ class SERVICE(Enum):
     OUTPUTS_API = 'panther-outputs-api'
     PIP_LAYER_BUILDER = 'panther-pip-layer-builder'
     POLICY_ENGINE = 'panther-policy-engine'
+    PYTHON_EXECUTOR_TESTS = 'panther-python-executor-tests'
     RBAC_DATALAKE_SYNC = 'panther-rbac-datalake-sync'
     REPLAY_API = 'panther-replay-api'
     REPLAY_RESULTS_PROCESSOR = 'panther-replay-results-processor'
@@ -205,6 +206,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.LAYER_MANAGER,
         SERVICE.PIP_LAYER_BUILDER,
         SERVICE.POLICY_ENGINE,
+        SERVICE.PYTHON_EXECUTOR_TESTS,
         SERVICE.REPLAY_API,
         SERVICE.REPLAY_DETECTIONS_ENGINE,
         SERVICE.REPLAY_LOG_PUSHER,
