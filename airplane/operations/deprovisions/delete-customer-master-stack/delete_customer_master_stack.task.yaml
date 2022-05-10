@@ -39,7 +39,7 @@ python:
   entrypoint: delete_customer_master_stack.py
   envVars:
     ECS_TASK_ROLE:
-      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerTeardown
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-PantherTeardown
 requireRequests: true
 allowSelfApprovals: false
 timeout: 7200
