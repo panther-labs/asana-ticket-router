@@ -9,6 +9,7 @@ coolname>=1.1.0
 GitPython
 notional==0.4.0
 pytest
+python-dateutil
 pytz
 pyyaml>=6.0
 tenacity>=8.0.1

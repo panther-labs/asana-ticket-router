@@ -1,0 +1,9 @@
+name: Ephemeral Statistics
+slug: ephemeral_statistics_xkj
+description: https://github.com/panther-labs/ephemeral-deployments
+python:
+  entrypoint: ephemeral_statistics.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: AirplaneWorkers-EphemeralDeployments
+timeout: 3600
