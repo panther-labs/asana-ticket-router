@@ -1,28 +1,40 @@
-name: Move Hosted Account To OU
-slug: move_hosted_account_to_ou
-description: Used to move hosted accounts between Customer and Terminated OU's
+name: Move Account to OU
+slug: move_account_to_ou
 parameters:
-- name: Fairytale Name
-  slug: fairytale_name
+- name: Organization
+  slug: organization
   type: shorttext
+  options:
+  - label: Hosted
+    value: hosted
+  - label: Panther Root
+    value: root
 - name: AWS Account ID
   slug: aws_account_id
   type: shorttext
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: Fairytale name or account name
 - name: Target OU
   slug: target_ou
   type: shorttext
   options:
-  - label: Customer OU
-    value: customer
   - label: Terminated OU
     value: terminated
   - label: Suspended OU
     value: suspended
+  - label: Customer OU (Hosted)
+    value: customer
+  - label: Staging OU (Panther Root)
+    value: staging
+  - label: Dev Accounts OU (Panther Root)
+    value: dev-accounts
 - name: Airplane Test Run
   slug: airplane_test_run
   type: boolean
 python:
-  entrypoint: move_hosted_account_to_ou.py
+  entrypoint: move_account_to_ou.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-OrganizationsMoveAccount
