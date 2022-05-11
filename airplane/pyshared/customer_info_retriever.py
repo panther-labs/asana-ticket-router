@@ -33,7 +33,8 @@ class AllCustomerAccountsInfo:
             self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(hosted_deploy_dir)}
         if staging_deploy_dir is not None:
             self.deploy_yml_accounts = {**self.deploy_yml_accounts, **self.get_deploy_yml_accounts(staging_deploy_dir)}
-        self.common_fairytale_names, self.uncommon_fairytale_names = self._get_common_and_uncommon_fairytale_names()
+        self.common_fairytale_names, self.uncommon_fairytale_names, self.missing_notion_updates = \
+            self._get_common_and_uncommon_fairytale_names()
 
     def __iter__(self):
         """Iterate over all accounts that are common for all sources of account information."""
@@ -84,8 +85,13 @@ class AllCustomerAccountsInfo:
 
         common = deploy.intersection(dynamo.intersection(notion))
         uncommon = deploy.difference(common) | dynamo.difference(common) | notion.difference(common)
+        missing_notion_updates = [
+            name for name in uncommon
+            if ((self.notion_accounts.get(name) and not self.notion_accounts[name].is_deprovision()
+                 and not self.notion_accounts[name].is_self_hosted()))
+        ]
 
-        return common, uncommon
+        return common, uncommon, missing_notion_updates
 
     def get_account_info(self, fairytale_name) -> CustomerAccountInfo:
         return CustomerAccountInfo(fairytale_name=fairytale_name,

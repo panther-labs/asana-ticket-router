@@ -1,7 +1,7 @@
 name: Update Panther Deployments Notion Records
 slug: update_panther_deployments_notion_record
 python:
-  entrypoint: update_deployment_records.py
+  entrypoint: update_panther_deployments_notion_records.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly

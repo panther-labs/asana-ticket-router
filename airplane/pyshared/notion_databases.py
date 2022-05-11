@@ -58,6 +58,12 @@ class AccountsDatabaseSchema:
     Account_Info_Auto_Updated = Property("Account Info Auto-Updated", schema.Checkbox())
     Airplane_Creation_Completed = Property("Airplane Creation Completed", schema.Checkbox())
 
+    def is_deprovision(self):
+        return self.Service_Type == "Deprovision"
+
+    def is_self_hosted(self):
+        return self.Service_Type == "Self Hosted"
+
 
 def get_accounts_database():
     """Notion database class definitions requires authentication to be setup when instantiated (the page object below).

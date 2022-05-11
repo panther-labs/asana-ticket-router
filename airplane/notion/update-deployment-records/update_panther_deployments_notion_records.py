@@ -29,7 +29,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
     def set_ignored_notion_entries(self):
         print(f"Accounts that will be skipped due to not existing in Notion or hosted/staging deployments:\n"
-              f"{self.all_accounts.uncommon_fairytale_names}")
+              f"{self.all_accounts.missing_notion_updates}")
 
         for fairytale_name, notion_info in self.all_accounts.notion_accounts.items():
             if fairytale_name in self.all_accounts.uncommon_fairytale_names:
@@ -104,8 +104,11 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             # contents of a rich text field rather than just the text.
             # noinspection PyProtectedMember
             text_object = account_info.notion_info._notional__page.properties[page_prop].rich_text
-            text_object = text_object[0] if isinstance(text_object, list) else text_object
-            return create_rtf_value(text=text_object.plain_text, url=text_object.href)
+            if text_object:
+                text_object = text_object[0] if isinstance(text_object, list) else text_object
+                return create_rtf_value(text=text_object.plain_text, url=text_object.href)
+            else:
+                return create_rtf_value(text="", url="")
         return getattr(account_info.notion_info, attr)
 
     @staticmethod
