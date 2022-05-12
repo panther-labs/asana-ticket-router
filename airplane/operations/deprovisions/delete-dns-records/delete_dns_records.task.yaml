@@ -1,0 +1,23 @@
+name: Delete DNS Records
+slug: delete_dns_records
+description: Delete DNS and Route53 records
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: Hosted
+    value: hosted
+  - label: Panther Root
+    value: root
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: delete_dns_records.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CloudFormationDeleteStack
+requireRequests: true
+allowSelfApprovals: false
+timeout: 3600
