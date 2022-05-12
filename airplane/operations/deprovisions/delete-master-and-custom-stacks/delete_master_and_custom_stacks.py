@@ -21,14 +21,18 @@ def delete_all_stacks(organization: str, aws_account_id: str, region: str, is_dr
     cfn_client = get_credentialed_client(**cfn_kwargs)
 
     response = cfn_client.list_stacks()
-    stacks_to_delete = [s["StackName"] for s in response["StackSummaries"]
-                        # Filter out deleted stacks
-                        if s["StackStatus"] not in ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]
-                        # Filter out stack instances
-                        and not s["StackName"].startswith("StackSet-")
-                        # Filter out nested stacks
-                        and s.get("ParentId") is None]
+    non_nested_stacks = [s for s in response["StackSummaries"]
+                         # Filter out stack instances
+                         if not s["StackName"].startswith("StackSet-")
+                         # Filter out nested stacks
+                         and s.get("ParentId") is None]
 
+    deleted_stacks = [s["StackName"] for s in non_nested_stacks
+                      if s["StackStatus"] in ["DELETE_COMPLETE", "DELETE_IN_PROGRESS"]]
+    if deleted_stacks:
+        print(f"Following stacks have been or currently are being deleted: {deleted_stacks}")
+
+    stacks_to_delete = [s["StackName"] for s in non_nested_stacks if s["StackName"] not in deleted_stacks]
     if not stacks_to_delete:
         print("No stacks to delete found. Exiting.")
         return

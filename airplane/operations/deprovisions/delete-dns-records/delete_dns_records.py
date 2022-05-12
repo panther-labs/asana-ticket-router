@@ -30,7 +30,7 @@ def delete_dns_records(organization: str, fairytale_name: str) -> None:
             cfn_waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 30, "MaxAttempts": 20})
             print(f"Deleted '{stack_name}' stack.")
         except ClientError:
-            print(f"Stack {stack_name} doesn't exist or is already deleted.")
+            print(f"Stack '{stack_name}' doesn't exist or is already deleted.")
 
 
 def main(params):
