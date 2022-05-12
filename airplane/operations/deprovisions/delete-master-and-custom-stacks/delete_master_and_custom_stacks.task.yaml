@@ -1,10 +1,14 @@
-name: Delete Customer Master Stack
-slug: delete_customer_master_stack
-description: A task to delete a customer's Panther master stack.
+name: Delete Master and Custom Stacks
+slug: delete_master_and_custom_stacks
 parameters:
-- name: Fairytale Name
-  slug: fairytale_name
+- name: Organization
+  slug: organization
   type: shorttext
+  options:
+  - label: Hosted
+    value: hosted
+  - label: Panther Root
+    value: root
 - name: AWS Account ID
   slug: aws_account_id
   type: shorttext
@@ -32,14 +36,14 @@ parameters:
     value: us-east-2
   - label: ""
     value: us-west-2
-- name: Airplane Test Run
-  slug: airplane_test_run
+- name: Dry Run
+  slug: is_dry_run
   type: boolean
 python:
-  entrypoint: delete_customer_master_stack.py
+  entrypoint: delete_master_and_custom_stacks.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-PantherTeardown
 requireRequests: true
 allowSelfApprovals: false
-timeout: 7200
+timeout: 3600
