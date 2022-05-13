@@ -50,9 +50,7 @@ From the airplane directory (Python3 must be 3.9 or above! This is what Airplane
 1. `python3 -m venv airplane_testing`
 1. `source airplane_testing/bin/activate`
 1. `pip install -r requirements.txt`
-1. Manual test: `pytest parentdir/of/airplane/python/task`
-1. To add a manual test to a task, add something similar to the following:
-   ```
-   def test_manual():
-       main({"my": "args", "from": "airplane"})
-   ```
+1. `pip install -r test-requirements.txt`
+1. Manual tests: `pytest parentdir/of/airplane/python/task --manual-test`
+    1. Mark manual tests with `@pytest.mark.manual_test`
+1. Unit tests: `pytest parentdir/of/airplane/python/task` 
