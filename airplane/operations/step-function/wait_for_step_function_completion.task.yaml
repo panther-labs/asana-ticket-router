@@ -10,4 +10,4 @@ python:
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-StepFunctionReadOnly
-timeout: 3600
+timeout: 7200

@@ -4,7 +4,7 @@ from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 def _get_unfinished_airplane_creation_accounts(notion_entries):
     return [
         fairytale_name for fairytale_name, notion_info in notion_entries.items()
-        if not notion_info.Airplane_Creation_Completed
+        if (notion_info.Airplane_Creation_Link and not notion_info.Airplane_Creation_Completed)
     ]
 
 

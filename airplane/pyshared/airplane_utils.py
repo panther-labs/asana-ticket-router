@@ -1,6 +1,7 @@
 import os
 
 from pyshared import onepass
+from v2.consts.airplane_env import AirplaneEnv
 
 
 class AirplaneTask:
@@ -12,12 +13,16 @@ class AirplaneTask:
         return is_test_run(ap_params={})
 
     @staticmethod
-    def get_run_url():
-        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "runs", os.environ["AIRPLANE_RUN_ID"])
+    def get_task_run_url():
+        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "runs", AirplaneEnv.AIRPLANE_RUN_ID)
+
+    @staticmethod
+    def get_runbook_run_url():
+        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "sessions", AirplaneEnv.AIRPLANE_SESSION_ID)
 
     @staticmethod
     def get_task_url():
-        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "tasks", os.environ["AIRPLANE_TASK_ID"])
+        return os.path.join(AirplaneTask.AIRPLANE_BASE_URL, "tasks", AirplaneEnv.AIRPLANE_TASK_ID)
 
     def main(self):
         raise NotImplementedError
