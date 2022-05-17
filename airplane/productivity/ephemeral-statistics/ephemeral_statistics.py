@@ -86,10 +86,10 @@ class EphemeralStatistics(AirplaneTask):
                            f"and created_at > '{datetime_obj}'"),
                 "failed":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
-                           f"and created_at > '{datetime_obj}'")
+                           f"and created_at > '{datetime_obj}'"),
                 "timeout":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'timeout'"
-                           f"and created_at > '{datetime_obj}'")
+                           f"and created_at > '{datetime_obj}'"),
                 "in_progress":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result is null"
                            f"and created_at > '{datetime_obj}'")
