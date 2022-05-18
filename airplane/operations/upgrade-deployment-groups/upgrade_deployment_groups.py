@@ -27,6 +27,11 @@ class UpgradeDeploymentGroups(AirplaneModifyGitTask):
         super().__init__(params=params, git_repo=DeploymentsRepo.HOSTED)
         self.parsed_params = self._parse_params(airplane_params=AirplaneParams(**params))
 
+    def _format_version(version) -> str:
+        if version.startswith("v"):
+            return version
+        return f"v{version}"
+        
     def _parse_params(self, airplane_params: AirplaneParams) -> ParsedParams:
         with tmp_change_dir(change_dir=self.git_dir):
             parsed_deployment_groups = [group.strip().lower() for group in airplane_params.deployment_groups.split(",")]
@@ -38,12 +43,11 @@ class UpgradeDeploymentGroups(AirplaneModifyGitTask):
                 )
 
             return ParsedParams(deployment_group_filepaths=[
-                get_deployment_group_filepath(group_name=group) for group in parsed_deployment_groups
-            ],
+                                    get_deployment_group_filepath(group_name=group) for group in parsed_deployment_groups
+                                ],
                                 deployment_groups=airplane_params.deployment_groups,
-                                version=airplane_params.version
-                                if airplane_params.version.startswith("v") else f"v{airplane_params.version}")
-
+                                version=self._format_version(airplane_params.version))
+ 
     def get_git_title(self):
         return f"Upgrading groups {self.parsed_params.deployment_groups} to {self.parsed_params.version}"
 
@@ -53,6 +57,7 @@ class UpgradeDeploymentGroups(AirplaneModifyGitTask):
             cfg["Version"] = self.parsed_params.version
             save_yaml_cfg(cfg_filepath=filepath, cfg=cfg)
         gen_cfgs()
+        return ("deployment-metadata", )
 
 
 def main(params):

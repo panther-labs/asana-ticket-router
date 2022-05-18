@@ -1,0 +1,20 @@
+name: Create release candidate
+slug: create_release_candidate
+description: |-
+  Creates a release candidate:
+  Creates a new branch on panther-enterprise
+  Modifies the VERSION file in panther-enterprise
+  Pushes the new branch to origin
+  Creates a new branch on panther-auxiliary
+parameters:
+- name: Version
+  slug: version
+  type: shorttext
+  description: Panther Release version. Should be in the format of X.YY
+- name: Airplane Test Run
+  slug: airplane_test_run
+  type: boolean
+python:
+  entrypoint: create_release_candidate.py
+requireRequests: true
+allowSelfApprovals: false

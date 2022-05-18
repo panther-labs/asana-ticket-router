@@ -69,6 +69,7 @@ def git_add_commit_push(files: List[str], title, description="", test_run=False)
         git_push()
     else:
         print(Repo(".").git.diff())
+        print(Repo(".").git.log("--graph --oneline --all --decorate -5".split()))
         print("\n\n\nYour filesystem has been changed. You may want to undo those local changes listed above")
 
 
@@ -112,7 +113,10 @@ class AirplaneModifyGitTask(AirplaneCloneGitTask):
         """
         raise NotImplementedError
 
+    def checkout_new_branch(self, branch):
+        git_checkout(branch, create=True)
+
     def main_within_cloned_dir(self):
         """Make a change to files in a repo then commit them (if the environment is staging or prod)."""
-        self.change_files()
-        git_add_commit_push(files=("deployment-metadata", ), title=self.get_git_title(), test_run=self.is_test_run())
+        modified_files = self.change_files()
+        git_add_commit_push(files=modified_files, title=self.get_git_title(), test_run=self.is_test_run())
