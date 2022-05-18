@@ -54,6 +54,9 @@ export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN
   --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
   --output text))
 
+identity=$(aws sts get-caller-identity | jq -r '.Arn')
+echo "Assumed CustomerSupportRole ${identity}"
+
 # Assume the role for the fairytale_name with Invoke lambda permissions
 export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
   $(aws sts assume-role \
@@ -62,10 +65,13 @@ export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN
   --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
   --output text))
 
+identity=$(aws sts get-caller-identity | jq -r '.Arn')
+echo "Assumed support role in customer account ${identity}"
+
 # Send invite using the tools
 if [ "${test_run}" = "true" ]; then
   printf "\n\n=== This is a test run! ===\n"
-  aws --region "${account_region}" lambda list-functions | jq .Functions[].FunctionName
+  aws --region "${account_region}" lambda invoke --invocation-type DryRun --function-name panther-ops-tools tmp
 else
   resend=''
   if [ "${resend_invitation}" = "true" ]; then
