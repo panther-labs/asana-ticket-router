@@ -71,7 +71,7 @@ echo "Assumed support role in customer account ${identity}"
 # Send invite using the tools
 if [ "${test_run}" = "true" ]; then
   printf "\n\n=== This is a test run! ===\n"
-  aws --region "${account_region}" lambda invoke --invocation-type DryRun --function-name panther-ops-tools tmp
+  aws --region "${account_region}" lambda invoke --invocation-type DryRun --function-name panther-ops-tools dummy
 else
   resend=''
   if [ "${resend_invitation}" = "true" ]; then
