@@ -73,6 +73,7 @@ if [ "${test_run}" = "true" ]; then
   printf "\n\n=== This is a test run! ===\n"
   aws --region "${account_region}" lambda invoke --invocation-type DryRun --function-name panther-ops-tools dummy
 else
+  export AWS_REGION="${account_region}"
   resend=''
   if [ "${resend_invitation}" = "true" ]; then
     resend='-resend'
