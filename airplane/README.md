@@ -54,3 +54,5 @@ From the airplane directory (Python3 must be 3.9 or above! This is what Airplane
 1. Manual tests: `pytest parentdir/of/airplane/python/task --manual-test`
     1. Mark manual tests with `@pytest.mark.manual_test`
 1. Unit tests: `pytest parentdir/of/airplane/python/task` 
+    1. With coverage: `pytest tests --cov-report html --cov=pyshared/ --cov=v2/pyshared/ --cov=.`
+    1. Continuously on every file change: `ptw tests`

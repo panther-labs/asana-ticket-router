@@ -22,10 +22,7 @@ class _AirplaneLoggerFormatter(Formatter):
 
 class AirplaneLogger(Logger):
 
-    def __init__(self,
-                 name: str = "airplane-logger",
-                 is_utc: bool = True,
-                 level: int or str = logging.INFO):
+    def __init__(self, name: str = "airplane-logger", is_utc: bool = True, level: int or str = logging.INFO):
         super().__init__(name, self._get_level(level))
         self._formatter = _AirplaneLoggerFormatter(is_utc)
         self._add_default_handler()
@@ -33,7 +30,7 @@ class AirplaneLogger(Logger):
     @staticmethod
     def _get_level(level: int or str) -> str:
         # Environemt variable LOG_LEVEL takes precedence over the parameter level
-        return os.getenv("LOG_LEVEL", level)
+        return int(os.getenv("LOG_LEVEL", level))
 
     def _add_default_handler(self) -> None:
         stderr_handler = StreamHandler()
