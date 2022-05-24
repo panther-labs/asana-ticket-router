@@ -22,6 +22,7 @@ class ManualCustomerDeploy(AirplaneModifyGitTask):
                 fairytale_name=self.airplane_params.fairytale_name)) as cfg:
             cfg["ManualDeploy"] = get_today_str()
         gen_cfgs()
+        return ["."]
 
     def get_git_title(self):
         return f"Manually redeploy {self.airplane_params.fairytale_name}"
