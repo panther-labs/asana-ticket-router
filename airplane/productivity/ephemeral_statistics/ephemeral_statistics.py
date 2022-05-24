@@ -56,6 +56,8 @@ class EphemeralStatistics(AirplaneTask):
 
     def count(self, query):
         output = self.invoke(query)
+        if not output:
+            return 0
         return output[0].get("count", 0)
 
     def invoke(self, query):
