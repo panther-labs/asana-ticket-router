@@ -1,14 +1,22 @@
 from pyshared.aws_consts import get_aws_const
+from v2.consts.github_repos import GithubRepo
 
 
 class _PantherOrg:
     _OU_NAME_DICT = {}
+    _DEPLOYMENT_REPO = None
 
     @classmethod
     def get_ou_id(cls, ou_name: str) -> str:
         if ou_name not in cls._OU_NAME_DICT:
             raise AttributeError(f"OU '{ou_name}' is not available.")
         return cls._OU_NAME_DICT[ou_name]
+
+    @classmethod
+    def get_deployment_repo(cls) -> str:
+        if cls._DEPLOYMENT_REPO is None:
+            raise AttributeError(f"Deployment repo for {cls.__name__} is not defined")
+        return cls._DEPLOYMENT_REPO
 
 
 class RootOrg(_PantherOrg):
@@ -26,6 +34,8 @@ class RootOrg(_PantherOrg):
         "staging": STAGING,
     }
 
+    _DEPLOYMENT_REPO = GithubRepo.STAGING_DEPLOYMENTS
+
 
 class HostedOrg(_PantherOrg):
     NAME = "hosted"
@@ -40,6 +50,8 @@ class HostedOrg(_PantherOrg):
         "suspended": SUSPENDED,
     }
 
+    _DEPLOYMENT_REPO = GithubRepo.HOSTED_DEPLOYMENTS
+
 
 def get_panther_ou_id(organization: str, ou_name: str) -> str:
     if organization == RootOrg.NAME:
@@ -49,3 +61,12 @@ def get_panther_ou_id(organization: str, ou_name: str) -> str:
     else:
         raise AttributeError(f"Organization {organization} doesn't exist.")
     return panther_org.get_ou_id(ou_name)
+
+
+def get_panther_org(org_name) -> _PantherOrg:
+    all_orgs = {org.NAME: org for org in _PantherOrg.__subclasses__()}
+    org = all_orgs.get(org_name)
+
+    if org is None:
+        raise ValueError(f"Invalid org_name of {org_name}. Valid orgs are {list(all_orgs.keys())}")
+    return org

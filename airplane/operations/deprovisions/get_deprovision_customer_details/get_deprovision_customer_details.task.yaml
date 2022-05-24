@@ -1,0 +1,47 @@
+slug: get_deprovision_customer_details
+name: Get Deprovision Customer Details
+description: "Retrieves information about a customer that is about to be deprovisioned"
+
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Org Name
+  slug: org_name
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: region
+  slug: region
+  type: shorttext
+  options:
+  - label: ""
+    value: ap-northeast-1
+  - label: ""
+    value: ap-south-1
+  - label: ""
+    value: ap-southeast-1
+  - label: ""
+    value: ap-southeast-2
+  - label: ""
+    value: eu-central-1
+  - label: ""
+    value: eu-west-1
+  - label: ""
+    value: eu-west-2
+  - label: ""
+    value: us-east-1
+  - label: ""
+    value: us-east-2
+  - label: ""
+    value: us-west-2
+  required: false
+python:
+  entrypoint: get_deprovision_customer_details.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+

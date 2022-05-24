@@ -42,8 +42,9 @@ class AllCustomerAccountsInfo:
             yield self.get_account_info(fairytale_name=fairytale_name)
 
     @staticmethod
-    def get_dynamo_results(get_hosted, get_staging, test_roles) -> dict[str, dict]:
+    def get_dynamo_results(get_hosted, get_staging, test_roles=None) -> dict[str, dict]:
         results = {}
+        test_roles = {} if (test_roles is None) else test_roles
 
         tables_and_arns = []
         if get_hosted:
@@ -58,11 +59,28 @@ class AllCustomerAccountsInfo:
         return results
 
     @staticmethod
+    def query_accounts_notion_db():
+        return get_accounts_database().query().execute()
+
+    @staticmethod
     def get_notion_results() -> dict[str, AccountsDatabaseSchema]:
         return {
             account.Fairytale_Name: account
             for account in get_accounts_database().query().execute() if account.Fairytale_Name
         }
+
+    @staticmethod
+    def get_notion_duplicates() -> list[str]:
+        all_fairytale_names = []
+        duplicate_fairytale_names = []
+
+        for account in AllCustomerAccountsInfo.query_accounts_notion_db():
+            if account.Fairytale_Name:
+                if account.Fairytale_Name in all_fairytale_names:
+                    duplicate_fairytale_names.append(account.Fairytale_Name)
+                else:
+                    all_fairytale_names.append(account.Fairytale_Name)
+        return duplicate_fairytale_names
 
     @staticmethod
     def get_deploy_yml_accounts(hosted_deploy_dir) -> dict[str, dict]:
