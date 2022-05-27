@@ -1,0 +1,5 @@
+name: Scheduled Group Deploy
+slug: scheduled_group_deploy
+python:
+  entrypoint: scheduled_group_deploy.py
+timeout: 3600

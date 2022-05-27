@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+import importlib.util
 
 
 def get_cwd() -> str:
@@ -42,3 +43,14 @@ def tmp_change_dir(change_dir: str):
         yield
     finally:
         os.chdir(cur_dir)
+
+
+def load_py_file_as_module(filepath: str):
+    """
+    :param filepath: Absolute filepath
+    :return: Python module object
+    """
+    spec = importlib.util.spec_from_file_location("module.name", filepath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
