@@ -9,7 +9,7 @@ from pyshared.aws_creds import get_credentialed_client
 
 class EphemeralStatistics(AirplaneTask):
     IN_USE = 1
-    MAX_CLEANUP_ATTEMPTS = 3
+    MAX_CLEANUP_ATTEMPTS = 5
     CLEANUP_FAILED_RESULT = "failed"
 
     def __init__(self):
@@ -88,6 +88,14 @@ class EphemeralStatistics(AirplaneTask):
                            f"and created_at > '{datetime_obj}'"),
                 "failed":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
+                           f"and created_at > '{datetime_obj}'"),
+                "failed_pulumi":
+                self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
+                           f"and failed_reason like 'Pulumi Failure%'"
+                           f"and created_at > '{datetime_obj}'"),
+                "failed_cloudformation":
+                self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
+                           f"and failed_reason like 'Cloudformation failure%'"
                            f"and created_at > '{datetime_obj}'"),
                 "timeout":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'timeout'"
