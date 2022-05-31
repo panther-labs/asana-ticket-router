@@ -51,7 +51,7 @@ class EphemeralStatistics(AirplaneTask):
             "deployments_past_week": deployment_info["one_week"],
             "weekly_performance": {
                 "average_deploy_time": str(self._get_avg_deploy_time(start_time=self.one_week_ago))
-            }
+            },
         }
 
     def count(self, query):
@@ -61,6 +61,8 @@ class EphemeralStatistics(AirplaneTask):
         return output[0].get("count", 0)
 
     def invoke(self, query):
+        print(query) # Useful for debugging execution failures
+
         message_bytes = query.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes).decode("utf-8")
         payload = {'sql': {'query': base64_bytes}}
@@ -73,6 +75,10 @@ class EphemeralStatistics(AirplaneTask):
 
         res = response.get('Payload').read().decode()
         res_json = json.loads(res)
+
+        if 'FunctionError' in response:
+            raise Exception(f"\n\tQuery: {query}\n\tResponse: {res_json}")
+
         output = res_json.get("sql", {}).get("result", {})
         return output
 
@@ -85,24 +91,24 @@ class EphemeralStatistics(AirplaneTask):
                 self.count(f"SELECT count(*) FROM deployments where created_at > '{datetime_obj}'"),
                 "success":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'success'"
-                           f"and created_at > '{datetime_obj}'"),
+                           f" and created_at > '{datetime_obj}'"),
                 "failed":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
-                           f"and created_at > '{datetime_obj}'"),
+                           f" and created_at > '{datetime_obj}'"),
                 "failed_pulumi":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
-                           f"and failed_reason like 'Pulumi Failure%'"
-                           f"and created_at > '{datetime_obj}'"),
+                           f" and failure_reason like 'Pulumi Failure%'"
+                           f" and created_at > '{datetime_obj}'"),
                 "failed_cloudformation":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'failed'"
-                           f"and failed_reason like 'Cloudformation failure%'"
-                           f"and created_at > '{datetime_obj}'"),
+                           f" and failure_reason like 'Cloudformation failure%'"
+                           f" and created_at > '{datetime_obj}'"),
                 "timeout":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result = 'timeout'"
-                           f"and created_at > '{datetime_obj}'"),
+                           f" and created_at > '{datetime_obj}'"),
                 "in_progress":
                 self.count(f"SELECT count(*) FROM deployments where step_function_result is null"
-                           f"and created_at > '{datetime_obj}'")
+                           f" and created_at > '{datetime_obj}'")
             }
 
         return deployment_info
