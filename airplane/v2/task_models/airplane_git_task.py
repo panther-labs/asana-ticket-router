@@ -64,7 +64,7 @@ class AirplaneGitTask(AirplaneTask):
     @classmethod
     def _get_latest_commit_url(cls):
         latest_commit_sha = Repo().head.object.hexsha
-        return f"{cls._get_remote_https_url()}/{latest_commit_sha}"
+        return f"{cls._get_remote_https_url()}/commit/{latest_commit_sha}"
 
     @classmethod
     def _git_clone(cls, repo_name: str) -> str:
