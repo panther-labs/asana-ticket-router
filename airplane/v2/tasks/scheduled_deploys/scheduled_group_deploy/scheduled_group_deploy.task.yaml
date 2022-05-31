@@ -1,5 +1,6 @@
 name: Scheduled Group Deploy
 slug: scheduled_group_deploy
+description: A cron task that deploys customer groups scheduled with https://app.airplane.dev/tasks/tsk20220503zn25y865i6l?__env=prod
 python:
   entrypoint: scheduled_group_deploy.py
 timeout: 3600

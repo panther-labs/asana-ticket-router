@@ -1,5 +1,6 @@
 name: Cancel Deployment Group Schedules
 slug: cancel_deployment_group_schedules
+description: Used to cancel customer group deployments scheduled with https://app.airplane.dev/tasks/tsk20220503zn25y865i6l?__env=prod
 parameters:
 - name: All Groups
   slug: all_groups
@@ -52,5 +53,5 @@ parameters:
 python:
   entrypoint: cancel_deployment_group_schedules.py
 requireRequests: true
-allowSelfApprovals: false
+allowSelfApprovals: true
 timeout: 3600
