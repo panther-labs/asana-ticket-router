@@ -56,13 +56,14 @@ class ScheduledGroupDeploy(AirplaneGitTask):
                         self._add_to_deployment_summary(group, version)
                     else:
                         time_until_deployment = get_time_until_deployment(time)
-                        print(f"Group '{group}' is not due deployment for the next {time_until_deployment}")
+                        logger.info(f"Group '{group}' is not due deployment for the next {time_until_deployment}")
 
         if not self._deployment_summary:
             logger.info("No groups due deployment found. Exiting without changes.")
             return
 
         if not AirplaneEnv.is_local_env():
+            logger.info("Updating deployment targets.")
             generate_configs(repo_path=repo_abs_path)
 
         with tmp_change_dir(repo_abs_path):

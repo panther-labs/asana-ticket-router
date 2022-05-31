@@ -51,6 +51,22 @@ class AirplaneGitTask(AirplaneTask):
         write_to_file(filepath=ssh_key_path, text=ssh_key, is_append=False)
 
     @classmethod
+    def _get_remote_https_url(cls):
+        repo = Repo()
+        repo_name = repo.working_dir.split("/")[-1]
+        if len(repo.remotes) != 1:
+            raise RuntimeError(
+                f"Repo '{repo_name}' doesn't have exactly one remote. Actual number: {len(repo.remotes)}")
+        remote_ssh_url = repo.remotes[0].url
+        repo_path = remote_ssh_url.split(':')[1].removesuffix('.git')
+        return f"https://github.com/{repo_path}"
+
+    @classmethod
+    def _get_latest_commit_url(cls):
+        latest_commit_sha = Repo().head.object.hexsha
+        return f"{cls._get_remote_https_url()}/{latest_commit_sha}"
+
+    @classmethod
     def _git_clone(cls, repo_name: str) -> str:
         """
         Run 'git clone <repo_name>' command
@@ -144,3 +160,4 @@ class AirplaneGitTask(AirplaneTask):
             self._git_add(filepaths)
             self._git_commit(title, description)
             self._git_push()
+            logger.info(f"Pushed a new commit: {self._get_latest_commit_url()}")
