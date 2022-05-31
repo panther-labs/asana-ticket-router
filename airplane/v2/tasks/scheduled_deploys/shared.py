@@ -1,7 +1,7 @@
 import pendulum
 from ruamel.yaml import comments
 
-from v2.pyshared.date_utils import parse_datetime_str, is_within_past_hour, Timezone
+from v2.pyshared.date_utils import parse_datetime_str, is_within_past_hour, Timezone, get_human_readable_difference
 from v2.pyshared.panther_version_util import to_semver, is_valid_bump
 from v2.pyshared.yaml_utils import is_comment_in_yaml_file, add_top_level_comment
 
@@ -47,6 +47,11 @@ def parse_deployment_schedule(comments: list[str]) -> tuple[str, str]:
 def parse_deployment_time(deployment_time: str) -> pendulum.DateTime:
     deployment_time = remove_timezone_placeholder(deployment_time)
     return parse_datetime_str(deployment_time, tz=Timezone.PDT)
+
+
+def get_time_until_deployment(deployment_time: str) -> str:
+    deployment_time = parse_deployment_time(deployment_time)
+    return get_human_readable_difference(deployment_time, tz=Timezone.PDT)
 
 
 def is_due_deployment(deployment_time: str) -> bool:

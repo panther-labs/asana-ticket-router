@@ -7,7 +7,7 @@ from v2.pyshared.deployments_file import get_deployment_group_filepath, generate
 from v2.pyshared.airplane_logger import logger
 from v2.task_models.airplane_git_task import AirplaneGitTask
 from v2.tasks.scheduled_deploys.shared import validate_deployment_version, contains_deployment_schedule, \
-    parse_deployment_schedule, is_due_deployment
+    parse_deployment_schedule, is_due_deployment, get_time_until_deployment
 
 
 class ScheduledGroupDeploy(AirplaneGitTask):
@@ -54,6 +54,9 @@ class ScheduledGroupDeploy(AirplaneGitTask):
                         cfg_yaml["Version"] = version
                         remove_top_level_comments(cfg_yaml)
                         self._add_to_deployment_summary(group, version)
+                    else:
+                        time_until_deployment = get_time_until_deployment(time)
+                        print(f"Group '{group}' is not due deployment for the next {time_until_deployment}")
 
         if not self._deployment_summary:
             logger.info("No groups due deployment found. Exiting without changes.")

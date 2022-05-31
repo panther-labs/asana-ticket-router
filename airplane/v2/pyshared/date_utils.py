@@ -51,3 +51,7 @@ def is_within_past_hour(target_datetime: pendulum.DateTime) -> bool:
     target_tz = target_datetime.tz.name
     hour_ago = get_now(target_tz).subtract(hours=1)
     return get_now(target_tz) > target_datetime > hour_ago
+
+
+def get_human_readable_difference(target_datetime: pendulum.DateTime, tz: str = Timezone.LOCAL) -> str:
+    return get_now(tz).diff_for_humans(other=target_datetime, absolute=True)
