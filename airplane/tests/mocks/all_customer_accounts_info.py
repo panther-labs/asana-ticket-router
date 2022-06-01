@@ -1,4 +1,5 @@
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
+from pyshared.notion_databases import AccountsDatabaseSchema
 
 from tests.mocks.deployment_metadata_table import get_metadata_table_ddb_cfg
 from tests.mocks.notion_databases import MockAccountsDatabase
@@ -9,7 +10,7 @@ class MockAllCustomerAccountsInfo(AllCustomerAccountsInfo):
     def __init__(self, *_, **__):
         self.common_fairytale_names = []
         self.dynamo_accounts = {}
-        self.notion_accounts = {}
+        self.notion_accounts: dict[str, AccountsDatabaseSchema] = {}
         self.notion_duplicates = []
 
     def create_fake_customer(self, fairytale_name, dynamo=None, notion=None):

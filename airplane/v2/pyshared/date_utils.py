@@ -35,6 +35,10 @@ def get_today(tz: str = Timezone.LOCAL) -> pendulum.Date:
     return pendulum.today(tz)
 
 
+def get_day_of_week_name(datetime_obj: pendulum.DateTime) -> str:
+    return datetime_obj.format("dddd")
+
+
 def get_today_str(tz: str = Timezone.LOCAL) -> str:
     return to_date_str(get_today(tz))
 
