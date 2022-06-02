@@ -36,7 +36,8 @@ class DeploymentHealthChecker(AirplaneTask):
         inconsistencies = []
 
         for fairytale_name, notion_info in self.notion_entries.items():
-            if not notion_info.Actual_Version or (notion_info.Deploy_Group not in HostedDeploymentGroup.get_values()):
+            if not notion_info.Actual_Version or (notion_info.Deploy_Group.lower()
+                                                  not in HostedDeploymentGroup.get_values()):
                 continue
             version = to_semver(notion_info.Actual_Version)
             if (version.major != latest_deployed_ga_version.major) or (version.minor !=

@@ -14,10 +14,11 @@ from tests.mocks.deployment_metadata_table import get_metadata_table_ddb_cfg
 def mock_all_accounts_info(manual_test_run) -> MockAllCustomerAccountsInfo:
     if manual_test_run:
         yield None
-    with mock.patch("operations.deprovisions.get_deprovision_customer_details.get_deprovision_customer_details."
-                    "AllCustomerAccountsInfo") as mock_accounts_info:
-        mock_accounts_info.return_value = MockAllCustomerAccountsInfo()
-        yield mock_accounts_info.return_value
+    else:
+        with mock.patch("operations.deprovisions.get_deprovision_customer_details.get_deprovision_customer_details."
+                        "AllCustomerAccountsInfo") as mock_accounts_info:
+            mock_accounts_info.return_value = MockAllCustomerAccountsInfo()
+            yield mock_accounts_info.return_value
 
 
 def test_invalid_fairytale_name(mock_all_accounts_info):
