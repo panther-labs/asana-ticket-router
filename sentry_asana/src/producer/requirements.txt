@@ -1,2 +1,2 @@
-boto3-stubs[sqs,secretsmanager]==1.20.44
-dependency-injector[yaml]==4.37.0
+boto3-stubs[sqs,secretsmanager]==1.24.2
+dependency-injector[yaml]==4.39.1
