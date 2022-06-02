@@ -9,9 +9,18 @@ set -o errexit
 # Use the error status of the first failure, rather than that of the last item in a pipeline.
 set -o pipefail
 
-# install pulumi
+# install pulumi-cli
 curl -fsSL https://get.pulumi.com | sh -s -- --version 3.33.2
+export PATH="/root/.pulumi/bin:$PATH"
+pulumi version
+pulumi whoami
 
-# install base deps
+# init our venv
+python -m venv venv
+# activate venv
 source venv/bin/activate
+# install base python deps
 pip install pulumi==3.28.0 pulumi-aws==5.1.2
+
+# run pulumi commands
+pulumi stack init --stack $STACK_NAME || echo "stack already exists"
