@@ -142,6 +142,7 @@ class SERVICE(Enum):
     ATHENA_API = 'panther-athena-api'
     AWS_EVENT_PROCESSOR = 'panther-aws-event-processor'
     CFN_CUSTOM_RESOURCES = 'panther-cfn-custom-resources'
+    CFN_STACK_POLICY = 'panther-cfn-stack-policy'
     CLOUDSECURITY_DATALAKE_FORWARDER = 'panther-cloudsecurity-datalake-forwarder'
     CLOUD_PULLER = 'panther-cloud-puller'
     CN_ROUTER = 'panther-cn-router'
@@ -254,6 +255,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
     TEAM.ADOPTION: [
         SERVICE.APITOKEN_AUTHORIZER,
         SERVICE.CFN_CUSTOM_RESOURCES,
+        SERVICE.CFN_STACK_POLICY,
         SERVICE.CN_ROUTER,
         SERVICE.GRAPH_API,
         SERVICE.METRICS_API,
