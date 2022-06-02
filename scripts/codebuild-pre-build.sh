@@ -20,7 +20,7 @@ python -m venv venv
 # activate venv
 source venv/bin/activate
 # install base python deps
-pip install pulumi==3.28.0 pulumi-aws==5.1.2
+pip install pulumi==3.33.2 pulumi-aws==5.6.0
 
 # run pulumi commands
 pulumi stack init --stack $STACK_NAME || echo "stack already exists"
