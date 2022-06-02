@@ -58,7 +58,7 @@ class DeploymentHealthChecker(AirplaneTask):
             "mismatched_panther_versions": self._get_mismatched_panther_versions(),
             "deploy_group_inconsistency": self._get_deploy_group_inconsistency(latest_deployed_ga_version),
             "runbook_url": self.get_runbook_run_url(),
-            "latest_deployed_ga_version": latest_deployed_ga_version,
+            "latest_deployed_ga_version": str(latest_deployed_ga_version),
         }
 
 
