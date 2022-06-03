@@ -173,6 +173,9 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             expected_attrs["Expected_Version"] = expected_version.replace("v", "")
         return expected_attrs
 
+    def get_failure_slack_channel(self):
+        return "#eng-ops"
+
 
 def main(_):
-    UpdateDeploymentRecords().main()
+    UpdateDeploymentRecords().main_notify_failures()

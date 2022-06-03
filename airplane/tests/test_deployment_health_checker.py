@@ -15,11 +15,6 @@ FAKE_SESSION_ID = "123"
 
 
 @pytest.fixture(scope="function", autouse=True)
-def setup_runbook_url():
-    AirplaneEnv.AIRPLANE_SESSION_ID = FAKE_SESSION_ID
-
-
-@pytest.fixture(scope="function", autouse=True)
 def day_of_week() -> mock.MagicMock:
     with mock.patch("operations.deployment.deployment_health_checker.deployment_health_checker.get_day_of_week_name") \
             as mock_day_of_week:
@@ -150,11 +145,11 @@ def test_latest_version(mock_all_accounts_info):
     assert result["latest_deployed_ga_version"] == "10.2.3"
 
 
-def test_happy_path():
+def test_happy_path(airplane_session_id):
     result = run_task({})
     assert not result["unfinished_airplane"]
     assert not result["mismatched_panther_versions"]
-    assert result["runbook_url"] == f"https://app.airplane.dev/sessions/{FAKE_SESSION_ID}"
+    assert result["runbook_url"] == f"https://app.airplane.dev/sessions/{airplane_session_id}"
 
 
 @pytest.mark.manual_test

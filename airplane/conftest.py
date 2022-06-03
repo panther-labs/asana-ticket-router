@@ -6,7 +6,10 @@ os.environ["LOG_LEVEL"] = str(logging.ERROR)
 
 import pytest
 
+from unittest import mock
+
 from pyshared.airplane_utils import set_local_run
+from v2.consts.airplane_env import AirplaneEnv
 
 
 def _import_local_env():
@@ -25,15 +28,39 @@ def _import_local_env():
     return local_env
 
 
+@pytest.fixture(scope="session")
+def airplane_session_id():
+    return "123"
+
+
+@pytest.fixture(scope="session")
+def airplane_run_id():
+    return "234"
+
+
 @pytest.fixture(scope="session", autouse=True)
-def manual_test_suite_run_setup(manual_test_run):
+def manual_test_suite_setup(manual_test_run):
     if not manual_test_run:
         return
-
     local_env = _import_local_env()
     set_local_run()
     for repo_name in ("hosted-deployments", "staging-deployments"):
         os.environ[repo_name] = getattr(local_env, repo_name, os.path.join(local_env.repos_parent_dir, repo_name))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def unit_test_suite_setup(manual_test_run, request, airplane_session_id, airplane_run_id):
+    if manual_test_run:
+        return
+    for patch_obj_str in (
+        "pyshared.airplane_utils.AirplaneTask.send_slack_message",
+        "v2.task_models.airplane_task.AirplaneTask.send_slack_message"
+    ):
+        patch_obj = mock.patch(patch_obj_str)
+        patch_obj.start()
+        request.addfinalizer(patch_obj.stop)
+    AirplaneEnv.AIRPLANE_SESSION_ID = airplane_session_id
+    AirplaneEnv.AIRPLANE_RUN_ID = airplane_run_id
 
 
 def pytest_addoption(parser):

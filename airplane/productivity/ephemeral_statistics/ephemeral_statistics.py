@@ -130,9 +130,12 @@ class EphemeralStatistics(AirplaneTask):
                                 dateutil.parser.parse(deployment_times[start]))
         return deploy_time_sum / total_deploys
 
+    def get_failure_slack_channel(self):
+        return "#eng-ops"
+
 
 def main(_):
-    return EphemeralStatistics().main()
+    return EphemeralStatistics().main_notify_failures({})
 
 
 if __name__ == "__main__":

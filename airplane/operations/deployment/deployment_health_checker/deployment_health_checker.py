@@ -51,7 +51,7 @@ class DeploymentHealthChecker(AirplaneTask):
                                   for notion_entry in self.notion_entries.values() if notion_entry.Actual_Version))
         return max(panther_versions) if panther_versions else "0.0.0"
 
-    def main(self):
+    def main(self, params):
         latest_deployed_ga_version = self._get_latest_deployed_ga_version()
 
         return {
@@ -62,6 +62,9 @@ class DeploymentHealthChecker(AirplaneTask):
             "latest_deployed_ga_version": str(latest_deployed_ga_version),
         }
 
+    def get_failure_slack_channel(self):
+        return "#eng-ops"
+
 
 def main(_):
-    return DeploymentHealthChecker().main()
+    return DeploymentHealthChecker().main_notify_failures({})
