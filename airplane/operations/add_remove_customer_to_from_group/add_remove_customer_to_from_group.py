@@ -89,7 +89,7 @@ def main(params: dict) -> None:
         params["comment"] = "Panther Deployment Role - Used to manage panther deployments\n\n"
 
     elif group == "DataAccess":
-        params["group_name"] = "DataAccessGroup"
+        params["group_name"] = "DataAccess"
         params["policy_name"] = "AssumeDataAccessRole"
         params["role_arn"] = f"arn:aws:iam::{params['aws_account_id']}:role/PantherDataAccessRole*"
         params["comment"] = "Panther Data Access Role - Used for on-call support to Panther instances\n\n"
