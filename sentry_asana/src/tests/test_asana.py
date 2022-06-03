@@ -42,15 +42,13 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
                 "resource_type": "project",
                 "archived": True,
                 "created_at": "2022-01-02T00:00:00.000Z",
-                "is_template": False
             },
             {
-                "gid": "sprint_gid_template",
-                "name": "🐆  Template: Sprint MM/DD - MM/DD",
+                "gid": "sprint_gid_3",
+                "name": "Sprint: 3",
                 "resource_type": "project",
-                "archived": False,
-                "created_at": "2021-01-01T00:00:00.000Z",
-                "is_template": True
+                "archived": True,
+                "created_at": "2022-01-03T00:00:00.000Z",
             }
         ]
     if id == 'release_board':
@@ -61,7 +59,6 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
                 "resource_type": "project",
                 "archived": False,
                 "created_at": "2022-01-01T00:00:00.000Z",
-                "is_template": False
             },
         ]
     return [
@@ -71,7 +68,6 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
             "resource_type": "project",
             "archived": False,
             "created_at": "2022-01-01T00:00:00.000Z",
-            "is_template": False
         },
         {
             "gid": "sprint_gid_2",
@@ -79,7 +75,6 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
             "resource_type": "project",
             "archived": True,
             "created_at": "2022-01-02T00:00:00.000Z",
-            "is_template": False
         },
         {
             "gid": "sprint_gid_3",
@@ -87,15 +82,6 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
             "resource_type": "project",
             "archived": False,
             "created_at": "2022-01-03T00:00:00.000Z",
-            "is_template": False
-        },
-        {
-            "gid": "sprint_gid_template",
-            "name": "🐆  Template: Sprint MM/DD - MM/DD",
-            "resource_type": "project",
-            "archived": False,
-            "created_at": "2021-01-01T00:00:00.000Z",
-            "is_template": True
         }
     ]
 
@@ -165,7 +151,7 @@ async def test_get_projects_in_portfolio(container: AsanaContainer) -> None:
 
     service: AsanaService = container.asana_service()
     projects = await service._get_projects_in_portfolio('id')
-    assert len(projects) == 4
+    assert len(projects) == 3
 
 
 @ pytest.mark.asyncio

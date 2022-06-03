@@ -43,7 +43,8 @@ class AsanaService:
         self._serializer = serializer
         self._client = client
         # Tell Asana to use the latest API changes (opt in, silence warning)
-        self._client.headers = {'Asana-Enable': 'new_user_task_lists'}
+        self._client.headers = {
+            'Asana-Enable': 'new_user_task_lists,new_project_templates'}
         self._parser = re.compile(
             r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
 
@@ -56,7 +57,7 @@ class AsanaService:
                 self._client.portfolios.get_items,
                 portfolio_gid,
                 opt_fields=['name', 'resource_type',
-                            'created_at', 'archived', 'is_template']
+                            'created_at', 'archived']
             )
         )
 
@@ -295,7 +296,6 @@ class AsanaService:
         # Filter unwanted results
         filtered_projects = filter(
             lambda proj:
-            proj['is_template'] is False and
             proj['archived'] is False and
             proj['resource_type'] == 'project', projects
         )
