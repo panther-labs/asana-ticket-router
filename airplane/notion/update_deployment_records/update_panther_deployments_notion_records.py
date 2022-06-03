@@ -23,7 +23,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
                                                     staging_deploy_dir=self.git_dirs[DeploymentsRepo.STAGING],
                                                     test_roles=self.test_roles)
 
-    def main(self):
+    def main(self, params):
         self.set_ignored_notion_entries()
         self.update_notion_entries()
 

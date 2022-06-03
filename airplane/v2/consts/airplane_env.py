@@ -2,6 +2,7 @@ import os
 
 
 class AirplaneEnv:
+    AIRPLANE_BASE_URL = "https://app.airplane.dev"
     AIRPLANE_SCHEDULE_ID = os.getenv("AIRPLANE_SCHEDULE_ID")
     AIRPLANE_TASK_ID = os.getenv("AIRPLANE_TASK_ID")
     AIRPLANE_RUNNER_ID = os.getenv("AIRPLANE_RUNNER_ID")
@@ -12,3 +13,7 @@ class AirplaneEnv:
     @classmethod
     def is_local_env(cls):
         return cls.AIRPLANE_RUNNER_ID is None
+
+    @classmethod
+    def get_task_run_url(cls):
+        return os.path.join(cls.AIRPLANE_BASE_URL, "runs", cls.AIRPLANE_RUN_ID)

@@ -50,7 +50,7 @@ class TestUpdateDeploymentGroupSchedules:
                                            future_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
-        self._TASK.run(params)
+        self._TASK.run_notify_failures(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -66,7 +66,7 @@ class TestUpdateDeploymentGroupSchedules:
                                            past_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
-        self._TASK.run(params)
+        self._TASK.run_notify_failures(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -82,7 +82,7 @@ class TestUpdateDeploymentGroupSchedules:
 
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{invalid_bump}' is not a valid bump from '{base_version}'."
         with pytest.raises(AttributeError, match=expected_error_msg):
-            self._TASK.run(params)
+            self._TASK.run_notify_failures(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -96,7 +96,7 @@ class TestUpdateDeploymentGroupSchedules:
 
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{base_version}' is not a valid bump from '{base_version}'."
         with pytest.raises(AttributeError, match=expected_error_msg):
-            self._TASK.run(params)
+            self._TASK.run_notify_failures(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -111,4 +111,4 @@ class TestUpdateDeploymentGroupSchedules:
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
         with pytest.raises(UnpublishedPantherVersion, match=version):
-            self._TASK.run(params)
+            self._TASK.run_notify_failures(params)

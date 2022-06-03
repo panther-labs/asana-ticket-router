@@ -2,6 +2,7 @@ import traceback
 
 from slack_sdk import WebClient
 
+from v2.consts.airplane_env import AirplaneEnv
 from v2.pyshared.aws_secrets import get_secret_value
 
 
@@ -24,11 +25,11 @@ class AirplaneTask:
     def run_notify_failures(self, params: dict) -> any:
         """Same as run function, but it sends a Slack message to the failure channel if it fails."""
         try:
-            return self.main(params)
+            return self.run(params)
         except Exception:
             self.send_slack_message(
                 channel_name=self.get_failure_slack_channel(),
-                message=f"Airplane task {self.get_task_run_url()} failed:\n{traceback.format_exc()}"
+                message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n{traceback.format_exc()}"
             )
             raise
 
