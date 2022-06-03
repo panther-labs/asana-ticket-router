@@ -3,4 +3,7 @@ slug: scheduled_group_deploy
 description: A cron task that deploys customer groups scheduled with https://app.airplane.dev/tasks/tsk20220503zn25y865i6l?__env=prod
 python:
   entrypoint: scheduled_group_deploy.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DeploymentArtifacts
 timeout: 3600

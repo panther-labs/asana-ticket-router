@@ -1,5 +1,19 @@
+from unittest import mock
+
 from tests.v2.scheduled_deploys_test.shared import *
+from v2.exceptions import UnpublishedPantherVersion
 from v2.tasks.scheduled_deploys.scheduled_group_deploy.scheduled_group_deploy import ScheduledGroupDeploy
+
+
+@pytest.fixture(scope="function", autouse=True)
+def version_published(manual_test_run):
+    if manual_test_run:
+        yield None
+    else:
+        with mock.patch("v2.tasks.scheduled_deploys.scheduled_group_deploy.scheduled_group_deploy."
+                        "is_version_published") as mock_version_published:
+            mock_version_published.return_value = True
+            yield mock_version_published
 
 
 class TestUpdateDeploymentGroupSchedules:
@@ -86,3 +100,15 @@ class TestUpdateDeploymentGroupSchedules:
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
+
+    def test_unpublished_version_fails(self, hosted_deployments_repo, past_datetime, version_published):
+        version = "v1.35.999"
+        version_published.return_value = False
+        self._mock_deployment_file(hosted_deployments_repo,
+                                   HostedDeploymentGroup.A,
+                                   version,
+                                   past_datetime)
+        params = {"hosted_deployments_path": hosted_deployments_repo}
+
+        with pytest.raises(UnpublishedPantherVersion, match=version):
+            self._TASK.run(params)

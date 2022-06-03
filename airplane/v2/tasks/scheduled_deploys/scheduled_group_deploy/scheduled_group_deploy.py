@@ -1,10 +1,12 @@
 from v2.consts.airplane_env import AirplaneEnv
 from v2.consts.depoyment_groups import HostedDeploymentGroup
 from v2.consts.github_repos import GithubRepo
+from v2.exceptions import UnpublishedPantherVersion
 from v2.pyshared.os_util import tmp_change_dir
 from v2.pyshared.yaml_utils import change_yaml_file, get_top_level_comments, remove_top_level_comments
 from v2.pyshared.deployments_file import get_deployment_group_filepath, generate_configs
 from v2.pyshared.airplane_logger import logger
+from v2.pyshared.panther_version_util import is_version_published
 from v2.task_models.airplane_git_task import AirplaneGitTask
 from v2.tasks.scheduled_deploys.shared import validate_deployment_version, contains_deployment_schedule, \
     parse_deployment_schedule, is_due_deployment, get_time_until_deployment
@@ -50,6 +52,8 @@ class ScheduledGroupDeploy(AirplaneGitTask):
                     time, version = parse_deployment_schedule(comments)
                     if is_due_deployment(time):
                         validate_deployment_version(group, old_version=cfg_yaml["Version"], new_version=version)
+                        if not is_version_published(version=version):
+                            raise UnpublishedPantherVersion(version=version)
                         logger.info(f"Group '{group}' is due deployment - upgrading to '{version}'.")
                         cfg_yaml["Version"] = version
                         remove_top_level_comments(cfg_yaml)
