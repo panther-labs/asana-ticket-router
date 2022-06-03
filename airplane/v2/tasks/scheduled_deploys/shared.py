@@ -11,6 +11,8 @@ DEPLOYMENT_TIMEZONE_PLACEHOLDER = "(PDT)"
 
 
 def generate_deployment_schedule_str(deployment_version: str, deployment_time: str):
+    if not deployment_version.startswith("v"):
+        deployment_version = f"v{deployment_version}"
     return f"{DEPLOYMENT_VERSION_COMMENT_PLACEHOLDER} {deployment_version}\n" \
            f"{DEPLOYMENT_TIME_COMMENT_PLACEHOLDER} {deployment_time}"
 

@@ -48,8 +48,13 @@ def base_version() -> str:
 
 
 @pytest.fixture
-def valid_new_version() -> str:
-    return "v1.34.11"
+def valid_new_version_without_v_prefix() -> str:
+    return "1.34.11"
+
+
+@pytest.fixture
+def valid_new_version(valid_new_version_without_v_prefix: pytest.fixture) -> str:
+    return f"v{valid_new_version_without_v_prefix}"
 
 
 @pytest.fixture

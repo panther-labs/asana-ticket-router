@@ -43,6 +43,35 @@ class TestUpdateDeploymentGroupSchedules:
         for group in not_updated_groups:
             assert_group_was_not_updated(hosted_deployments_repo, group, deployment_group_files[group])
 
+    def test_happy_path_without_v_prefix(self,
+                                         hosted_deployments_repo,
+                                         base_version,
+                                         valid_new_version_without_v_prefix,
+                                         valid_date,
+                                         valid_time):
+        deployment_group_files = {}
+        for group in HostedDeploymentGroup.get_values():
+            deployment_group_files[group] = read_deployment_group_file(hosted_deployments_repo, group)
+        params = self.get_params(hosted_deployments_repo,
+                                 valid_new_version_without_v_prefix,
+                                 {
+                                     "group_a_deployment_date": valid_date,
+                                     "group_a_deployment_time": valid_time,
+                                     "group_legacy_sf_deployment_date": valid_date,
+                                     "group_legacy_sf_deployment_time": valid_time
+                                 })
+        self._TASK.run(params)
+
+        # Groups A and Legacy-SF deployment schedules are updated
+        updated_groups = [HostedDeploymentGroup.A, HostedDeploymentGroup.LEGACY_SF]
+        for group in updated_groups:
+            assert_group_was_updated(hosted_deployments_repo, group, deployment_group_files[group])
+
+        # Remaining group schedules are not updated
+        not_updated_groups = set(HostedDeploymentGroup.get_values()) - set(updated_groups)
+        for group in not_updated_groups:
+            assert_group_was_not_updated(hosted_deployments_repo, group, deployment_group_files[group])
+
     def test_past_deployment_time(self,
                                   hosted_deployments_repo,
                                   base_version,
