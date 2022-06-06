@@ -63,12 +63,6 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         return notion_val != update_val
 
     @staticmethod
-    def get_version_number(template_url: str, existing_notion_version: str) -> str:
-        if existing_notion_version == "Not Created":
-            return existing_notion_version
-        return re.search("s3.amazonaws.com/(.+?)/panther.yml", template_url).group(1).lstrip("v")
-
-    @staticmethod
     def standardize_deploy_group(deploy_group: str) -> str:
         if deploy_group is None:
             return deploy_group
@@ -153,9 +147,6 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             # Notion doesn't keep the seconds field, so zero it out in the Dynamo value
             "Upgraded":
             create_date_time_value(upgraded_time_pt.replace(second=0)),
-            "Version":
-            UpdateDeploymentRecords.get_version_number(account_info.dynamo_info["PantherTemplateURL"],
-                                                       account_info.notion_info.Version),
         }
 
         if aws_account_id != UpdateDeploymentRecords.IGNORE_FIELD:

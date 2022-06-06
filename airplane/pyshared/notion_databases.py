@@ -53,7 +53,6 @@ class AccountsDatabaseSchema:
     Upgraded = Property("Upgraded", schema.Date())
     Actual_Version = Property("Actual Version", schema.Select())
     Expected_Version = Property("Expected Version", schema.Select())
-    Version = Property("Version", schema.Select())
     AWS_Organization = Property("AWS Organization", schema.Select())
     Account_Info_Auto_Updated = Property("Account Info Auto-Updated", schema.Checkbox())
     Airplane_Creation_Link = Property("Airplane Creation Link", schema.URL())

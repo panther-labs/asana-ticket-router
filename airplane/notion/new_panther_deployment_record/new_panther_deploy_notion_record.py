@@ -47,7 +47,7 @@ class NewPantherDeployNotionRecord(AirplaneTask):
                      f"roleName={self.ap_params.support_role}&account={self.ap_params.aws_account_id}&"
                      f"displayName={self.ap_params.account_name}%20Support")),
             Upgraded=datetime.datetime.now(pytz.timezone('US/Pacific')).date(),
-            Version=self.ap_params.version,
+            Expected_Version=self.ap_params.version,
         )
 
         return self.unparsed_params
