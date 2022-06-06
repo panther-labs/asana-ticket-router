@@ -135,6 +135,7 @@ class SERVICE(Enum):
     """Mapping of services"""
     ALARM_LOGGER = 'panther-alarm-logger'
     ALERTS_API = 'panther-alerts-api'
+    ALERTS_MIGRATION = 'panther-alerts-migration'
     ALERT_DELIVERY_API = 'panther-alert-delivery-api'
     ANALYSIS_API = 'panther-analysis-api'
     APITOKEN_AUTHORIZER = 'panther-apitoken-authorizer'
@@ -237,6 +238,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
     ],
     TEAM.INVESTIGATIONS: [
         SERVICE.ALERTS_API,
+        SERVICE.ALERTS_MIGRATION,
         SERVICE.ALERT_DELIVERY_API,
         SERVICE.ATHENA_ADMIN_API,
         SERVICE.ATHENA_API,
