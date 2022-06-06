@@ -22,7 +22,7 @@ class EphemeralStatistics(AirplaneTask):
         self.one_day_ago = datetime.today() - timedelta(days=1)
         self.one_week_ago = datetime.today() - timedelta(weeks=1)
 
-    def main(self):
+    def main(self, params):
         deployment_info = self._get_deployment_info()
 
         return {
