@@ -35,6 +35,7 @@ def mock_all_accounts_info(manual_test_run) -> MockAllCustomerAccountsInfo:
                 accounts_info.notion_accounts[name] = MockAccountsDatabase()
                 accounts_info.notion_accounts[name].Fairytale_Name = name
                 accounts_info.notion_accounts[name].Actual_Version = ""
+                accounts_info.notion_accounts[name].Deploy_Group = "A"
             mock_accounts_info.return_value = accounts_info
             yield mock_accounts_info.return_value
 
@@ -132,17 +133,33 @@ def test_deploy_groups_not_processed_on_upgrade_days(mock_all_accounts_info, day
     assert not result["deploy_group_inconsistency"]
 
 
-def _setup_latest_version(mock_all_accounts_info):
+def _setup_latest_ga_version(mock_all_accounts_info):
     mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_1].Actual_Version = "10.2.3"
     mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_2].Actual_Version = ""
     mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_3].Actual_Version = "2.1.2"
 
 
-def test_latest_version(mock_all_accounts_info):
-    _setup_latest_version(mock_all_accounts_info)
+def test_latest_ga_version(mock_all_accounts_info):
+    _setup_latest_ga_version(mock_all_accounts_info)
     result = run_task({})
 
     assert result["latest_deployed_ga_version"] == "10.2.3"
+
+
+def _setup_latest_ga_version_with_internal_accounts(mock_all_accounts_info):
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_1].Actual_Version = "99.99.99"
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_1].Deploy_Group = "Internal"
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_2].Actual_Version = "88.88.88"
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_2].Deploy_Group = "STAGING"
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_3].Actual_Version = "1.2.3"
+    mock_all_accounts_info.notion_accounts[FAIRYTALE_NAME_3].Deploy_Group = "A"
+
+
+def test_internal_account_versions_should_not_be_used_to_determine_latest_ga_version(mock_all_accounts_info):
+    _setup_latest_ga_version_with_internal_accounts(mock_all_accounts_info)
+    result = run_task({})
+
+    assert result["latest_deployed_ga_version"] == "1.2.3"
 
 
 def test_happy_path(airplane_session_id):

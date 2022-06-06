@@ -24,3 +24,7 @@ class HostedDeploymentGroup:
     @classmethod
     def get_values(cls) -> list[str]:
         return [cls.A, cls.C, cls.E, cls.G, cls.J, cls.L, cls.N, cls.P, cls.Z, cls.CPAAS, cls.LEGACY_SF]
+
+    @classmethod
+    def is_hosted_deployment_group(cls, deployment_group):
+        return deployment_group.lower() in cls.get_values()
