@@ -1,14 +1,14 @@
 import datetime
 import pytz
-import re
 import urllib.parse
 
 from notional import types as notional_types
+from notional.text import FullColor
 
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.deployments_file import DeploymentsRepo
 from pyshared.git_ops import AirplaneMultiCloneGitTask
-from pyshared.notion_databases import are_rtf_values_equal, create_date_time_value, create_rtf_value, \
+from pyshared.notion_databases import are_text_objects_equal, create_date_time_value, create_rtf_value, \
     get_display_rtf_value
 
 
@@ -57,8 +57,9 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
         if (attr == "Upgraded") and str(notion_val) and str(update_val):
             return str(notion_val) != str(update_val)
-        if isinstance(notion_val, notional_types.RichText):
-            return not are_rtf_values_equal(notion_val, update_val)
+
+        if isinstance(notion_val, notional_types.TextObject):
+            return not are_text_objects_equal(notion_val, update_val.rich_text[0])
 
         return notion_val != update_val
 
@@ -92,15 +93,14 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
     @staticmethod
     def get_notion_value(attr, account_info):
-        if attr in ("Account_Name", "Support_Role"):
+        if attr in ("Account_Name", "Support_Role", "Expected_Version", "Actual_Version"):
             page_prop = attr.replace("_", " ")
             # This private member used to be public, and to my knowledge, is the only way to get the actual
             # contents of a rich text field rather than just the text.
             # noinspection PyProtectedMember
             text_object = account_info.notion_info._notional__page.properties[page_prop].rich_text
             if text_object:
-                text_object = text_object[0] if isinstance(text_object, list) else text_object
-                return create_rtf_value(text=text_object.plain_text, url=text_object.href)
+                return text_object[0] if isinstance(text_object, list) else text_object
             else:
                 return create_rtf_value(text="", url="")
         return getattr(account_info.notion_info, attr)
@@ -156,12 +156,16 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
                 url=(f"https://{region}.signin.aws.amazon.com/switchrole?roleName={role_name}&account={aws_account_id}&"
                      f"displayName={url_support_name}"))
 
-        actual_version = account_info.dynamo_info.get("ActualVersion")
-        expected_version = account_info.dynamo_info.get("ExpectedVersion")
+        actual_version = account_info.dynamo_info.get("ActualVersion", "").replace("v", "")
+        expected_version = account_info.dynamo_info.get("ExpectedVersion", "").replace("v", "")
+        version_color = FullColor.GREEN_BACKGROUND
+        if (actual_version and expected_version) and actual_version != expected_version:
+            version_color = FullColor.RED_BACKGROUND
+
         if actual_version:
-            expected_attrs["Actual_Version"] = actual_version.replace("v", "")
+            expected_attrs["Actual_Version"] = create_rtf_value(text=actual_version, color=version_color)
         if expected_version:
-            expected_attrs["Expected_Version"] = expected_version.replace("v", "")
+            expected_attrs["Expected_Version"] = create_rtf_value(text=expected_version, color=version_color)
         return expected_attrs
 
     def get_failure_slack_channel(self):

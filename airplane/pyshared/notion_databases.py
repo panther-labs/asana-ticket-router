@@ -1,25 +1,28 @@
 from notional import schema, types
 from notional.orm import Property
+from notional.text import FullColor
 
 from pyshared.notion_auth import NotionSession
 
 
-def create_rtf_value(text, url=None):
-    return types.RichText.parse_obj({
-        "type":
-        "rich_text",
+def create_rtf_value(text, url=None, color=FullColor.DEFAULT):
+    data = {
+        "type": "rich_text",
         "rich_text": [{
             "type": "text",
             "plain_text": text,
             "href": url,
             "text": {
                 "content": text,
-                "link": {
-                    "url": url
-                }
             },
+            "annotations": {"color": color}
         }]
-    })
+    }
+
+    text_obj = data["rich_text"][0]
+    if url:
+        text_obj["text"]["link"] = {"url": url}
+    return types.RichText.parse_obj(data)
 
 
 def get_display_rtf_value(value: schema.RichText):
@@ -27,10 +30,12 @@ def get_display_rtf_value(value: schema.RichText):
     return f"[{value.plain_text}]({value.href})"
 
 
-def are_rtf_values_equal(notion_val: schema.RichText, update_val: schema.RichText) -> bool:
-    notion = notion_val.rich_text[0]
-    update = update_val.rich_text[0]
-    return (notion.text == update.text) and (notion.href == update.href)
+def are_text_objects_equal(notion_val: schema.RichText, update_val: schema.RichText) -> bool:
+    return (
+            (notion_val.text == notion_val.text) and
+            (notion_val.href == update_val.href) and
+            (notion_val.annotations.color == update_val.annotations.color)
+    )
 
 
 def create_date_time_value(updated_datetime):
@@ -51,8 +56,8 @@ class AccountsDatabaseSchema:
     Service_Type = Property("Service Type", schema.Select())
     Support_Role = Property("Support Role", schema.RichText())
     Upgraded = Property("Upgraded", schema.Date())
-    Actual_Version = Property("Actual Version", schema.Select())
-    Expected_Version = Property("Expected Version", schema.Select())
+    Actual_Version = Property("Actual Version", schema.RichText())
+    Expected_Version = Property("Expected Version", schema.RichText())
     AWS_Organization = Property("AWS Organization", schema.Select())
     Account_Info_Auto_Updated = Property("Account Info Auto-Updated", schema.Checkbox())
     Airplane_Creation_Link = Property("Airplane Creation Link", schema.URL())

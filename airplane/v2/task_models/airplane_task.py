@@ -27,10 +27,11 @@ class AirplaneTask:
         try:
             return self.run(params)
         except Exception:
-            self.send_slack_message(
-                channel_name=self.get_failure_slack_channel(),
-                message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n{traceback.format_exc()}"
-            )
+            if not AirplaneEnv.is_local_env():
+                self.send_slack_message(
+                    channel_name=self.get_failure_slack_channel(),
+                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n{traceback.format_exc()}"
+                )
             raise
 
     @staticmethod
