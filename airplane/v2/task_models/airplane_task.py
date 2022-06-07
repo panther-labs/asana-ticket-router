@@ -27,10 +27,10 @@ class AirplaneTask:
         try:
             return self.run(params)
         except Exception:
-            if not AirplaneEnv.is_local_env():
+            if AirplaneEnv.is_prod_env():
                 self.send_slack_message(
                     channel_name=self.get_failure_slack_channel(),
-                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n{traceback.format_exc()}"
+                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n```{traceback.format_exc()}```"
                 )
             raise
 

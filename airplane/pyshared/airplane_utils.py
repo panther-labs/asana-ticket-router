@@ -36,10 +36,10 @@ class AirplaneTask:
         try:
             return self.main(params)
         except Exception:
-            if not is_local_run():
+            if is_prod_env():
                 self.send_slack_message(
                     channel_name=self.get_failure_slack_channel(),
-                    message=f"Airplane task {self.get_task_run_url()} failed:\n{traceback.format_exc()}"
+                    message=f"Airplane task {self.get_task_run_url()} failed:\n```{traceback.format_exc()}```"
                 )
             raise
 
@@ -77,6 +77,10 @@ def set_local_run():
 
 def is_local_run():
     return os.environ.get("local_run", "") == "true"
+
+
+def is_prod_env():
+    return os.getenv("AIRPLANE_ENV") == "prod"
 
 
 def is_test_run(ap_params):
