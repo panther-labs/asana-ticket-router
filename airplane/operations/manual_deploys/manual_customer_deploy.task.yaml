@@ -7,5 +7,5 @@ parameters:
   type: shorttext
 python:
   entrypoint: manual_customer_deploy.py
-requireRequests: true
-allowSelfApprovals: true
+requireRequests: false
+allowSelfApprovals: false
