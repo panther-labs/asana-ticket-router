@@ -35,7 +35,7 @@ class AirplaneTask:
             raise
 
     @staticmethod
-    def get_failure_slack_channel(self):
+    def get_failure_slack_channel():
         """Failure notifications will be directed to this channel if main_notify_failures is called."""
         return ""
 

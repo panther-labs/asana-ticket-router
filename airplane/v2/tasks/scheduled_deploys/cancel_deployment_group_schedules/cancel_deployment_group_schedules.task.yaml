@@ -52,6 +52,6 @@ parameters:
   default: false
 python:
   entrypoint: cancel_deployment_group_schedules.py
-requireRequests: true
-allowSelfApprovals: true
+requireRequests: false
+allowSelfApprovals: false
 timeout: 3600
