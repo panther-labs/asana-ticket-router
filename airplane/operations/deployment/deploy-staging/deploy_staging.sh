@@ -94,5 +94,20 @@ update_version_in_repo() {
     update_version_in_repo "hosted-deployments" "master" "${CONFIG_FILE}" "${LATEST_GA}" "${MSG}"
 )
 
+## hosted-deployment latest-ga-fridays
+export TZ=America/Los_Angeles
+FRIDAY=5
+current_day=$(date +%u)
+current_hour=$(date +%H)
+
+# Friday afternoon for a time that works for most people in PT to ET timezones in case it needs to be debugged
+if [[ "${current_day}" == "${FRIDAY}" ]] && [[ "${current_hour}" > "11" ]] && [[ "${current_hour}" < "14" ]]; then
+(
+    CONFIG_FILE="deployment-metadata/deployment-groups/latest-ga-fridays.yml"
+    MSG="Updating latest-ga-fridays group to '${LATEST_GA}'"
+    update_version_in_repo "hosted-deployments" "master" "${CONFIG_FILE}" "${LATEST_GA}" "${MSG}"
+)
+fi
+
 ## Airplane output
 echo "airplane_output_set {\"rc_version\": \"${LATEST_RC}\", \"ga_version\": \"${LATEST_GA}\"}"
