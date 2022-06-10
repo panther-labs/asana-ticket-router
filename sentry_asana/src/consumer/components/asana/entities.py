@@ -133,6 +133,13 @@ SELF_HOSTED_ACCOUNTS_IDS = [
 
 class SERVICE(Enum):
     """Mapping of services"""
+    # Fargate (convention only in us-east-1)
+    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-naming.html
+    EC2_INTERNAL = ".ec2.internal"
+    # Fargate (any other region)
+    COMPUTE_INTERNAL = ".compute.internal"
+
+    # Lambdas
     ALARM_LOGGER = 'panther-alarm-logger'
     ALERTS_API = 'panther-alerts-api'
     ALERTS_MIGRATION = 'panther-alerts-migration'
@@ -242,11 +249,13 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.ALERT_DELIVERY_API,
         SERVICE.ATHENA_ADMIN_API,
         SERVICE.ATHENA_API,
+        SERVICE.COMPUTE_INTERNAL,
         SERVICE.DATABASE_WORKFLOW,
         SERVICE.DATACATALOG_COMPACTOR,
         SERVICE.DATACATALOG_COMPACTOR_CALLBACKS,
         SERVICE.DATACATALOG_COMPACTOR_REAPER,
         SERVICE.DATACATALOG_UPDATER,
+        SERVICE.EC2_INTERNAL,
         SERVICE.GREYNOISE_PROCESSOR,
         SERVICE.LOG_ALERT_FORWARDER,
         SERVICE.LOOKUP_TABLES_API,

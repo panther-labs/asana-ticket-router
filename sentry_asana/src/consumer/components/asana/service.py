@@ -334,12 +334,10 @@ class AsanaService:
 
     @staticmethod
     def _get_owning_team_from_service(service: str) -> EngTeam:
-        """Return the team that owns the specified service by service name.
+        """Return the team that owns the specified service by partial service name match.
         Defaults to OBSERVABILITY_PERF if none found"""
-        team = SERVICE_TO_TEAM.get(
-            service,
-            TEAM.OBSERVABILITY_PERF
-        )
+        team = next((val for key, val in SERVICE_TO_TEAM.items()
+                     if key in service), TEAM.OBSERVABILITY_PERF)
         return ENG_TEAMS[team]
 
     @staticmethod

@@ -249,6 +249,14 @@ async def test_get_owning_team_from_service(container: AsanaContainer) -> None:
         SERVICE.ALERT_DELIVERY_API.value)
     assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
 
+    # Test partial match for fargate
+    team = service._get_owning_team_from_service(
+        "ip-10-24-34-0.ec2.internal")
+    assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
+    team = service._get_owning_team_from_service(
+        "ip-10-24-34-0.us-west-2.compute.internal")
+    assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
+
 
 @ pytest.mark.asyncio
 async def test_get_owning_team_from_fe_service(container: AsanaContainer) -> None:
