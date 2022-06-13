@@ -8,6 +8,8 @@ RUN apt-get update -q && \
       python3-pip \
       unzip \
       wget
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+ENV TZ=America/Los_Angeles
 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.14.2/yq_linux_386.tar.gz -O - |\
   tar xz && mv yq_linux_386 /usr/bin/yq
