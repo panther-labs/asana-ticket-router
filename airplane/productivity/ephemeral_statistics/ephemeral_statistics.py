@@ -49,9 +49,10 @@ class EphemeralStatistics(AirplaneTask):
             },
             "deployments_past_day": deployment_info["one_day"],
             "deployments_past_week": deployment_info["one_week"],
-            "weekly_performance": {
-                "average_deploy_time": str(self._get_avg_deploy_time(start_time=self.one_week_ago))
-            },
+            "average_deploy_time": {
+                "daily": self._get_avg_deploy_times(start_time=self.one_day_ago),
+                "weekly": self._get_avg_deploy_times(start_time=self.one_week_ago)
+            }
         }
 
     def count(self, query):
@@ -113,22 +114,24 @@ class EphemeralStatistics(AirplaneTask):
 
         return deployment_info
 
-    def _get_avg_deploy_time(self, start_time):
-        start = "step_function_execution_time"
-        end = "updated_at"
-        results = self.invoke(f"SELECT {start},{end} FROM deployments where step_function_result = 'success' "
-                              f"and created_at > '{start_time}'")
+    def _get_avg_from_query(self, start_time, comparison):
+        deployments = self.invoke(f"SELECT rank_filter.updated_at - rank_filter.created_at as diff FROM (select deployments.*, rank() over (partition by ref_host_id order by created_at) from deployments) rank_filter where step_function_result = 'success' and {comparison} and created_at > '{start_time}'")
 
-        total_deploys = len(results)
-        deploy_time_sum = timedelta(seconds=0)
+        result = 0
+        if deployments is not None:
+            total_deploys = len(deployments)
+            deploy_time_sum = timedelta(seconds=0)
+            for deployment_times in deployments:
+                deploy_time_sum += (dateutil.parser.parse(deployment_times["diff"]) -
+                                    dateutil.parser.parse('00:00:00.00'))
+            result = deploy_time_sum / total_deploys
+        return result
 
-        if total_deploys == 0:
-            return deploy_time_sum
-
-        for deployment_times in results:
-            deploy_time_sum += (dateutil.parser.parse(deployment_times[end]) -
-                                dateutil.parser.parse(deployment_times[start]))
-        return deploy_time_sum / total_deploys
+    def _get_avg_deploy_times(self, start_time):
+        return {
+            "initial": str(self._get_avg_from_query(start_time, "rank = 1")),
+            "upgrades": str(self._get_avg_from_query(start_time, "rank != 1")),
+        }
 
     def get_failure_slack_channel(self):
         return "#eng-ops"
