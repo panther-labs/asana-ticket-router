@@ -8,6 +8,8 @@
 PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 
+pip3 install -r automation-scripts/requirements.txt
+
 echo "Customer: ${PARAM_CUSTOMERID}"
 
 cd hosted-deployments
@@ -20,6 +22,9 @@ if [ git diff --quiet ] ; then
     echo "No changes made"
     exit 0
 fi
+
+python3 automation-scripts/generate.py
+python3 automation-scripts/lint.py
 
 echo "Changes"
 git diff
