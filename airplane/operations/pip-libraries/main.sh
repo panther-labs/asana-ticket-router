@@ -8,13 +8,13 @@
 PATH=$PATH:util # For running airplane locally
 REPOSITORY=hosted-deployments git-clone
 
-pip3 install -r automation-scripts/requirements.txt
-
 echo "Customer: ${PARAM_CUSTOMERID}"
 
 cd hosted-deployments
 
-CONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
+pip3 install -r automation-scripts/requirements.txt
+
+llCONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
 
 yq e -i '.CloudFormationParameters.PipLibraries = strenv(PARAM_PIPLIBRARIES)' "${CONFIG_FILE}"
 
