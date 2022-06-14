@@ -14,7 +14,7 @@ cd hosted-deployments
 
 pip3 install -r automation-scripts/requirements.txt
 
-llCONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
+CONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
 
 yq e -i '.CloudFormationParameters.PipLibraries = strenv(PARAM_PIPLIBRARIES)' "${CONFIG_FILE}"
 
