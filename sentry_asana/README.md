@@ -23,7 +23,7 @@ Consumer
 
 ## Modifying service mappings
 
-To change what teams are responsible for what services, modify the mappinigs found in `./sentry_asana/src/consumer/service/asana_service.py`.
+To change what teams are responsible for what services, modify the mappinigs found in `./sentry_asana/src/consumer/components/asana/entities.py`.
 Each team's services are grouped by team there, be sure to move the mapping to the correct section in addition to updating the team being mapped to.
 
 ## Credentials
@@ -31,15 +31,16 @@ Each team's services are grouped by team there, be sure to move the mapping to t
 The service requires the following secrets:
 
 - Sentry_Asana_Secrets
-  - SENTRY_CLIENT_SECRET: found in the custom integration setup in Sentry. See https://sentry.io/settings/panther-labs/developer-settings/ to view all custom integrations. `Sentry-to-Asana-Hosted-Ops` is the integration that corresponds to the service deployed in the `hosted-ops` account (i.e. 'Prod'). For development, use the Client Secret in `Sentry-to-Asana-Dev`.
-  - ASANA_PAT: the PAT used as the bearer token during Asana API calls. Create a PAT here https://app.asana.com/0/my-apps
-  - SENTRY_PAT: the PAT used as the bearer token during Sentry API. Create a PAT here https://sentry.io/settings/account/api/auth-tokens/
+  - `SENTRY_CLIENT_SECRET`: found in the custom integration setup in Sentry. See https://sentry.io/settings/panther-labs/developer-settings/ to view all custom integrations. `Sentry-Asana-Prod` is the integration that corresponds to the service deployed in the `hosted-ops` account (i.e. 'Prod'). For development, please use the Client Secret in `Sentry-Asana-Dev`.
+  - `ASANA_PAT`: the PAT used as the bearer token during Asana API calls. Create a PAT here https://app.asana.com/0/my-apps
+  - `SENTRY_PAT`: the PAT used as the bearer token during Sentry API. Create a PAT here https://sentry.io/settings/account/api/auth-tokens/
 
 ## Deploying The Service
 
 ### Prod
 
-To deploy in **prod** (i.e. panther-hosted-ops account), trigger the codebuild project through the console to deploy what is on the `main` branch.
+To deploy in **prod** (i.e. `panther-hosted-ops` account), all you need to do is submit a PR. On merge, it will automatically trigger a [codebuild](https://github.com/panther-labs/hosted-aws-management/blob/master/panther-hosted-ops/us-west-2/sentry-asana-codebuild.yml) job to build and update the infrastrucutre and code for the project.
+
 In order to deploy the service manually (i.e. through the Pulumi CLI), Pulumi CLI is required (see https://www.pulumi.com/docs/reference/cli/ for install details). Complete your Pulumi setup (including access token related work) prior to deploying.
 
 ### Dev
@@ -58,7 +59,7 @@ You must create an AWS Secret containing the 3 credentials in the above section 
 ### Set up your dev environment
 
 - Setup python environment
-  - Install python 3.9 using pyenv. It is needed to create the `venv` with a version of python that we want.
+  - Install python 3.9 using pyenv (patch version doesn't matter). It is needed to create the `venv` with a version of python that we want.
     - `brew install pyenv`
     - `pyenv install 3.9.9`
     - `pyenv local 3.9.9`
@@ -69,9 +70,9 @@ You must create an AWS Secret containing the 3 credentials in the above section 
     - `python -m venv venv`
     - Activate the venv. This will show `(venv)` prefixed to your terminal.
     - `source venv/bin/activate`
-  - Install deps
+  - Install all development dependencies in the top-level requirements file
     - `pip install -r requirements.txt`
-- Setup Pulumi
+- Setup Pulumi (skip the remaining bullets if you have your dev env configured)
   - Install Pulumi
     - `brew install pulumi`
     - See https://www.pulumi.com/docs/reference/cli/ for instructions
@@ -86,11 +87,22 @@ You must create an AWS Secret containing the 3 credentials in the above section 
 
 ### Deploy to your dev account
 
-- Ensure that a `Pulumi.dev-<YOUR_STACKNAME>.yaml` Pulumi config file exists in the top level directory. If one does not exist, create the file and ensure it is gitignored by the existing entry in the `.gitignore`. The config file should look identical to `Pulumi.sentry-asana.yaml` in its content, with correct values for the following:
+- Ensure that a `Pulumi.dev-<YOUR_STACKNAME>.yaml` Pulumi config file exists in the top level directory. If one does not exist, create the file. The config file should look identical to `Pulumi.sentry-asana.yaml` in its content, with correct values for the following:
+
+Example for `Pulumi.dev-nick-sentry.yaml`:
+```
+config:
+  sentry-asana-integration:deploymentParams:
+    # Set to true for local dev
+    development: true
+    alarmEmailSubscriptions:
+      - nick.angelou@panther.io
+```
+Definitions:
   - `deploymentParams`
-    - `development`: An indicator to run in dev mode which uses dev asana boards.
-    - `alarmActionsTopic`: This is a list of unmanaged topic arns inside hosted-ops. Currently, there is only one (`hosted-ops-on-call`) to notify on-call (PagerDuty) when exceptions happen in Lambda or if there are messages in the DLQ.
-    - `alarmEmailSubscriptions`: This is a list of email addresses that will be added as subscriptions to an SNS topic that is managed by this project. It also notifies on exceptions in Lambda or if there are messages in the DLQ. We provide a controlled SNS topic for development and also to act as an additional notification layer.
+    - `development`: An indicator to run in dev mode which uses dev asana boards. Ensure this is set to `true`!
+    - `alarmActionsTopic`: **Not needed for local dev**, but this is a list of unmanaged topic arns inside hosted-ops where unmanaged means it is set up outside of this repository. Currently, there is only one topic (`hosted-ops-on-call`) to notify on-call (PagerDuty) when unhandled exceptions happen in Lambda or if there are messages that land in the DLQ.
+    - `alarmEmailSubscriptions`: This is a list of email addresses that will be added as subscriptions to an SNS topic that is managed by this project. Very useful for debugging and in production this is the observability's gmail group.
 - Run the following command, replacing the <> brackets as needed: `AWS_REGION=us-west-2 dev -- pulumi up --config-file Pulumi.dev-<YOUR_STACK_NAME>.yaml --stack panther-dev/dev-<YOUR_STACK_NAME>`
   - The command should prompt you to confirm creation of the stack if the stack does not exist
 
@@ -108,7 +120,7 @@ To run them, do the following:
 
 ## Updating the Team IDs
 
-If the team IDs within Asana change, or new teams have been added and the team ID code in `src/enum/teams.py` needs to be updated, a list of team IDs can be found by executing the following API call:
+If the team IDs within Asana change, or new teams have been added and the team ID code in `./sentry_asana/src/consumer/components/asana/entities.py` needs to be updated, a list of team IDs can be found by executing the following API call:
 
 ```
 curl -H "Authorization: Bearer ***)" \
