@@ -18,7 +18,7 @@ CONFIG_FILE="deployment-metadata/deployment-targets/${PARAM_CUSTOMERID}.yml"
 
 yq e -i '.CloudFormationParameters.PipLibraries = strenv(PARAM_PIPLIBRARIES)' "${CONFIG_FILE}"
 
-if [ git diff --quiet ] ; then
+if [ $(git diff --quiet) ] ; then
     echo "No changes made"
     exit 0
 fi
