@@ -1,4 +1,5 @@
 from typing import List
+import base64
 import os
 import subprocess
 
@@ -42,8 +43,9 @@ def git_clone(repo, github_setup=False, existing_dir=None):
         setup_github()
 
     secret_name = _run_cmd(f"REPOSITORY={repo} {_UTIL_PATH}/get-deploy-key-secret-name").strip()
-    deploy_key_base64 = get_secret_value(secret_name=secret_name)
-    _run_cmd(f"REPOSITORY={repo} DEPLOY_KEY_BASE64={deploy_key_base64} {_UTIL_PATH}/git-clone")
+    with open(os.path.join(os.path.expanduser("~"), ".ssh", "id_github"), "w") as key_file:
+        key_file.write(base64.b64decode(get_secret_value(secret_name=secret_name)).decode('ascii'))
+    Repo.clone_from(url=f"git@github.com:panther-labs/{repo}", to_path=repo)
 
     return repo
 
