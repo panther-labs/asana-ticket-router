@@ -1,3 +1,4 @@
+import re
 import semver
 
 from pyshared.aws_creds import get_credentialed_client
@@ -19,6 +20,15 @@ def is_valid_bump(old_version: semver.VersionInfo, new_version: semver.VersionIn
     # Minor version is the same or one greater
     is_valid_minor = new_version.minor in [old_version.minor, old_version.bump_minor().minor]
     return is_newer_version and (is_valid_major or is_valid_minor)
+
+
+def get_version_from_template_url(template_url: str) -> str:
+    """Get the customer's Panther instance version from the PantherTemplateURL parameter.
+
+    :param template_url: PantherTemplateURL parameter
+    :return: The version parsed from the template URL
+    """
+    return re.search('s3.amazonaws.com/(.+?)/panther.yml', template_url).group(1)
 
 
 def is_version_published(version: str):

@@ -87,6 +87,13 @@ class AirplaneGitTask(AirplaneTask):
         return Repo().git.diff()
 
     @staticmethod
+    def _git_untracked_files() -> list[str]:
+        """
+        :return: List of names of untracked files
+        """
+        return Repo().untracked_files
+
+    @staticmethod
     def _git_add(filepaths: list[str] = None) -> None:
         """
         Run 'git add <filepaths>' command
@@ -148,9 +155,17 @@ class AirplaneGitTask(AirplaneTask):
         :return: None
         """
         git_diff_output = self._git_diff()
+        untracked_files = self._git_untracked_files()
         if git_diff_output:
             logger.info(f"Git diff: {git_diff_output}")
-        else:
+        if untracked_files:
+            untracked_files_output = ""
+            for untracked_file in untracked_files:
+                untracked_files_output += f"{untracked_file}:\n"
+                with open(untracked_file, "r") as untracked_file_stream:
+                    untracked_files_output += untracked_file_stream.read()
+            logger.info(f"Untracked files:\n{untracked_files_output}")
+        if not (git_diff_output or untracked_files):
             logger.warning("Git diff: no changes. No files will be committed.")
             return
 

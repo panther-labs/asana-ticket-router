@@ -1,15 +1,15 @@
 import logging
 import os
-
-# Required before imports create logger with a separate level
-os.environ["LOG_LEVEL"] = str(logging.ERROR)
+from unittest import mock
 
 import pytest
 
-from unittest import mock
+# Required before imports create logger with a separate level
+os.environ["LOG_LEVEL"] = os.getenv("LOG_LEVEL", str(logging.ERROR))
 
 from pyshared.airplane_utils import set_local_run
 from v2.consts.airplane_env import AirplaneEnv
+from v2.pyshared.airplane_logger import logger
 
 
 def _import_local_env():
@@ -52,10 +52,8 @@ def manual_test_suite_setup(manual_test_run):
 def unit_test_suite_setup(manual_test_run, request, airplane_session_id, airplane_run_id):
     if manual_test_run:
         return
-    for patch_obj_str in (
-        "pyshared.airplane_utils.AirplaneTask.send_slack_message",
-        "v2.task_models.airplane_task.AirplaneTask.send_slack_message"
-    ):
+    for patch_obj_str in ("pyshared.airplane_utils.AirplaneTask.send_slack_message",
+                          "v2.task_models.airplane_task.AirplaneTask.send_slack_message"):
         patch_obj = mock.patch(patch_obj_str)
         patch_obj.start()
         request.addfinalizer(patch_obj.stop)
