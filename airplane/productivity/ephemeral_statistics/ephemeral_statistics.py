@@ -134,7 +134,7 @@ class EphemeralStatistics(AirplaneTask):
         }
 
     def get_failure_slack_channel(self):
-        return "#eng-ops"
+        return "#triage-productivity"
 
 
 def main(_):

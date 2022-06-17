@@ -11,7 +11,7 @@ class DeploymentDeletionChecker(AirplaneTask):
         return self.find_customers_close_to_deletion()
 
     def get_failure_slack_channel(self):
-        return "#eng-ops"
+        return "#triage-productivity"
 
     @staticmethod
     def find_customers_close_to_deletion():

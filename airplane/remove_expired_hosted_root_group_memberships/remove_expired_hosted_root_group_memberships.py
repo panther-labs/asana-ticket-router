@@ -77,7 +77,7 @@ class HostedRootGroupMembershipRemover(AirplaneTask):
                                 test_run=params["airplane_test_run"])
 
     def get_failure_slack_channel(self):
-        return "#eng-ops"
+        return "#triage-productivity"
 
 
 def main(params):
