@@ -7,7 +7,8 @@ from pyshared.notion_auth import NotionSession
 
 def create_rtf_value(text, url=None, color=FullColor.DEFAULT):
     data = {
-        "type": "rich_text",
+        "type":
+        "rich_text",
         "rich_text": [{
             "type": "text",
             "plain_text": text,
@@ -15,7 +16,9 @@ def create_rtf_value(text, url=None, color=FullColor.DEFAULT):
             "text": {
                 "content": text,
             },
-            "annotations": {"color": color}
+            "annotations": {
+                "color": color
+            }
         }]
     }
 
@@ -31,11 +34,8 @@ def get_display_rtf_value(value: schema.RichText):
 
 
 def are_text_objects_equal(notion_val: schema.RichText, update_val: schema.RichText) -> bool:
-    return (
-            (notion_val.text == notion_val.text) and
-            (notion_val.href == update_val.href) and
-            (notion_val.annotations.color == update_val.annotations.color)
-    )
+    return ((notion_val.text == update_val.text) and (notion_val.href == update_val.href)
+            and (notion_val.annotations.color == update_val.annotations.color))
 
 
 def create_date_time_value(updated_datetime):
