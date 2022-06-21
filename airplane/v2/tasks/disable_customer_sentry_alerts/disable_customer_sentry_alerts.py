@@ -27,10 +27,7 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
                 logger.info(f"Sentry alerts are already disabled for customer '{fairytale_name}'.")
                 return
 
-            if "CloudFormationParameters" not in yaml_cfg:
-                yaml_cfg.update({"CloudFormationParameters": {}})
-            cfn_params = yaml_cfg["CloudFormationParameters"]
-            cfn_params["SentryEnvironment"] = ""
+            yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnvironment"] = ""
 
         if not AirplaneEnv.is_local_env():
             logger.info("Updating deployment targets.")
