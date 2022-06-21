@@ -1,3 +1,5 @@
+import ruamel.yaml
+
 from v2.consts.airplane_env import AirplaneEnv
 from v2.consts.github_repos import GithubRepo
 from v2.pyshared.os_util import tmp_change_dir
@@ -9,6 +11,10 @@ from v2.task_models.airplane_git_task import AirplaneGitTask
 
 class DisableCustomerSentryAlerts(AirplaneGitTask):
 
+    @staticmethod
+    def is_sentry_disabled(yaml_cfg: ruamel.yaml.CommentedMap):
+        return yaml_cfg.get("CloudFormationParameters", {}).get("SentryEnvironment") == ""
+
     def run(self, params: dict):
         fairytale_name = params['fairytale_name']
         repo_abs_path = self.clone_repo_or_get_local(repo_name=GithubRepo.HOSTED_DEPLOYMENTS,
@@ -17,6 +23,10 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
 
         with change_yaml_file(cfg_filepath=get_customer_deployment_filepath(fairytale_name=fairytale_name,
                                                                             repo_path=repo_abs_path)) as yaml_cfg:
+            if self.is_sentry_disabled(yaml_cfg):
+                logger.info(f"Sentry alerts are already disabled for customer '{fairytale_name}'.")
+                return
+
             if "CloudFormationParameters" not in yaml_cfg:
                 yaml_cfg.update({"CloudFormationParameters": {}})
             cfn_params = yaml_cfg["CloudFormationParameters"]
