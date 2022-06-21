@@ -101,7 +101,7 @@ current_day=$(date +%u)
 current_hour=$(date +%H)
 
 # Friday afternoon for a time that works for most people in PT to ET timezones in case it needs to be debugged
-if [ "${current_day}" = "${FRIDAY}" ] && [ "${current_hour}" > "11" ] && [ "${current_hour}" < "14" ]; then
+if [ "${current_day}" = "${FRIDAY}" ] && [ "${current_hour}" -gt "11" ] && [ "${current_hour}" -lt "14" ]; then
 (
     CONFIG_FILE="deployment-metadata/deployment-groups/latest-ga-fridays.yml"
     MSG="Updating latest-ga-fridays group to '${LATEST_GA}'"

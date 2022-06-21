@@ -1,6 +1,6 @@
-bandit
-mypy
-pylint
+bandit==1.7.4
+mypy==0.950
+pylint==2.13.9
 yapf
 pulumi==3.33.2
 pulumi-aws==5.6.0
