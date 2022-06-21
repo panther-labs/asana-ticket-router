@@ -1,0 +1,11 @@
+name: Disable Customer Sentry Alerts
+slug: disable_customer_sentry_alerts
+parameters:
+  - name: Fairytale Name
+    slug: fairytale_name
+    type: shorttext
+python:
+  entrypoint: disable_customer_sentry_alerts.py
+requireRequests: true
+allowSelfApprovals: false
+timeout: 3600
