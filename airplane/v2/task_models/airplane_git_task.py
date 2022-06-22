@@ -118,6 +118,7 @@ class AirplaneGitTask(AirplaneTask):
 
     @staticmethod
     def _git_pull_rebase():
+        logger.info("Running 'git pull --rebase'")
         git_cmd.Git().pull('--rebase')
 
     @staticmethod
@@ -127,7 +128,7 @@ class AirplaneGitTask(AirplaneTask):
         Make up to 3 attempts to run 'git push' command. Run 'git pull --rebase' after each failed attempt.
         :return: None
         """
-        Repo().remote().push()
+        Repo().remote().push().raise_if_error()
 
     def clone_repo_or_get_local(self, repo_name: str, local_repo_abs_path: str = None) -> str:
         """
