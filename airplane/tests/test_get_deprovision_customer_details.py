@@ -106,5 +106,5 @@ def test_happy_path(mock_all_accounts_info):
 @pytest.mark.manual_test
 def test_manual():
     # TODO: Requires adding test roles, currently doesn't work when calling via pytest
-    params = AirplaneParams(fairytale_name="tangible-dinosaur", org_name="hosted")
+    params = AirplaneParams(fairytale_name="tuscan-beagle", org_name="hosted")
     main(asdict(params))

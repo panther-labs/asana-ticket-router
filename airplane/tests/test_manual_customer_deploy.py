@@ -7,5 +7,5 @@ from operations.manual_deploys.manual_customer_deploy import AirplaneParams, mai
 
 @pytest.mark.manual_test
 def test_manual():
-    params = AirplaneParams(fairytale_name="tangible-dinosaur")
+    params = AirplaneParams(fairytale_name="tuscan-beagle")
     main(asdict(params))
