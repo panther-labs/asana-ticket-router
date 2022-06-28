@@ -138,17 +138,23 @@ class EphemeralStatistics(AirplaneTask):
         }
 
     def _get_audit_info(self, start_time):
+        # Totals
         count = 0
-        sign_in = 0
-        query = f"SELECT count(*), sum(sign_in_count) as sign_in FROM ref_hosts WHERE id in ( SELECT ref_host_id FROM deployments WHERE created_at > '{start_time}')"
+        total_sign_in = 0
+        deployments = f"SELECT ref_host_id FROM deployments WHERE created_at > '{start_time}'"
+        query = f"SELECT count(*), sum(sign_in_count) as sign_in FROM ref_hosts WHERE id in ( {deployments} )"
         output = self.invoke(query)
         if output:
             count = output[0].get("count", 0)
-            sign_in = output[0].get("sign_in", 0)
+            total_sign_in = output[0].get("sign_in", 0)
+
+        # Host
+        host_sign_in = self.count(f"SELECT count(*) FROM ref_hosts WHERE id in ( {deployments} ) and sign_in_count > 0")
 
         return {
             "count": count,
-            "sign_in": sign_in,
+            "total_sign_in": total_sign_in,
+            "host_sign_in": host_sign_in,
         }
 
     def get_failure_slack_channel(self):
