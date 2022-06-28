@@ -52,6 +52,10 @@ class EphemeralStatistics(AirplaneTask):
             "average_deploy_time": {
                 "daily": self._get_avg_deploy_times(start_time=self.one_day_ago),
                 "weekly": self._get_avg_deploy_times(start_time=self.one_week_ago)
+            },
+            "audit_info": {
+                "daily": self._get_audit_info(start_time=self.one_day_ago),
+                "weekly": self._get_audit_info(start_time=self.one_week_ago)
             }
         }
 
@@ -131,6 +135,20 @@ class EphemeralStatistics(AirplaneTask):
         return {
             "initial": str(self._get_avg_from_query(start_time, "rank = 1")),
             "upgrades": str(self._get_avg_from_query(start_time, "rank != 1")),
+        }
+
+    def _get_audit_info(self, start_time):
+        count = 0
+        sign_in = 0
+        query = f"SELECT count(*), sum(sign_in_count) as sign_in FROM ref_hosts WHERE id in ( SELECT ref_host_id FROM deployments WHERE created_at > '{start_time}')"
+        output = self.invoke(query)
+        if output:
+            count = output[0].get("count", 0)
+            sign_in = output[0].get("sign_in", 0)
+
+        return {
+            "count": count,
+            "sign_in": sign_in,
         }
 
     def get_failure_slack_channel(self):
