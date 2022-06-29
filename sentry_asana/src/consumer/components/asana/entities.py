@@ -293,6 +293,7 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
     """Mapping of FE Services"""
     ALERTS_AND_ERRORS = '/alerts-and-errors/'
     ANALYSIS = '/analysis/'
+    API_TOKENS = '/api-tokens/'
     CLOUD_ACCOUNTS = '/cloud-accounts/'
     DATA_MODELS = '/data-models/'
     DATA_SCHEMAS = '/data-schemas/'
@@ -310,6 +311,9 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
 
 
 _TEAM_TO_FE_SERVICE: Dict[TEAM, List[FE_SERVICE]] = {
+    TEAM.ADOPTION: [
+        FE_SERVICE.API_TOKENS
+    ],
     TEAM.DETECTIONS: [
         FE_SERVICE.ANALYSIS,
         FE_SERVICE.DATA_MODELS,
