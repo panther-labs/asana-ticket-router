@@ -63,10 +63,11 @@ class AllCustomerAccountsInfo:
         return get_accounts_database().query().execute()
 
     @staticmethod
-    def get_notion_results() -> dict[str, AccountsDatabaseSchema]:
+    def get_notion_results(include_deprovisioned=True) -> dict[str, AccountsDatabaseSchema]:
         return {
             account.Fairytale_Name: account
-            for account in get_accounts_database().query().execute() if account.Fairytale_Name
+            for account in get_accounts_database().query().execute()
+            if (account.Fairytale_Name and (include_deprovisioned or not account.is_deprovision()))
         }
 
     @staticmethod

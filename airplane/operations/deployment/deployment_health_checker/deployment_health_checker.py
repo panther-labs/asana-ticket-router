@@ -8,7 +8,7 @@ from v2.pyshared.panther_version_util import to_semver
 class DeploymentHealthChecker(AirplaneTask):
 
     def __init__(self):
-        self.notion_entries = AllCustomerAccountsInfo().get_notion_results()
+        self.notion_entries = AllCustomerAccountsInfo().get_notion_results(include_deprovisioned=False)
 
     def _get_unfinished_airplane_creation_accounts(self):
         return [
@@ -47,11 +47,9 @@ class DeploymentHealthChecker(AirplaneTask):
         return inconsistencies
 
     def _get_latest_deployed_ga_version(self):
-        panther_versions = tuple((
-            to_semver(notion_entry.Actual_Version) for notion_entry in self.notion_entries.values() if
-            notion_entry.Actual_Version and
-            (HostedDeploymentGroup.is_hosted_deployment_group(notion_entry.Deploy_Group))
-        ))
+        panther_versions = tuple((to_semver(notion_entry.Actual_Version)
+                                  for notion_entry in self.notion_entries.values() if notion_entry.Actual_Version and (
+                                      HostedDeploymentGroup.is_hosted_deployment_group(notion_entry.Deploy_Group))))
         return max(panther_versions) if panther_versions else to_semver("0.0.0")
 
     def main(self, params):
