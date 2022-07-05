@@ -155,6 +155,7 @@ class EphemeralStatistics(AirplaneTask):
             "count": count,
             "total_sign_in": total_sign_in,
             "host_sign_in": host_sign_in,
+            "host_sign_in_human": f"{round(host_sign_in / count * 100, 4)}%",
         }
 
     def get_failure_slack_channel(self):
