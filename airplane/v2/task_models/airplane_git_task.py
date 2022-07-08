@@ -1,6 +1,6 @@
 from git import Repo
 from git import cmd as git_cmd
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from v2.consts.airplane_env import AirplaneEnv
 from v2.consts.github_repos import GithubRepo
@@ -122,7 +122,10 @@ class AirplaneGitTask(AirplaneTask):
         git_cmd.Git().pull('--rebase')
 
     @staticmethod
-    @retry(stop=stop_after_attempt(3), after=lambda _: AirplaneGitTask._git_pull_rebase(), reraise=True)
+    @retry(wait=wait_fixed(30),
+           stop=stop_after_attempt(3),
+           after=lambda _: AirplaneGitTask._git_pull_rebase(),
+           reraise=True)
     def _git_push() -> None:
         """
         Make up to 3 attempts to run 'git push' command. Run 'git pull --rebase' after each failed attempt.
