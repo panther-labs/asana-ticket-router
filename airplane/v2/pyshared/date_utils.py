@@ -1,8 +1,11 @@
 import pendulum
 
+_WEEK_DAY_FORMAT = 'dddd'
 _DATE_FORMAT = 'YYYY-MM-DD'
-_DATETIME_FORMAT = f"{_DATE_FORMAT} hh:mm A"
-_DATETIME_WITH_TZ_NAME_FORMAT = f"{_DATETIME_FORMAT} (zz)"
+_TIME_FORMAT = 'hh:mm A'
+_TIME_WITH_TZ_NAME_FORMAT = f'{_TIME_FORMAT} (zz)'
+_DATETIME_FORMAT = f"{_DATE_FORMAT} {_TIME_FORMAT}"
+_DATETIME_WITH_TZ_NAME_FORMAT = f"{_DATE_FORMAT} {_TIME_WITH_TZ_NAME_FORMAT}"
 
 
 class Timezone:
@@ -13,6 +16,10 @@ class Timezone:
 
 def to_date_str(date_obj: pendulum.Date) -> str:
     return date_obj.format(_DATE_FORMAT)
+
+
+def to_time_str(datetime_obj: pendulum.DateTime) -> str:
+    return datetime_obj.format(_TIME_WITH_TZ_NAME_FORMAT)
 
 
 def to_datetime_str(datetime_obj: pendulum.DateTime) -> str:
@@ -36,7 +43,7 @@ def get_today(tz: str = Timezone.LOCAL) -> pendulum.Date:
 
 
 def get_day_of_week_name(datetime_obj: pendulum.DateTime) -> str:
-    return datetime_obj.format("dddd")
+    return datetime_obj.format(_WEEK_DAY_FORMAT)
 
 
 def get_today_str(tz: str = Timezone.LOCAL) -> str:

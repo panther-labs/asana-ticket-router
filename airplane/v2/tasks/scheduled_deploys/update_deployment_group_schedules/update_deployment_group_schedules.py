@@ -1,7 +1,7 @@
 import re
 
 from v2.tasks.scheduled_deploys.shared import validate_deployment_version, validate_deployment_time, \
-    update_group_deployment_schedule
+    update_group_deployment_schedule, get_deployment_time_now
 from v2.consts.github_repos import GithubRepo
 from v2.pyshared.os_util import tmp_change_dir
 from v2.pyshared.yaml_utils import change_yaml_file
@@ -31,6 +31,9 @@ def get_group_deployment_time(params: dict, group_name: str) -> str:
 
     if date_key not in params or time_key not in params:
         raise AttributeError(f"Missing deployment date or time for deployment group '{group_name}'.")
+
+    if params[time_key] == "now":
+        params[time_key] = get_deployment_time_now()
 
     return f"{params[date_key]} {params[time_key]}"
 

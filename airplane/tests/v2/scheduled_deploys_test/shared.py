@@ -31,6 +31,11 @@ def past_time() -> str:
 
 
 @pytest.fixture
+def now() -> str:
+    return "now"
+
+
+@pytest.fixture
 def past_datetime() -> str:
     # 15 mins ago
     return to_datetime_str(get_now(tz=Timezone.PDT).subtract(minutes=15))

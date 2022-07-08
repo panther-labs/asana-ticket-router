@@ -15,8 +15,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -75,8 +75,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -135,8 +135,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -195,8 +195,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -255,8 +255,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -315,8 +315,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -375,8 +375,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -435,8 +435,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -495,8 +495,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -555,8 +555,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
@@ -615,8 +615,8 @@ parameters:
     type: shorttext
     required: false
     options:
-      - label: ""
-        value: "Now"
+      - label: "Now"
+        value: "now"
       - label: "06:00 AM (PDT)"
         value: "06:00 AM (PDT)"
       - label: "07:00 AM (PDT)"
