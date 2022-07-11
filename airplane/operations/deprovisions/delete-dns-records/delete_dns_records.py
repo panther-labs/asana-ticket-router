@@ -44,14 +44,18 @@ class DnsRecordRemover(AirplaneTask):
 
     def run(self, params):
         fairytale_name = params["fairytale_name"]
+        aws_account_id = AllCustomerAccountsInfo.get_notion_results()[fairytale_name].AWS_Account_ID
+        deprov_slack_msg = (f"Account {aws_account_id}/{fairytale_name} is being deprovisioned "
+                            f"(see {AirplaneEnv.get_task_run_url()}).\n\n"
+                            f"Requestor email: {AirplaneEnv.REQUESTOR_EMAIL}, team ID: {AirplaneEnv.AIRPLANE_TEAM_ID}")
+
+        # Send Jay Rosenthal a message for data-analytics-gathering purposes
+        jrosenthal_slack_id = "U037VGD4ZFC"
+        self.send_slack_message(channel_name=jrosenthal_slack_id, message=deprov_slack_msg)
+
         is_stack_deleted = self.delete_dns_records(organization=params["organization"], fairytale_name=fairytale_name)
         if is_stack_deleted:
-            aws_account_id = AllCustomerAccountsInfo.get_notion_results()[fairytale_name].AWS_Account_ID
-            self.send_slack_message(
-                channel_name="#security-alerts-high-pri",
-                message=f"Account {aws_account_id}/{fairytale_name} is being deprovisioned "
-                f"(see {AirplaneEnv.get_task_run_url()}).\n\n"
-                f"Requestor email: {AirplaneEnv.REQUESTOR_EMAIL}, team ID: {AirplaneEnv.AIRPLANE_TEAM_ID}")
+            self.send_slack_message(channel_name="#security-alerts-high-pri", message=deprov_slack_msg)
 
 
 def main(params):
