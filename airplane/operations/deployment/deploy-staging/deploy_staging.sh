@@ -14,12 +14,34 @@ check_if_published() {
     echo "Found latest ${VERSION_TYPE}: ${VERSION_STR}"
 }
 
+# https://jonlabelle.com/snippets/view/shell/compare-semver-versions-in-bash
+is_greater_version() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
+
+get_latest_version() {
+  LATEST_RC="${1}"
+  LATEST_GA="${2}"
+
+  # Trim latest RC to Major.Minor.Patch only
+  LATEST_RC_TRIMMED=$(echo "${LATEST_RC}" | cut -d "-" -f1)
+
+  # With latest RC trimmed, we can compare versions using 'sort -V'
+  if is_greater_version "${LATEST_RC_TRIMMED}" "${LATEST_GA}"; then
+    echo "${LATEST_RC}"
+  else
+    echo "Using latest GA version (${LATEST_GA}) for latest RC version (${LATEST_RC})">&2
+    echo "${LATEST_GA}"
+  fi
+}
+
 # Find latest artifacts
 LATEST_RC=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep RC | grep -v 'RC/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
 LATEST_GA=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep '[0-9]\+\.[0-9]\+\.[0-9]\+/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
 
 check_if_published "${LATEST_RC}" "RC"
 check_if_published "${LATEST_GA}" "GA"
+
+# If the latest GA is higher (newer) than the latest RC, use it, otherwise, keep RC as is
+LATEST_RC=$(get_latest_version "${LATEST_RC}" "${LATEST_GA}")
 
 update_version_in_repo() {
     REPO_NAME="${1}"
