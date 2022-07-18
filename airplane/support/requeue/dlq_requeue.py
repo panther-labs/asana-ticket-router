@@ -7,10 +7,10 @@ from pyshared.aws_creds import get_credentialed_client
 
 
 def main(params):
-    account_id = params["aws_account_id"]
-    from_queue = params["from_queue"]
-    to_queue = params.get("to_queue")
-    region = params["region"]
+    account_id = params["aws_account_id"].strip()
+    from_queue = params["from_queue"].strip()
+    to_queue = params.get("to_queue", "").strip()
+    region = params["region"].strip()
 
     client_kwargs = {
         "arns":
@@ -19,7 +19,7 @@ def main(params):
         "desc": "airplane_dlq"
     }
 
-    if to_queue is None:
+    if not to_queue:
         to_queue = get_to_queue(from_queue, client_kwargs)
         print(f"Using to_queue '{to_queue}'")
 
