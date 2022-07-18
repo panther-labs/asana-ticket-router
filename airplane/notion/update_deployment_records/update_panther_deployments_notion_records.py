@@ -1,6 +1,7 @@
 import datetime
 import pytz
 import urllib.parse
+from typing import Optional
 
 from notional import types as notional_types
 from notional.text import FullColor
@@ -9,7 +10,7 @@ from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.deployments_file import DeploymentsRepo
 from pyshared.git_ops import AirplaneMultiCloneGitTask
 from pyshared.notion_databases import are_text_objects_equal, create_date_time_value, create_rtf_value, \
-    get_display_rtf_value
+    get_accounts_database, get_display_rtf_value
 
 
 class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
@@ -19,11 +20,14 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
     def __init__(self):
         super().__init__(git_repos=(DeploymentsRepo.HOSTED, DeploymentsRepo.STAGING))
+        self.all_accounts: Optional[AllCustomerAccountsInfo] = None
+
+    def main(self, params):
+        self.add_missing_notion_entries()
+        # Only get all the accounts after missing accounts have been added
         self.all_accounts = AllCustomerAccountsInfo(hosted_deploy_dir=self.git_dirs[DeploymentsRepo.HOSTED],
                                                     staging_deploy_dir=self.git_dirs[DeploymentsRepo.STAGING],
                                                     test_roles=self.test_roles)
-
-    def main(self, params):
         self.set_ignored_notion_entries()
         self.update_notion_entries()
 
@@ -37,6 +41,22 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
                     print(f"Set {fairytale_name} to not be auto updated")
                     if not self.is_test_run():
                         notion_info.Account_Info_Auto_Updated = False
+
+    def add_missing_notion_entries(self):
+        """Useful if anyone accidentally deletes a row from the Notion DB - adds any accounts in GH not found in
+        Notion. This only adds the fairytale name and lets the rest of this task add the rest."""
+        deploy = {
+            **AllCustomerAccountsInfo.get_deploy_yml_accounts(self.git_dirs[DeploymentsRepo.HOSTED]),
+            **AllCustomerAccountsInfo.get_deploy_yml_accounts(self.git_dirs[DeploymentsRepo.STAGING])
+        }
+        notion = AllCustomerAccountsInfo.get_notion_results()
+        missing_names = set(deploy).difference(set(notion))
+        notion_db = get_accounts_database()
+
+        for fairytale_name in missing_names:
+            print(f"Adding missing account, '{fairytale_name}', to Notion")
+            if not self.is_test_run():
+                notion_db.create(Fairytale_Name=fairytale_name)
 
     def update_notion_entries(self):
         for account_info in self.all_accounts:
@@ -112,6 +132,16 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         return value
 
     @staticmethod
+    def get_org(account_info):
+        if account_info.github_repo == DeploymentsRepo.STAGING:
+            return "panther-root"
+
+        if account_info.deploy_yml_info["DeploymentType"].lower() == "cpaas":
+            return "customer"
+
+        return "panther-hosted-root"
+
+    @staticmethod
     def get_expected_customer_attributes(account_info):
         aws_account_id = account_info.dynamo_info.get("AWSConfiguration", {}).get("AccountId",
                                                                                   UpdateDeploymentRecords.IGNORE_FIELD)
@@ -123,6 +153,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
         role_name = f"PantherSupportRole-{region}"
         url_support_name = urllib.parse.quote(f"{company_name} Support")
+        email_domain = account_info.generated_yml_info.get('BaseRootEmail', 'panther.io').split("@")[1]
 
         expected_attrs = {
             "Account_Info_Auto_Updated":
@@ -131,14 +162,14 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             create_rtf_value(
                 text=company_name,
                 url=f"https://{account_info.dynamo_info['GithubCloudFormationParameters']['CustomDomain']}/sign-in"),
-            # Ignoring AWS_Organization
+            "AWS_Organization":
+            UpdateDeploymentRecords.get_org(account_info),
             # Ignoring Backend
             "Deploy_Group":
             UpdateDeploymentRecords.standardize_deploy_group(account_info.deploy_yml_info.get("DeploymentGroup")),
             # Ignoring Deploy Type
             "Email":
-            f"panther-hosted+{account_info.fairytale_name}@panther.io",
-
+            f"panther-hosted+{account_info.fairytale_name}@{email_domain}",
             # Ignoring Legacy_Stacks
             # Ignoring PoC
             "Region":
