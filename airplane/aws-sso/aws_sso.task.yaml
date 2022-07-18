@@ -1,0 +1,30 @@
+name: AWS SSO
+slug: aws_sso
+description: Request for AWS SSO
+parameters:
+- name: User ID
+  slug: user_id
+  type: shorttext
+  description: firstname.lastname
+- name: Account ID
+  slug: account_id
+  type: shorttext
+  description: AWS account ID
+- name: Permission Set
+  slug: permission_set
+  type: shorttext
+  description: Choose one valid permission sets from [panther-ops, panther-viewonly, panther-billing, panther-billingadmin, panther-readsfsecret]
+- name: Expiry Time
+  slug: expiry_time
+  type: shorttext
+  description: Time in hours from now. Valid values are [1,2,3,4]
+- name: Escalation Reason
+  slug: escalation_reason
+  type: longtext
+  description: Reason for perm escalation
+python:
+  entrypoint: aws_sso.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbWrite
+timeout: 3600
