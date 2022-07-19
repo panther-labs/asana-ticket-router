@@ -139,6 +139,9 @@ class SERVICE(Enum):
     # Fargate (any other region)
     COMPUTE_INTERNAL = ".compute.internal"
 
+    # CloudWatch Alarms
+    CW_ALARM_EFS = "Panther-EFSThroughput-fs-"
+
     # Lambdas
     ALARM_LOGGER = 'panther-alarm-logger'
     ALERTS_API = 'panther-alerts-api'
@@ -250,6 +253,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.ATHENA_ADMIN_API,
         SERVICE.ATHENA_API,
         SERVICE.COMPUTE_INTERNAL,
+        SERVICE.CW_ALARM_EFS,
         SERVICE.DATABASE_WORKFLOW,
         SERVICE.DATACATALOG_COMPACTOR,
         SERVICE.DATACATALOG_COMPACTOR_CALLBACKS,
