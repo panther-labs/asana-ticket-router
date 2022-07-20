@@ -140,7 +140,7 @@ class SERVICE(Enum):
     COMPUTE_INTERNAL = ".compute.internal"
 
     # CloudWatch Alarms
-    CW_ALARM_EFS = "Panther-EFSThroughput-fs-"
+    CW_ALARM_EFS = "Panther-EFS"
 
     # Lambdas
     ALARM_LOGGER = 'panther-alarm-logger'
