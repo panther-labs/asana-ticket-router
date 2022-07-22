@@ -5,7 +5,11 @@ check_if_published() {
     VERSION_STR="${1}"
     VERSION_TYPE="${2}"
 
-    PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-enterprise-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
+    if [ "$VERSION_TYPE" == "RC" ]; then
+        PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-internal-rc-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
+    else
+        PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-enterprise-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
+    fi
     if [ "${PUBLISH_TIME}" = "" ]; then
         echo "${VERSION_TYPE} ${VERSION_STR} publish is not complete"
         exit 1
@@ -34,7 +38,7 @@ get_latest_version() {
 }
 
 # Find latest artifacts
-LATEST_RC=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep RC | grep -v 'RC/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
+LATEST_RC=$(aws s3 ls s3://panther-internal-rc-us-west-2/v | awk '{ print $2 }' | grep RC | grep -v 'RC/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
 LATEST_GA=$(aws s3 ls s3://panther-enterprise-us-west-2/v | awk '{ print $2 }' | grep '[0-9]\+\.[0-9]\+\.[0-9]\+/' | sort -V | tail -n1 | awk -F '/' '{print $1}')
 
 check_if_published "${LATEST_RC}" "RC"
