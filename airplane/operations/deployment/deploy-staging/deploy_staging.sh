@@ -5,7 +5,7 @@ check_if_published() {
     VERSION_STR="${1}"
     VERSION_TYPE="${2}"
 
-    if [ "$VERSION_TYPE" == "RC" ]; then
+    if [ "$VERSION_TYPE" = "RC" ]; then
         PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-internal-rc-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
     else
         PUBLISH_TIME=$(TZ=UTC aws s3 ls s3://panther-enterprise-us-west-2/${VERSION_STR}/panther.yml | awk '{print $1"T"$2}')
