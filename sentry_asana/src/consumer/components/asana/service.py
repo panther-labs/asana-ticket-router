@@ -328,6 +328,7 @@ class AsanaService:
                 CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
                 CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
                 CUSTOMFIELD.TEAM.value: fields.assigned_team.team_id,
+                CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
             },
             'notes': notes
         }
