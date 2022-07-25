@@ -10,7 +10,7 @@ set -o errexit
 set -o pipefail
 
 # install pulumi-cli
-curl -fsSL https://get.pulumi.com | sh -s -- --version 3.33.2
+curl -fsSL https://get.pulumi.com | sh -s -- --version 3.35.2
 export PATH="/root/.pulumi/bin:$PATH"
 pulumi version
 pulumi whoami
@@ -20,7 +20,7 @@ python -m venv venv
 # activate venv
 source venv/bin/activate
 # install base python deps
-pip install pulumi==3.33.2 pulumi-aws==5.6.0
+pip install pulumi==3.35.2 pulumi-aws==5.9.2
 
 # run pulumi commands
 pulumi stack init --stack $STACK_NAME || echo "stack already exists"
