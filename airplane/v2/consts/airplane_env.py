@@ -3,7 +3,7 @@ import os
 
 class AirplaneEnv:
     AIRPLANE_BASE_URL = "https://app.airplane.dev"
-    AIRPLANE_ENV = os.getenv("AIRPLANE_ENV")
+    AIRPLANE_ENV_SLUG = os.getenv("AIRPLANE_ENV_SLUG")
     AIRPLANE_SCHEDULE_ID = os.getenv("AIRPLANE_SCHEDULE_ID")
     AIRPLANE_TASK_ID = os.getenv("AIRPLANE_TASK_ID")
     AIRPLANE_REQUESTER_EMAIL = os.getenv("AIRPLANE_REQUESTER_EMAIL")
@@ -19,7 +19,7 @@ class AirplaneEnv:
 
     @classmethod
     def is_prod_env(cls):
-        return cls.AIRPLANE_ENV == "prod"
+        return cls.AIRPLANE_ENV_SLUG == "prod"
 
     @classmethod
     def get_task_run_url(cls):
