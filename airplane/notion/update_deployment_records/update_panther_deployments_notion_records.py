@@ -106,10 +106,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
             notes = notes[after_name_index:]
             return notes.split(",")[0]
-        try:
-            return account_info.dynamo_info["CompanyDisplayName"]
-        except KeyError:
-            return account_info.deploy_yml_info["CloudFormationParameters"]["CompanyDisplayName"]
+        return account_info.dynamo_info["GithubCloudFormationParameters"]["CompanyDisplayName"]
 
     @staticmethod
     def get_notion_value(attr, account_info):
@@ -136,7 +133,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         if account_info.github_repo == DeploymentsRepo.STAGING:
             return "panther-root"
 
-        if account_info.deploy_yml_info["DeploymentType"].lower() == "cpaas":
+        if account_info.dynamo_info["DeploymentType"].lower() == "cpaas":
             return "customer"
 
         return "panther-hosted-root"
@@ -146,14 +143,14 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         aws_account_id = account_info.dynamo_info.get("AWSConfiguration", {}).get("AccountId",
                                                                                   UpdateDeploymentRecords.IGNORE_FIELD)
         company_name = UpdateDeploymentRecords.get_company_name(account_info)
-        region = account_info.dynamo_info['GithubConfiguration']['CustomerRegion']
+        region = account_info.dynamo_info["GithubConfiguration"]["CustomerRegion"]
         upgraded_time_utc = pytz.timezone("UTC").localize(
             datetime.datetime.strptime(account_info.dynamo_info["Updated"], "%Y-%m-%dT%H:%M:%S"))
         upgraded_time_pt = upgraded_time_utc.astimezone(pytz.timezone("US/Pacific"))
 
         role_name = f"PantherSupportRole-{region}"
         url_support_name = urllib.parse.quote(f"{company_name} Support")
-        email_domain = account_info.generated_yml_info.get('BaseRootEmail', 'panther.io').split("@")[1]
+        email_domain = account_info.dynamo_info["GithubConfiguration"]["BaseRootEmail"].split("@")[1]
 
         expected_attrs = {
             "Account_Info_Auto_Updated":

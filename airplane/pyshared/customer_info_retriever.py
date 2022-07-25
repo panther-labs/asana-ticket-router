@@ -14,10 +14,9 @@ STAGING_DEPLOYMENTS_METADATA = get_aws_const(const_name="STAGING_DEPLOYMENTS_MET
 
 class CustomerAccountInfo:
 
-    def __init__(self, fairytale_name: str, deploy_yml_info: dict, generated_yml_info: dict, dynamo_info: dict,
+    def __init__(self, fairytale_name: str, deploy_yml_info: dict, dynamo_info: dict,
                  notion_info: AccountsDatabaseSchema, github_repo: str):
         self.deploy_yml_info = deploy_yml_info
-        self.generated_yml_info = generated_yml_info
         self.dynamo_info = dynamo_info
         self.fairytale_name = fairytale_name
         self.notion_info = notion_info
@@ -32,22 +31,13 @@ class AllCustomerAccountsInfo:
                                                        test_roles=test_roles)
         self.notion_accounts = self.get_notion_results()
         self.deploy_yml_accounts = {}
-        self.generated_yml_accounts = {}
         if hosted_deploy_dir is not None:
             hosted_accounts = self.get_deploy_yml_accounts(hosted_deploy_dir)
             self.deploy_yml_accounts = {**self.deploy_yml_accounts, **hosted_accounts}
-            self.generated_yml_accounts = {
-                **self.get_deploy_yml_accounts(hosted_deploy_dir, get_generated=True),
-                **self.generated_yml_accounts
-            }
             self.hosted_account_names = list(hosted_accounts.keys())
         if staging_deploy_dir is not None:
             staging_accounts = self.get_deploy_yml_accounts(staging_deploy_dir)
             self.deploy_yml_accounts = {**self.deploy_yml_accounts, **staging_accounts}
-            self.generated_yml_accounts = {
-                **self.get_deploy_yml_accounts(staging_deploy_dir, get_generated=True),
-                **self.generated_yml_accounts
-            }
             self.staging_account_names = list(staging_accounts.keys())
         self.common_fairytale_names, self.uncommon_fairytale_names, self.missing_notion_updates = \
             self._get_common_and_uncommon_fairytale_names()
@@ -100,18 +90,16 @@ class AllCustomerAccountsInfo:
         return duplicate_fairytale_names
 
     @staticmethod
-    def get_deploy_yml_accounts(hosted_deploy_dir, get_generated=False) -> dict[str, dict]:
+    def get_deploy_yml_accounts(hosted_deploy_dir) -> dict[str, dict]:
         deploy_yml_accounts = {}
 
-        deploy_meta_dir = os.path.join(hosted_deploy_dir, "deployment-metadata")
-        yml_dir = os.path.join(deploy_meta_dir, "generated") if get_generated else os.path.join(
-            deploy_meta_dir, "deployment-targets")
+        targets_dir = os.path.join(hosted_deploy_dir, "deployment-metadata", "deployment-targets")
 
-        for customer_file in os.listdir(yml_dir):
+        for customer_file in os.listdir(targets_dir):
             if not customer_file.endswith(".yml"):
                 continue
             fairytale_name = os.path.splitext(customer_file)[0]
-            with open(os.path.join(yml_dir, customer_file), "r") as file_handler:
+            with open(os.path.join(targets_dir, customer_file), "r") as file_handler:
                 deploy_yml_accounts[fairytale_name] = yaml.safe_load(file_handler)
 
         return deploy_yml_accounts
@@ -135,7 +123,6 @@ class AllCustomerAccountsInfo:
         github_repo = DeploymentsRepo.HOSTED if fairytale_name in self.hosted_account_names else DeploymentsRepo.STAGING
         return CustomerAccountInfo(fairytale_name=fairytale_name,
                                    deploy_yml_info=self.deploy_yml_accounts[fairytale_name],
-                                   generated_yml_info=self.generated_yml_accounts[fairytale_name],
                                    dynamo_info=self.dynamo_accounts[fairytale_name],
                                    notion_info=self.notion_accounts[fairytale_name],
                                    github_repo=github_repo)
