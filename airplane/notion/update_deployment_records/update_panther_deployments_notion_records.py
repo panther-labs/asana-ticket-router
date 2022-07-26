@@ -163,7 +163,8 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             UpdateDeploymentRecords.get_org(account_info),
             # Ignoring Backend
             "Deploy_Group":
-            UpdateDeploymentRecords.standardize_deploy_group(account_info.deploy_yml_info.get("DeploymentGroup")),
+            UpdateDeploymentRecords.standardize_deploy_group(
+                account_info.dynamo_info["GithubConfiguration"].get("DeploymentGroup")),
             # Ignoring Deploy Type
             "Email":
             f"panther-hosted+{account_info.fairytale_name}@{email_domain}",
