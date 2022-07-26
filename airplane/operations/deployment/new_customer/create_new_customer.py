@@ -51,4 +51,4 @@ class NewCustomerCreator(AirplaneGitTask):
 
 
 def main(params):
-    return NewCustomerCreator(is_dry_run=AirplaneEnv.is_prod_env()).run(params)
+    return NewCustomerCreator(is_dry_run=(not AirplaneEnv.is_prod_env())).run(params)
