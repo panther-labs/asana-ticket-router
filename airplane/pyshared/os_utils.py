@@ -5,12 +5,17 @@ from contextlib import contextmanager
 
 @contextmanager
 def tmp_change_dir(change_dir):
-    old_dir = os.getcwd()
+    try:
+        old_dir = os.getcwd()
+    except FileNotFoundError:
+        old_dir = None
+
     os.chdir(change_dir)
     try:
         yield
     finally:
-        os.chdir(old_dir)
+        if old_dir is not None:
+            os.chdir(old_dir)
 
 
 def list_files(path):

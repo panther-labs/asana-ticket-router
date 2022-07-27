@@ -37,12 +37,17 @@ def write_to_file(filepath: str, text: str, is_append: bool = True) -> None:
 
 @contextmanager
 def tmp_change_dir(change_dir: str):
-    cur_dir = get_cwd()
+    try:
+        cur_dir = get_cwd()
+    except FileNotFoundError:
+        cur_dir = None
+
     os.chdir(change_dir)
     try:
         yield
     finally:
-        os.chdir(cur_dir)
+        if cur_dir is not None:
+            os.chdir(cur_dir)
 
 
 def load_py_file_as_module(filepath: str):

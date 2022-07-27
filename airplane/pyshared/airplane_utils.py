@@ -14,14 +14,9 @@ class AirplaneTask:
     test_roles = {}
 
     def __init__(self):
-        self.start_dir = os.getcwd()
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.task_dir = self.tmp_dir.name
         os.chdir(self.task_dir)
-
-    # TODO: Remove in near future
-    def __del__(self):
-        os.chdir(self.start_dir)
 
     @staticmethod
     def is_test_run():
