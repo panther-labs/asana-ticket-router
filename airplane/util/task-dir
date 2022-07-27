@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -eu
+
+START_DIR=$(pwd)
+TASK_DIR=${AIRPLANE_TASK_ID:-}
+
+cd_to_task_dir() {
+  if [ -n "${TASK_DIR}" ]; then
+    trap cleanup_task_dir EXIT
+    mkdir ${TASK_DIR}
+    cd ${TASK_DIR}
+  fi
+}
+
+cleanup_task_dir() {
+  cd ${START_DIR}
+  rm -rf ${TASK_DIR}
+}
+

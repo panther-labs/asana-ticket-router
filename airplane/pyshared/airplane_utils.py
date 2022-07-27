@@ -1,4 +1,5 @@
 import os
+import tempfile
 import traceback
 
 from v2.pyshared.aws_secrets import get_secret_value
@@ -11,6 +12,16 @@ from v2.consts.airplane_env import AirplaneEnv
 class AirplaneTask:
     AIRPLANE_BASE_URL = "https://app.airplane.dev"
     test_roles = {}
+
+    def __init__(self):
+        self.start_dir = os.getcwd()
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.task_dir = self.tmp_dir.name
+        os.chdir(self.task_dir)
+
+    # TODO: Remove in near future
+    def __del__(self):
+        os.chdir(self.start_dir)
 
     @staticmethod
     def is_test_run():

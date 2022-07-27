@@ -1,3 +1,5 @@
+import os
+import tempfile
 import traceback
 
 from slack_sdk import WebClient
@@ -13,6 +15,14 @@ class AirplaneTask:
         :param is_dry_run: Flag indicating a dry run
         """
         self.is_dry_run = is_dry_run
+        self.start_dir = os.getcwd()
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.task_dir = self.tmp_dir.name
+        os.chdir(self.task_dir)
+
+    # TODO: Remove in near future
+    def __del__(self):
+        os.chdir(self.start_dir)
 
     def run(self, params: dict) -> any:
         """
@@ -30,8 +40,7 @@ class AirplaneTask:
             if AirplaneEnv.is_prod_env():
                 self.send_slack_message(
                     channel_name=self.get_failure_slack_channel(),
-                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n```{traceback.format_exc()}```"
-                )
+                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n```{traceback.format_exc()}```")
             raise
 
     @staticmethod

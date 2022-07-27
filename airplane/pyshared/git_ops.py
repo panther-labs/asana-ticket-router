@@ -9,7 +9,9 @@ from pyshared.airplane_utils import AirplaneTask, is_local_run
 from pyshared.aws_secrets import get_secret_value
 from pyshared.os_utils import tmp_change_dir
 
-_UTIL_PATH = f"{os.path.dirname(__file__)}/../util"
+
+def _get_util_path():
+    return f"{os.path.dirname(__file__)}/../util"
 
 
 def _run_cmd(cmd: str) -> str:
@@ -20,15 +22,15 @@ def _run_cmd(cmd: str) -> str:
 
 
 def setup_github():
-    _run_cmd("util/setup-github")
+    _run_cmd(f"{_get_util_path()}/setup-github")
 
 
 def git_add(files: List[str]):
-    _run_cmd(f'{_UTIL_PATH}/git-add {" ".join(files)}')
+    _run_cmd(f'{_get_util_path()}/git-add {" ".join(files)}')
 
 
 def git_checkout(branch, create=False):
-    _run_cmd(f"BRANCH={branch} CREATE={str(create).lower()} {_UTIL_PATH}/git-checkout")
+    _run_cmd(f"BRANCH={branch} CREATE={str(create).lower()} {_get_util_path()}/git-checkout")
 
 
 def git_clone(repo, github_setup=False, existing_dir=None):
@@ -42,7 +44,7 @@ def git_clone(repo, github_setup=False, existing_dir=None):
     if github_setup:
         setup_github()
 
-    secret_name = _run_cmd(f"REPOSITORY={repo} {_UTIL_PATH}/get-deploy-key-secret-name").strip()
+    secret_name = _run_cmd(f"REPOSITORY={repo} {_get_util_path()}/get-deploy-key-secret-name").strip()
     with open(os.path.join(os.path.expanduser("~"), ".ssh", "id_github"), "w") as key_file:
         key_file.write(base64.b64decode(get_secret_value(secret_name=secret_name)).decode('ascii'))
     Repo.clone_from(url=f"git@github.com:panther-labs/{repo}", to_path=repo)
@@ -51,11 +53,11 @@ def git_clone(repo, github_setup=False, existing_dir=None):
 
 
 def git_commit(title, description=""):
-    _run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" {_UTIL_PATH}/git-commit')
+    _run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" {_get_util_path()}/git-commit')
 
 
 def git_push():
-    output = _run_cmd(f'TEST_RUN="false" {_UTIL_PATH}/git-push')
+    output = _run_cmd(f'TEST_RUN="false" {_get_util_path()}/git-push')
     if output:
         print(output)
 
@@ -78,11 +80,11 @@ def git_add_commit_push(files: List[str], title, description="", test_run=False)
 class AirplaneMultiCloneGitTask(AirplaneTask):
 
     def __init__(self, git_repos):
+        super().__init__()
         self.git_dirs = {
             repo: git_clone(repo=repo, github_setup=True, existing_dir=_get_existing_dir(repo))
             for repo in git_repos
         }
-        super().__init__()
 
     def main(self):
         raise NotImplementedError
@@ -91,8 +93,8 @@ class AirplaneMultiCloneGitTask(AirplaneTask):
 class AirplaneCloneGitTask(AirplaneTask):
 
     def __init__(self, params, git_repo):
-        self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=_get_existing_dir(git_repo))
         super().__init__()
+        self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=_get_existing_dir(git_repo))
 
     def main_within_cloned_dir(self):
         raise NotImplementedError
