@@ -29,6 +29,7 @@ class TEAM(Enum):
     INVESTIGATIONS = 'INVESTIGATIONS'
     OBSERVABILITY_PERF = 'OBSERVABILITY_PERF'
     PRODUCTIVITY = 'PRODUCTIVITY'
+    DEPLOYMENT = 'DEPLOYMENT'
     QUALITY = 'QUALITY'
     SECURITY_IT_COMPLIANCE = 'SECURITY_IT_COMPLIANCE'
 
@@ -103,6 +104,12 @@ ENG_TEAMS: Dict[TEAM, EngTeam] = {
         backlog_id='1201267919523628',
         sprint_portfolio_id='1201680804234034',
         sprint_portfolio_id_dev='1201700591175700'
+    ),
+    TEAM.DEPLOYMENT: EngTeam(
+        team_id='1202496475295943',
+        backlog_id='1202423273325597',
+        sprint_portfolio_id='1202671247671153',
+        sprint_portfolio_id_dev='1201700591175703'
     ),
     TEAM.QUALITY: EngTeam(
         team_id='1201305154831713',
