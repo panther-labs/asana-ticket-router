@@ -2,26 +2,37 @@ name: AWS SSO
 slug: aws_sso
 description: Request for AWS SSO
 parameters:
-- name: User ID
-  slug: user_id
-  type: shorttext
-  description: firstname.lastname
-- name: Account ID
+- name: AWS Account ID
   slug: account_id
   type: shorttext
-  description: AWS account ID
 - name: Permission Set
   slug: permission_set
   type: shorttext
-  description: Choose one valid permission sets from [panther-ops, panther-viewonly, panther-billing, panther-billingadmin, panther-readsfsecret]
-- name: Expiry Time
+  options:
+  - label: "Billing Admin"
+    value: panther-billingadmin
+  - label: "Billing View Only"
+    value: panther-billing
+  - label: "Data Admin"
+    value: panther-dataadmin
+  - label: "Deploy Admin"
+    value: panther-deployadmin
+  - label: "Ops"
+    value: panther-ops
+  - label: "Org Admin"
+    value: panther-orgadmin
+  - label: "Read SF Secret"
+    value: panther-readsfsecret
+  - label: "View Only"
+    value: panther-viewonly
+- name: Access Duration
   slug: expiry_time
   type: shorttext
-  description: Time in hours from now. Valid values are [1,2,3,4]
+  description: Time that access is required, valid values are 1 to 4 hours.
 - name: Escalation Reason
   slug: escalation_reason
   type: longtext
-  description: Reason for perm escalation
+  description: Reason that access to this permission set is required.
 python:
   entrypoint: aws_sso.py
   envVars:
