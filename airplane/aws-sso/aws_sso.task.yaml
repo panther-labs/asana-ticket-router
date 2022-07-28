@@ -39,3 +39,5 @@ python:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbWrite
 timeout: 3600
+requireRequests: true
+allowSelfApprovals: false

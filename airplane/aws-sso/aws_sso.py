@@ -1,10 +1,10 @@
-import os
+from v2.consts.airplane_env import AirplaneEnv
 from pyshared.dynamo_db import DynamoDbSearch, get_ddb_table
 from pyshared.date_utils import generate_utc_timestamp, generate_utc_expiry_timestamp
 
 
 def write_to_db(table, data_to_write):
-    extra_fields = {'user_id': os.getenv("AIRPLANE_REQUESTER_EMAIL"), 'request_time': generate_utc_timestamp(), 'request_status': 'NEW'}
+    extra_fields = {'user_id': AirplaneEnv.AIRPLANE_REQUESTER_EMAIL, 'request_time': generate_utc_timestamp(), 'request_status': 'NEW'}
     response = table.put_item(Item={**data_to_write, **extra_fields})
     return response
 
@@ -26,7 +26,7 @@ def check_valid_permission_set(permission_set):
 
 
 def check_valid_env_airplane_requestor_email():
-    if os.environ.get('AIRPLANE_REQUESTER_EMAIL') is None:
+    if AirplaneEnv.AIRPLANE_REQUESTER_EMAIL is None:
         raise ValueError(
             "AIRPLANE_REQUESTER_EMAIL environment variable not set, unable to complete task since no email address was supplied."
         )
