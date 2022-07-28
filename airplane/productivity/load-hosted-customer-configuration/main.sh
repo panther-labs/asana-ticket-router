@@ -5,6 +5,9 @@
 : "${PARAM_CUSTOMERID:?Expected CUSTOMERID param}"
 
 PATH=$PATH:util # For running airplane locally
+. util/task-dir
+cd_to_task_dir
+
 REPOSITORY=hosted-deployments git-clone
 
 echo "================================"

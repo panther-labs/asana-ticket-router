@@ -10,9 +10,9 @@ from pyshared.os_utils import tmp_change_dir
 from pyshared.yaml_utils import load_yaml_cfg, save_yaml_cfg
 
 REPOSITORY = "conduit-deployments"
-GREYNOISE_PARAM_FILE="greynoise_prod.yml"
-LOCAL_PARAM_FILE="test_cfn_params.yml"       # Used for testing/dry runs
-LOCAL_PARAM_TMPL="test_cfn_params.yml.tmpl"  # ditto
+GREYNOISE_PARAM_FILE = "greynoise_prod.yml"
+LOCAL_PARAM_FILE = "test_cfn_params.yml"  # Used for testing/dry runs
+LOCAL_PARAM_TMPL = "test_cfn_params.yml.tmpl"  # ditto
 
 # todo:
 # parameterize for Conduit staging runs
@@ -20,6 +20,7 @@ LOCAL_PARAM_TMPL="test_cfn_params.yml.tmpl"  # ditto
 # add handling for IpInfo (likely a separate script)
 # add handling for CPaaS/self-hosted customers (maybe not worth doing)
 # refactor to use library dry run resources
+
 
 def fetch_lambda_role_arn(aws_account_id: str, region: str) -> str:
     """Fetch the ARN of the role used by the target customer's
@@ -38,6 +39,7 @@ def fetch_lambda_role_arn(aws_account_id: str, region: str) -> str:
     lookup_lambda = client.get_function(FunctionName="panther-lookup-tables-api")
     return lookup_lambda["Configuration"]["Role"]
 
+
 def update_yaml_file(file_path, arn) -> None:
     """Update the specified Cfn parameter YAML file by adding the customer's
     role ARN to the list of full access GreyNoise ARNs
@@ -46,8 +48,7 @@ def update_yaml_file(file_path, arn) -> None:
         file_path: The path to the target YAML file
         arn: the ARN of the customer's role
     """
-    cfn_yaml = load_yaml_cfg(file_path,
-                             error_msg=f"GreyNoise parameter file not found: '{file_path}'")
+    cfn_yaml = load_yaml_cfg(file_path, error_msg=f"GreyNoise parameter file not found: '{file_path}'")
     current_arns = cfn_yaml["CloudFormationParameters"]["GreyNoiseFullAccessARNs"]
     print(f"Granting full GreyNoise access to the following role arn {arn}")
     if arn in current_arns:
@@ -55,6 +56,7 @@ def update_yaml_file(file_path, arn) -> None:
         sys.exit(1)
     cfn_yaml["CloudFormationParameters"]["GreyNoiseFullAccessARNs"].append(arn)
     save_yaml_cfg(cfg_filepath=file_path, cfg=cfn_yaml)
+
 
 def main(params: dict) -> dict:
     aws_account_id, region = params["aws_account_id"], params["region"]
@@ -70,14 +72,15 @@ def main(params: dict) -> dict:
             git_add_commit_push(files=[GREYNOISE_PARAM_FILE], title=commit_title, description='')
     else:
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        cfn_yaml_file = cfg_filepath=os.path.join(script_dir, LOCAL_PARAM_FILE)
-        cfn_yaml_tmpl = cfg_filepath=os.path.join(script_dir, LOCAL_PARAM_TMPL)
+        cfn_yaml_file = cfg_filepath = os.path.join(script_dir, LOCAL_PARAM_FILE)
+        cfn_yaml_tmpl = cfg_filepath = os.path.join(script_dir, LOCAL_PARAM_TMPL)
         # reset LOCAL_PARAM_FILE from LOCAL_PARAM_TMPL so that no one accidentally commits it to this repo
         if os.path.exists(LOCAL_PARAM_FILE):
             os.remove(LOCAL_PARAM_FILE)
         shutil.copy(cfn_yaml_tmpl, cfn_yaml_file)
         print(f"Processing the local test file {cfn_yaml_file}")
         update_yaml_file(cfn_yaml_file, role_arn)
+
 
 if __name__ == "__main__":
     # This input blob is for a customer dev account, which importantly lives under the hosted root account
@@ -88,5 +91,5 @@ if __name__ == "__main__":
         "aws_account_id": "135118505289",
         "region": "us-west-2",
         "dry_run": True
-        }
+    }
     main(test_params)

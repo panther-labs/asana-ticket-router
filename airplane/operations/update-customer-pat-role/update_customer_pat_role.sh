@@ -2,6 +2,9 @@
 # Linked to https://app.airplane.dev/t/update_customer_pat_role [do not edit this line]
 
 set -eu
+source util/task-dir
+cd_to_task_dir
+
 pip3 install cfn-lint PyYAML
 
 export REPOSITORY="hosted-aws-management"

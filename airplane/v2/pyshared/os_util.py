@@ -10,6 +10,13 @@ def get_cwd() -> str:
     return os.getcwd()
 
 
+def get_cwd() -> str:
+    """
+    :return: current working directory
+    """
+    return os.getcwd()
+
+
 def get_current_directory(__file__: str) -> str:
     """
     :param __file__: '__file__' attribute of the caller's script

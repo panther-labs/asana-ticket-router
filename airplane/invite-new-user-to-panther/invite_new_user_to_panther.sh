@@ -4,6 +4,8 @@
 set -eu
 
 PATH=$PATH:${PWD}/util # For running airplane locally
+source util/task-dir
+cd_to_task_dir
 
 fairytale_name="${PARAM_FAIRYTALE_NAME}"
 email_address="${PARAM_EMAIL_ADDRESS}"
