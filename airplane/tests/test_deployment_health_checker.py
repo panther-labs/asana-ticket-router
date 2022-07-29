@@ -171,6 +171,11 @@ def test_happy_path(airplane_session_id):
 
 @pytest.mark.manual_test
 def test_manual():
-    DeploymentHealthChecker.set_env_var_from_onepass_item(env_var_name="NOTION_AUTH_TOKEN",
-                                                          onepass_item_name="Notion - Productivity")
-    print(run_task({}))
+    try:
+        old_session_id = AirplaneEnv.AIRPLANE_SESSION_ID
+        AirplaneEnv.AIRPLANE_SESSION_ID = "fake_local_run_session_id"
+        DeploymentHealthChecker.set_env_var_from_onepass_item(env_var_name="NOTION_AUTH_TOKEN",
+                                                              onepass_item_name="Notion - Productivity")
+        print(run_task({}))
+    finally:
+        AirplaneEnv.AIRPLANE_SESSION_ID = old_session_id

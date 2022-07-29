@@ -1,5 +1,6 @@
 from pyshared.airplane_utils import AirplaneTask
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
+from pyshared.notion_databases import AccountsDatabaseSchema
 from v2.consts.depoyment_groups import HostedDeploymentGroup
 from v2.pyshared.date_utils import Timezone, get_day_of_week_name, get_today
 from v2.pyshared.panther_version_util import to_semver
@@ -36,8 +37,7 @@ class DeploymentHealthChecker(AirplaneTask):
         inconsistencies = []
 
         for fairytale_name, notion_info in self.notion_entries.items():
-            if not notion_info.Actual_Version or \
-                    (not HostedDeploymentGroup.is_hosted_deployment_group(notion_info.Deploy_Group)):
+            if not self._has_actual_version_and_hosted_deploy_group(notion_info):
                 continue
             version = to_semver(notion_info.Actual_Version)
             if (version.major != latest_deployed_ga_version.major) or (version.minor !=
@@ -48,9 +48,14 @@ class DeploymentHealthChecker(AirplaneTask):
 
     def _get_latest_deployed_ga_version(self):
         panther_versions = tuple((to_semver(notion_entry.Actual_Version)
-                                  for notion_entry in self.notion_entries.values() if notion_entry.Actual_Version and (
-                                      HostedDeploymentGroup.is_hosted_deployment_group(notion_entry.Deploy_Group))))
+                                  for notion_entry in self.notion_entries.values()
+                                  if self._has_actual_version_and_hosted_deploy_group(notion_entry)))
         return max(panther_versions) if panther_versions else to_semver("0.0.0")
+
+    @staticmethod
+    def _has_actual_version_and_hosted_deploy_group(notion_entry: AccountsDatabaseSchema):
+        return (notion_entry.Actual_Version and notion_entry.Deploy_Group
+                and HostedDeploymentGroup.is_hosted_deployment_group(notion_entry.Deploy_Group))
 
     def main(self, params):
         latest_deployed_ga_version = self._get_latest_deployed_ga_version()
