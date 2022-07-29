@@ -53,9 +53,6 @@ parameters:
   type: shorttext
   default: L
   description: Leave to default unless this instance is being created for some form of testing.
-  options:
-  - label: ""
-    value: L
 - name: First Name
   slug: first_name
   type: shorttext

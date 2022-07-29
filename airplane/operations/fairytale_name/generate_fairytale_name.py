@@ -21,4 +21,4 @@ class FairytaleNameGenerator(AirplaneTask):
 
 
 def main(params):
-    FairytaleNameGenerator().main(params)
+    return FairytaleNameGenerator().main(params)
