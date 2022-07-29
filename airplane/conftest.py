@@ -7,7 +7,6 @@ import pytest
 # Required before imports create logger with a separate level
 os.environ["LOG_LEVEL"] = os.getenv("LOG_LEVEL", str(logging.ERROR))
 
-from pyshared.airplane_utils import set_local_run
 from v2.consts.airplane_env import AirplaneEnv
 from v2.pyshared.airplane_logger import logger
 
@@ -43,7 +42,6 @@ def manual_test_suite_setup(manual_test_run):
     if not manual_test_run:
         return
     local_env = _import_local_env()
-    set_local_run()
     for repo_name in ("hosted-deployments", "staging-deployments"):
         os.environ[repo_name] = getattr(local_env, repo_name, os.path.join(local_env.repos_parent_dir, repo_name))
 

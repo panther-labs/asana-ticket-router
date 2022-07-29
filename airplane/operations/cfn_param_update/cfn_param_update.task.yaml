@@ -1,0 +1,23 @@
+name: CloudFormation Parameter Update
+slug: cfn_param_update
+description: Change a CloudFormation parameter for a customer and redeploy the customer to get that change
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: CFN Key Values List
+  slug: cfn_param_key_vals
+  description: |
+    Comma-separated key-values of CloudFormation parameters. It must be a CFN parameter - not something else, such as a
+    version update. If this is a fairly new parameter, the YAML checker might fail. In that case, verify the parameter 
+    exists [here](http://github.com/panther-labs/hosted-deployments/blob/832266d9459b326d8723bfd908df6f3a256b07a1/schemas/deployment-targets.yml#L15-L15),
+    
+    If it doesn't, create a PR similar to [this one](https://github.com/panther-labs/hosted-deployments/pull/1228/files#diff-cdff22894dfcfb8a2af0c3d0e8fd241459d39276b345ebba04a3592ee7da8136R53) 
+    
+    Example: MyFirstParam=hello world,MySecondParam=30,MyThirdParam=my:arn
+  type: shorttext
+  regex: '^(([^,]+=[^,]+),*)+$'
+python:
+  entrypoint: cfn_param_update.py
+requireRequests: true
+allowSelfApprovals: false

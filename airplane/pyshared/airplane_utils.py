@@ -81,7 +81,7 @@ def set_local_run():
 
 
 def is_local_run():
-    return os.environ.get("local_run", "") == "true"
+    return AirplaneEnv.is_local_env()
 
 
 def is_prod_env():
