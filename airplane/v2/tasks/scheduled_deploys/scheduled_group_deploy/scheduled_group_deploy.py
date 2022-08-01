@@ -1,5 +1,5 @@
 from v2.consts.airplane_env import AirplaneEnv
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.consts.github_repos import GithubRepo
 from v2.exceptions import UnpublishedPantherVersion
 from v2.pyshared.os_util import tmp_change_dir

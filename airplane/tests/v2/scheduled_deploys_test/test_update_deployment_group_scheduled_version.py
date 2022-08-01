@@ -1,5 +1,5 @@
 from tests.v2.scheduled_deploys_test.shared import *
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.tasks.scheduled_deploys.update_deployment_group_scheduled_version.update_deployment_group_scheduled_version import \
     UpdateDeploymentGroupScheduledVersion
 
@@ -61,11 +61,8 @@ class TestUpdateDeploymentGroups:
         for group in HostedDeploymentGroup.get_values():
             assert_group_was_updated(hosted_deployments_repo, group, deployment_files[group])
 
-    def test_update_all_without_v_prefix(self,
-                                         hosted_deployments_repo,
-                                         base_version,
-                                         valid_new_version_without_v_prefix,
-                                         valid_datetime):
+    def test_update_all_without_v_prefix(self, hosted_deployments_repo, base_version,
+                                         valid_new_version_without_v_prefix, valid_datetime):
         deployment_files = self._mock_deployment_files(hosted_deployments_repo, base_version, valid_datetime)
 
         params = self.get_params(hosted_deployments_repo, valid_new_version_without_v_prefix, {"all_groups": True})
@@ -120,4 +117,3 @@ class TestUpdateDeploymentGroups:
         expected_error_msg = "No deployment schedules were found for the requested groups. No changes will be made."
         with pytest.raises(ValueError, match=expected_error_msg):
             self._TASK.run(params)
-

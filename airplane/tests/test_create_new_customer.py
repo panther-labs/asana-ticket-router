@@ -32,7 +32,6 @@ def setup_mocks(manual_test_run, request):
                 "AirplaneGitTask.git_add_commit_and_push": None,
                 "generate_fairytale_name": "alpha-doe",
                 "load_yaml_cfg": generated_customer_file,
-                "pip_install_auto_scripts_requirements": None,
                 "tmp_change_dir": None,
         }.items():
             patch_obj = mock.patch(f"{create_new_customer.__name__}.{func_name}")
@@ -76,6 +75,13 @@ def test_domain_given(create_customer_metadata):
     main(params)
     cfg = _get_cfg_args(create_customer_metadata)
     assert cfg["customer_domain"] == "my-cool-domain"
+
+
+def test_invalid_deploy_group():
+    params = get_params()
+    params["deploy_group"] = "bad-deploy-group"
+    with pytest.raises(ValueError):
+        main(params)
 
 
 def test_outputs():

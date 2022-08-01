@@ -1,5 +1,5 @@
 from tests.v2.scheduled_deploys_test.shared import *
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.tasks.scheduled_deploys.cancel_deployment_group_schedules.cancel_deployment_group_schedules import \
     CancelDeploymentGroupSchedules
 

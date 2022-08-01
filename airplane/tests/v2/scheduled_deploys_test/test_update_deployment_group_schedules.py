@@ -1,7 +1,7 @@
 import re
 
 from tests.v2.scheduled_deploys_test.shared import *
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.tasks.scheduled_deploys.update_deployment_group_schedules.update_deployment_group_schedules import \
     UpdateDeploymentGroupSchedules
 
@@ -11,10 +11,7 @@ class TestUpdateDeploymentGroupSchedules:
 
     @staticmethod
     def get_params(repo_path: pathlib.Path, version: str, params_to_update: dict) -> dict:
-        params = {
-            "hosted_deployments_path": repo_path,
-            "deployment_version": version
-        }
+        params = {"hosted_deployments_path": repo_path, "deployment_version": version}
         params.update(params_to_update)
         return params
 
@@ -22,14 +19,13 @@ class TestUpdateDeploymentGroupSchedules:
         deployment_group_files = {}
         for group in HostedDeploymentGroup.get_values():
             deployment_group_files[group] = read_deployment_group_file(hosted_deployments_repo, group)
-        params = self.get_params(hosted_deployments_repo,
-                                 valid_new_version,
-                                 {
-                                     "group_a_deployment_date": valid_date,
-                                     "group_a_deployment_time": valid_time,
-                                     "group_legacy_sf_deployment_date": valid_date,
-                                     "group_legacy_sf_deployment_time": valid_time
-                                 })
+        params = self.get_params(
+            hosted_deployments_repo, valid_new_version, {
+                "group_a_deployment_date": valid_date,
+                "group_a_deployment_time": valid_time,
+                "group_legacy_sf_deployment_date": valid_date,
+                "group_legacy_sf_deployment_time": valid_time
+            })
 
         self._TASK.run(params)
 
@@ -43,23 +39,18 @@ class TestUpdateDeploymentGroupSchedules:
         for group in not_updated_groups:
             assert_group_was_not_updated(hosted_deployments_repo, group, deployment_group_files[group])
 
-    def test_happy_path_without_v_prefix(self,
-                                         hosted_deployments_repo,
-                                         base_version,
-                                         valid_new_version_without_v_prefix,
-                                         valid_date,
-                                         valid_time):
+    def test_happy_path_without_v_prefix(self, hosted_deployments_repo, base_version,
+                                         valid_new_version_without_v_prefix, valid_date, valid_time):
         deployment_group_files = {}
         for group in HostedDeploymentGroup.get_values():
             deployment_group_files[group] = read_deployment_group_file(hosted_deployments_repo, group)
-        params = self.get_params(hosted_deployments_repo,
-                                 valid_new_version_without_v_prefix,
-                                 {
-                                     "group_a_deployment_date": valid_date,
-                                     "group_a_deployment_time": valid_time,
-                                     "group_legacy_sf_deployment_date": valid_date,
-                                     "group_legacy_sf_deployment_time": valid_time
-                                 })
+        params = self.get_params(
+            hosted_deployments_repo, valid_new_version_without_v_prefix, {
+                "group_a_deployment_date": valid_date,
+                "group_a_deployment_time": valid_time,
+                "group_legacy_sf_deployment_date": valid_date,
+                "group_legacy_sf_deployment_time": valid_time
+            })
         self._TASK.run(params)
 
         # Groups A and Legacy-SF deployment schedules are updated
@@ -76,12 +67,10 @@ class TestUpdateDeploymentGroupSchedules:
         deployment_group_files = {}
         for group in HostedDeploymentGroup.get_values():
             deployment_group_files[group] = read_deployment_group_file(hosted_deployments_repo, group)
-        params = self.get_params(hosted_deployments_repo,
-                                 valid_new_version,
-                                 {
-                                     "group_a_deployment_date": valid_date,
-                                     "group_a_deployment_time": now,
-                                 })
+        params = self.get_params(hosted_deployments_repo, valid_new_version, {
+            "group_a_deployment_date": valid_date,
+            "group_a_deployment_time": now,
+        })
 
         self._TASK.run(params)
 
@@ -95,16 +84,13 @@ class TestUpdateDeploymentGroupSchedules:
         for group in not_updated_groups:
             assert_group_was_not_updated(hosted_deployments_repo, group, deployment_group_files[group])
 
-    def test_past_deployment_time(self,
-                                  hosted_deployments_repo,
-                                  base_version,
-                                  valid_new_version,
-                                  valid_date,
+    def test_past_deployment_time(self, hosted_deployments_repo, base_version, valid_new_version, valid_date,
                                   past_time):
         a_cfg = read_deployment_group_file(hosted_deployments_repo, HostedDeploymentGroup.A)
-        params = self.get_params(hosted_deployments_repo,
-                                 valid_new_version,
-                                 {"group_a_deployment_date": valid_date, "group_a_deployment_time": past_time})
+        params = self.get_params(hosted_deployments_repo, valid_new_version, {
+            "group_a_deployment_date": valid_date,
+            "group_a_deployment_time": past_time
+        })
 
         # Expected exception is raised
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': {valid_date} {past_time} is a past time."
@@ -116,9 +102,10 @@ class TestUpdateDeploymentGroupSchedules:
 
     def test_downgrade(self, hosted_deployments_repo, base_version, downgrade_version, valid_date, valid_time):
         a_cfg = read_deployment_group_file(hosted_deployments_repo, HostedDeploymentGroup.A)
-        params = self.get_params(hosted_deployments_repo,
-                                 downgrade_version,
-                                 {"group_a_deployment_date": valid_date, "group_a_deployment_time": valid_time})
+        params = self.get_params(hosted_deployments_repo, downgrade_version, {
+            "group_a_deployment_date": valid_date,
+            "group_a_deployment_time": valid_time
+        })
 
         # Expected exception is raised
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{downgrade_version}' is not a valid bump from '{base_version}'."
@@ -130,9 +117,10 @@ class TestUpdateDeploymentGroupSchedules:
 
     def test_invalid_bump(self, hosted_deployments_repo, base_version, invalid_bump, valid_date, valid_time):
         a_cfg = read_deployment_group_file(hosted_deployments_repo, HostedDeploymentGroup.A)
-        params = self.get_params(hosted_deployments_repo,
-                                 invalid_bump,
-                                 {"group_a_deployment_date": valid_date, "group_a_deployment_time": valid_time})
+        params = self.get_params(hosted_deployments_repo, invalid_bump, {
+            "group_a_deployment_date": valid_date,
+            "group_a_deployment_time": valid_time
+        })
 
         # Expected exception is raised
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{invalid_bump}' is not a valid bump from '{base_version}'."
@@ -144,9 +132,10 @@ class TestUpdateDeploymentGroupSchedules:
 
     def test_update_to_same_version(self, hosted_deployments_repo, base_version, valid_date, valid_time):
         a_cfg = read_deployment_group_file(hosted_deployments_repo, HostedDeploymentGroup.A)
-        params = self.get_params(hosted_deployments_repo,
-                                 base_version,
-                                 {"group_a_deployment_date": valid_date, "group_a_deployment_time": valid_time})
+        params = self.get_params(hosted_deployments_repo, base_version, {
+            "group_a_deployment_date": valid_date,
+            "group_a_deployment_time": valid_time
+        })
 
         # Expected exception is raised
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{base_version}' is not a valid bump from '{base_version}'."

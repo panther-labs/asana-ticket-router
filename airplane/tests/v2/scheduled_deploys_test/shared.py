@@ -4,7 +4,7 @@ import git
 import pytest
 import ruamel.yaml
 
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.pyshared.date_utils import get_today_str, to_datetime_str, get_now, Timezone
 from v2.pyshared.yaml_utils import change_yaml_file, load_yaml_cfg, get_top_level_comments
 from v2.tasks.scheduled_deploys.shared import update_group_deployment_schedule, contains_deployment_schedule

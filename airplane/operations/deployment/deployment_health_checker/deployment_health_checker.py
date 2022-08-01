@@ -1,7 +1,7 @@
 from pyshared.airplane_utils import AirplaneTask
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.notion_databases import AccountsDatabaseSchema
-from v2.consts.depoyment_groups import HostedDeploymentGroup
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.pyshared.date_utils import Timezone, get_day_of_week_name, get_today
 from v2.pyshared.panther_version_util import to_semver
 

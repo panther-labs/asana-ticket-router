@@ -1,11 +1,11 @@
 import os
-import sys
 
 from v2.task_models.airplane_git_task import AirplaneGitTask
 from v2.consts.airplane_env import AirplaneEnv
+from v2.consts.deployment_groups import HostedDeploymentGroup
 from v2.consts.github_repos import GithubRepo
 from v2.pyshared.deployments_file import create_customer_file, generate_fairytale_name, \
-    get_customer_deployment_filepath, get_deployment_metadata_dir, pip_install_auto_scripts_requirements
+    get_customer_deployment_filepath, get_deployment_metadata_dir
 from v2.pyshared.panther_version_util import get_version_from_template_url
 from v2.pyshared.os_util import tmp_change_dir
 from v2.pyshared.yaml_utils import load_yaml_cfg
@@ -41,6 +41,9 @@ class NewCustomerCreator(AirplaneGitTask):
         return get_version_from_template_url(template_url=cfg["PantherTemplateURL"])
 
     def run(self, params):
+        if not HostedDeploymentGroup.is_hosted_deployment_group(params["deploy_group"]):
+            raise ValueError(
+                f"Invalid deploy group of {params['deploy_group']}. Choose from {HostedDeploymentGroup.get_values()}")
         fairytale_name = create_customer_file(repo_path=self.deploys_path,
                                               customer_cfg=self._translate_params_to_customer_cfg(params))
         panther_version = self._get_customer_version(fairytale_name)
