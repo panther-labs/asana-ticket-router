@@ -25,3 +25,5 @@ Pulumi.dev*.yaml
 
 # pyenv
 .python-version
+
+**/.aws-sam

@@ -1,0 +1,11 @@
+version = 0.1
+
+[default]
+[default.build.parameters]
+[default.deploy.parameters]
+stack_name = "hosted-ops-lambdas"
+s3_bucket = "panther-hosted-ops-sam-artifacts"
+s3_prefix = "lambda"
+region = "us-west-2"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false

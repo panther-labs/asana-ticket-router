@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Hosted Ops CI
+
+Mappings:
+  Accounts:
+    HostedOps:
+      AccountId: 246537256134
+
+Resources:
+  DeployRCAndGALambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ReadDeploymentArtifacts
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - arn:aws:s3:::panther-enterprise-us-west-2*
+                  - arn:aws:s3:::panther-internal-rc-us-west-2*
+        - PolicyName: ReadAirplaneSecrets
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub
+                    - arn:aws:secretsmanager:us-west-2:${AccountId}:secret:airplane/*
+                    - AccountId: !FindInMap [ Accounts, HostedOps, AccountId ]
+
+  DeployRCAndGALambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: A cron lambda to deploy latest RC and GA versions to internal accounts
+      CodeUri: deploy_rc_and_ga/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      MemorySize: 256
+      Timeout: 900
+      Role: !GetAtt DeployRCAndGALambdaRole.Arn
+      Events:
+        RegularSchedule:
+          Type: Schedule
+          Properties:
+            # Every 5 minutes, 9am-3pm PDT, Mon-Fri
+            Schedule: cron(0/5 16-22 ? * MON-FRI *)
+        GAFridaysSchedule:
+          Type: Schedule
+          Properties:
+            Input: '{"is_demo_deployment": true}'
+            # Every 5 minutes, 3pm-4pm PDT on Mon-Fri
+            Schedule: cron(0/5 22-23 ? * MON-FRI *)
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:git:14
+
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: RC and GA deployments alarms
+      TopicName: rc-and-ga-deployments-alarms
+
+  DeployRCAndGALambdaAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref AlarmTopic
+      AlarmDescription: RC and GA deployments failure
+      AlarmName: rc-and-ga-deployments-failure
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DeployRCAndGALambda
+      EvaluationPeriods: 60
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Threshold: 1.0
+      Unit: Count
+      TreatMissingData: notBreaching
+
+  PagerDutySubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      # Deployment Team endpoint
+      Endpoint: https://events.pagerduty.com/integration/3bb41e5c1aeb4a01c0232cc056728ecd/enqueue
+      Protocol: "https"
+      RawMessageDelivery: false
+      TopicArn: !Ref AlarmTopic
