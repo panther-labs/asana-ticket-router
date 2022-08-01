@@ -51,7 +51,7 @@ class DeploymentStatistics(AirplaneTask):
         return options.get(time_range)
 
     def get_failure_slack_channel(self):
-        return "#triage-productivity"
+        return "#triage-deployment"
 
 
 def main(params):

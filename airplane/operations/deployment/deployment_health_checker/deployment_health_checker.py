@@ -69,7 +69,7 @@ class DeploymentHealthChecker(AirplaneTask):
         }
 
     def get_failure_slack_channel(self):
-        return "#triage-productivity"
+        return "#triage-deployment"
 
 
 def main(_):
