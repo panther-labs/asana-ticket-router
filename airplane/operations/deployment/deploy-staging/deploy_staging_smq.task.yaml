@@ -1,9 +1,0 @@
-name: Deploy latest RC and GA
-description: Deploys latest RC to staging and internal and latest GA to alpha
-slug: deploy_staging_smq
-shell:
-  entrypoint: deploy_staging.sh
-  envVars:
-    ECS_TASK_ROLE:
-      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DeploymentArtifacts
-timeout: 3600
