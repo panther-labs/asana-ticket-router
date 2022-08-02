@@ -207,6 +207,7 @@ class SERVICE(Enum):
     SNOWFLAKE_ADMIN_API = 'panther-snowflake-admin-api'
     SNOWFLAKE_API = 'panther-snowflake-api'
     SOURCE_API = 'panther-source-api'
+    SPLIT_IO_SDK = 'splitio'
     SYSTEM_STATUS = 'panther-system-status'
     TOKEN_AUTHORIZER = 'panther-token-authorizer'  # nosec
     USERS_API = 'panther-users-api'
@@ -290,6 +291,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.CFN_CUSTOM_RESOURCES,
         SERVICE.CFN_STACK_POLICY,
         SERVICE.OPS_TOOLS,
+        SERVICE.SPLIT_IO_SDK,
     ]
 }
 

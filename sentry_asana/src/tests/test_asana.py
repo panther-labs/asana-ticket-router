@@ -276,18 +276,30 @@ async def test_get_owning_team(container: AsanaContainer) -> None:
     """Test _get_owning_team"""
 
     service: AsanaService = container.asana_service()
-    team = service._get_owning_team(None, None)
+    team = service._get_owning_team(None, None, None, None)
     assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
 
-    team = service._get_owning_team(None, FE_SERVICE.DATA_SCHEMAS.value)
+    team = service._get_owning_team(None, FE_SERVICE.DATA_SCHEMAS.value, None, None)
     assert team is ENG_TEAMS[TEAM.INGESTION], 'Should route to INGESTION'
 
     team = service._get_owning_team(
-        SERVICE.DETECTIONS_ENGINE.value, None)
+        SERVICE.DETECTIONS_ENGINE.value, None, None, None)
     assert team is ENG_TEAMS[TEAM.DETECTIONS], 'Should route to DETECTIONS'
 
     team = service._get_owning_team(
-        SERVICE.ATHENA_ADMIN_API.value, FE_SERVICE.DATA_SCHEMAS.value)
+        SERVICE.ATHENA_ADMIN_API.value, FE_SERVICE.DATA_SCHEMAS.value, None, None)
+    assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
+
+    # Test new service tag.
+    team = service._get_owning_team(
+        None, None, SERVICE.ATHENA_ADMIN_API.value, None
+    )
+    assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
+
+    # Test team routing and preference order.
+    team = service._get_owning_team(
+        None, FE_SERVICE.DATA_SCHEMAS.value, None, TEAM.INVESTIGATIONS.value
+    )
     assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
 
 

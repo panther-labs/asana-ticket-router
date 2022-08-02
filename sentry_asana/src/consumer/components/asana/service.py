@@ -132,8 +132,10 @@ class AsanaService:
         priority = self._get_task_priority(level)
         environment = sentry_event['environment'].lower()
         assigned_team = self._get_owning_team(
-            tags.get('server_name', None),
-            tags.get('url', None)
+            server_name=tags.get('server_name', None),
+            url=tags.get('url', None),
+            service=tags.get('service', None),
+            team=tags.get('team', None),
         )
         project_gids = await self._get_project_ids(
             environment,
@@ -208,7 +210,7 @@ class AsanaService:
         prev_link = match.group(2)
         return prev_link
 
-    def _get_owning_team(self, server_name: Optional[str], url: Optional[str]) -> EngTeam:
+    def _get_owning_team(self, server_name: Optional[str], url: Optional[str], service: Optional[str], team: Optional[str]) -> EngTeam:
         """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
@@ -217,6 +219,17 @@ class AsanaService:
         The mappings of server_name to Asana team below is based on the assigning logic formerly in Sentry, seen here:
         https://sentry.io/settings/panther-labs/projects/panther-enterprise/ownership/
         """
+        # If they annotated a team, assign to that team; if that team is missing, try heuristics.
+        if team is not None:
+            try:
+                return ENG_TEAMS[TEAM[team]]
+            except KeyError:
+                pass
+
+        # service is just a new name for server_name, try it first, then try the old tag.
+        if service is not None:
+            return self._get_owning_team_from_service(service)
+
         # Prioritize ownership via the `server_name` tag
         if server_name is not None:
             return self._get_owning_team_from_service(server_name)
