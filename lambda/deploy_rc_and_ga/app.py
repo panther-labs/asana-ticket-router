@@ -1,10 +1,7 @@
 """
 Lambda function to deploy latest RC and GA versions
 """
-import os
-import sys
 import tempfile
-import importlib.util
 from functools import cmp_to_key
 
 import yaml
@@ -12,7 +9,8 @@ import boto3
 from botocore.exceptions import ClientError
 from semver import VersionInfo
 
-from git_util import git_clone, git_add_commit_and_push
+from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module
+from git_util import GitRepo
 
 
 class RC:
@@ -104,32 +102,20 @@ def get_latest_published_ga(bucket_name: str) -> VersionInfo or None:
             return version
 
 
-def load_py_file_as_module(filepath: str):
-    """
-    :param filepath: Absolute filepath
-    :return: Python module object
-    """
-    spec = importlib.util.spec_from_file_location("module.name", filepath)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
 def generate_and_lint_configs(repo_path: str) -> None:
-    automation_scripts_path = os.path.join(repo_path, "automation-scripts")
-    if automation_scripts_path not in sys.path:
-        sys.path.append(automation_scripts_path)
+    automation_scripts_path = join_paths(repo_path, "automation-scripts")
+    append_to_system_path(automation_scripts_path)
 
     # generate.py
     print("Generating configs")
-    generate_configs_path = os.path.join(automation_scripts_path, "generate.py")
-    module = load_py_file_as_module(filepath=generate_configs_path)
+    generate_configs_path = join_paths(automation_scripts_path, "generate.py")
+    module = load_py_file_as_module(generate_configs_path)
     module.generate_configs()
 
     # lint.py
     print("Linting configs")
-    lint_configs_path = os.path.join(automation_scripts_path, "lint.py")
-    module = load_py_file_as_module(filepath=lint_configs_path)
+    lint_configs_path = join_paths(automation_scripts_path, "lint.py")
+    module = load_py_file_as_module(lint_configs_path)
     module.run_checks()
 
 
@@ -137,40 +123,35 @@ def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> b
     return target_version.compare(current_version) == -1
 
 
-def upgrade_groups(repo_details: RepoDetails,
-                   rc_version: VersionInfo,
-                   ga_version: VersionInfo,
-                   is_demo_deployment: bool) -> None:
-    cur_dir = os.getcwd()
+def upgrade_groups(repo_details: RepoDetails, rc: VersionInfo, ga: VersionInfo, is_demo_deployment: bool) -> None:
+    current_dir = get_current_dir()
     with tempfile.TemporaryDirectory() as tmp_dir:
-        repo_path = git_clone(target_dir=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
-        os.chdir(repo_path)
-
+        repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
+        change_dir(repo.path)
         for group in repo_details.groups:
             if group.name == "demo" and not is_demo_deployment:
                 print("Skipping 'demo' group deployment")
                 continue
 
             print(f"Checking deployment group '{group.name}'")
-            config_file_path = f"deployment-metadata/deployment-groups/{group.name}.yml"
+            config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups", f"{group.name}.yml")
             with open(config_file_path, "r") as config_file:
                 config = yaml.load(config_file, Loader=yaml.FullLoader)
 
             current_semver = VersionInfo.parse(config["Version"].removeprefix("v"))
-            target_semver = rc_version if group.version == RC.VERSION else ga_version
+            target_semver = rc if group.version == RC.VERSION else ga
 
             if is_downgrade(current_semver, target_semver):
                 raise Exception(
-                    f"Attempting to downgrade from 'v{current_semver}' to 'v{target_semver}'. File: {repo_details.name}/{config_file_path}")
+                    f"Attempting to downgrade from 'v{current_semver}' to 'v{target_semver}'. File: {config_file_path}")
 
             config["Version"] = f"v{target_semver}"
             with open(config_file_path, "w") as config_file:
                 yaml.dump(config, config_file, sort_keys=False)
 
-        generate_and_lint_configs(repo_path)
-        git_add_commit_and_push(title="Upgrade to newest RC and GA versions")
-
-    os.chdir(cur_dir)
+        generate_and_lint_configs(repo.path)
+        repo.add_commit_and_push("Upgrade to newest RC and GA versions")
+    change_dir(current_dir)
 
 
 def lambda_handler(event, _):

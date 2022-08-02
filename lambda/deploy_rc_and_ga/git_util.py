@@ -1,4 +1,3 @@
-import os
 import json
 import base64
 
@@ -7,122 +6,100 @@ from git import Repo
 from git import cmd as git_cmd
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-
-def get_github_secret_name(repo_name: str) -> str or None:
-    if repo_name == "hosted-deployments":
-        return "airplane/hosted-deployments-deploy-key-base64"
-    if repo_name == "staging-deployments":
-        return "airplane/staging-deployments-deploy-key-base64"
+from os_util import join_paths, change_mode, run_cmd
 
 
-def _get_repo_ssh_key(repo_name: str) -> str:
-    client = boto3.client("secretsmanager")
-    secret_name = get_github_secret_name(repo_name)
-    response = json.loads(client.get_secret_value(SecretId=secret_name)["SecretString"])
-    secret_b64 = list(response.values())[0]
-    return base64.b64decode(secret_b64).decode('ascii')
+class GitRepo:
+    def __init__(self, path: str, repo_name: str, branch_name: str):
+        if not self._is_supported_repo(repo_name):
+            raise AttributeError(f"Repo '{repo_name}' isn't supported.")
+        self.name = repo_name
+        self.branch_name = branch_name
+        self.repo_url = f"git@github.com:panther-labs/{repo_name}.git"
+        self.path = join_paths(path, repo_name)
+        self._ssh_key_path = join_paths(path, 'id_rsa')
+        self._known_hosts_path = join_paths(path, 'known_hosts')
+        self._setup_auth()
+        self.repo = self._clone()
+        self._setup_github_user()
 
+    @staticmethod
+    def _is_supported_repo(repo_name: str) -> bool:
+        return repo_name in ["hosted-deployments", "staging-deployments"]
 
-def _setup_repo_ssh_key(target_dir: str, repo_name: str) -> None:
-    ssh_key = _get_repo_ssh_key(repo_name)
-    with open(f"{target_dir}/id_rsa", "w") as fileobj:
-        fileobj.write(ssh_key)
-    os.chmod(f"{target_dir}/id_rsa", 0o600)
-    os.system("ssh-keyscan -t rsa github.com | tee /tmp/known_hosts | ssh-keygen -lf -")
+    def _get_repo_ssh_key(self) -> str:
+        client = boto3.client("secretsmanager")
+        secret_name = f"airplane/{self.name}-deploy-key-base64"
+        response = json.loads(client.get_secret_value(SecretId=secret_name)["SecretString"])
+        secret_b64 = list(response.values())[0]
+        return base64.b64decode(secret_b64).decode('ascii')
 
+    def _setup_auth(self) -> None:
+        ssh_key = self._get_repo_ssh_key()
+        with open(self._ssh_key_path, "w") as fileobj:
+            fileobj.write(f"{ssh_key}\n")
+        change_mode(self._ssh_key_path, 0o600)
+        print(f"Saved an ssh key for '{self.name}' to: {self._ssh_key_path}")
+        run_cmd(f"ssh-keyscan github.com > {self._known_hosts_path}")
+        print(f"Added github.com to known hosts at: {self._known_hosts_path}")
 
-def git_clone(target_dir: str, repo_name: str, branch_name: str) -> str:
-    _setup_repo_ssh_key(target_dir, repo_name)
-    repo_path = f"{target_dir}/{repo_name}"
-    repo = Repo.clone_from(
-        url=f"git@github.com:panther-labs/{repo_name}.git",
-        branch=branch_name,
-        to_path=repo_path,
-        env={"GIT_SSH_COMMAND": f"ssh -o UserKnownHostsFile=/tmp/known_hosts -i {target_dir}/id_rsa"}
-    )
-    git_config = repo.config_writer()
-    git_config.set_value("user", "email", "github-service-account@runpanther.io")
-    git_config.set_value("user", "name", "panther-bot")
-    git_config.release()
-    return repo_path
+    def _clone(self) -> Repo:
+        print(f"Clonning repo to: {self.path}")
+        return Repo.clone_from(
+            url=self.repo_url,
+            branch=self.branch_name,
+            to_path=self.path,
+            env={"GIT_SSH_COMMAND": f"ssh -o UserKnownHostsFile={self._known_hosts_path} -i {self._ssh_key_path}"}
+        )
 
+    def _setup_github_user(self):
+        git_config = self.repo.config_writer()
+        git_config.set_value("user", "email", "github-service-account@runpanther.io")
+        git_config.set_value("user", "name", "panther-bot")
+        git_config.release()
 
-def _git_diff() -> str:
-    """
-    :return: 'git diff' output
-    """
-    return Repo().git.diff()
+    def _diff(self) -> str:
+        return self.repo.git.diff()
 
+    def _add(self, filepaths: list[str] = None) -> str:
+        if not filepaths:
+            filepaths = [self.path]
+        return self.repo.index.add(filepaths)
 
-def _git_add(filepaths: list[str] = None) -> None:
-    """
-    Run 'git add <filepaths>' command
-    :param filepaths: List of absolute paths of files to add. If None, use current directory - ["."]
-    :return: None
-    """
-    if not filepaths:
-        filepaths = ["."]
-    Repo().git.add(filepaths)
+    def _commit(self, title: str, description: str = "") -> None:
+        if description:
+            title = f"{title}\n\n{description}"
+        self.repo.index.commit(message=title)
 
+    @staticmethod
+    def _pull_rebase():
+        print("Running 'git pull --rebase'")
+        git_cmd.Git().pull('--rebase')
 
-def _git_commit(title: str, description: str = "") -> None:
-    """
-    Run 'git commit' command
-    :param title: Commit title
-    :param description: Commit description
-    :return: None
-    """
-    if description:
-        title = f"{title}\n\n{description}"
-    Repo().index.commit(message=title)
+    @retry(wait=wait_fixed(30), stop=stop_after_attempt(3), after=lambda _: GitRepo._pull_rebase(), reraise=True)
+    def _push(self) -> None:
+        self.repo.remote().push().raise_if_error()
 
+    def _get_remote_https_url(self):
+        if len(self.repo.remotes) != 1:
+            raise RuntimeError(
+                f"Repo '{self.name}' doesn't have exactly one remote. Actual number: {len(self.repo.remotes)}")
+        remote_ssh_url = self.repo.remotes[0].url
+        repo_path = remote_ssh_url.split(':')[1].removesuffix('.git')
+        return f"https://github.com/{repo_path}"
 
-def _git_pull_rebase():
-    print("Running 'git pull --rebase'")
-    git_cmd.Git().pull('--rebase')
+    def _get_latest_commit_url(self):
+        latest_commit_sha = self.repo.head.object.hexsha
+        return f"{self._get_remote_https_url()}/commit/{latest_commit_sha}"
 
+    def add_commit_and_push(self, title: str, description: str = "", filepaths: list[str] = None) -> None:
+        if not self._diff():
+            print("Git diff: no changes. No files will be committed.")
+            return
 
-@retry(wait=wait_fixed(30), stop=stop_after_attempt(3), after=lambda _: _git_pull_rebase(), reraise=True)
-def _git_push() -> None:
-    """
-    Make up to 3 attempts to run 'git push' command. Run 'git pull --rebase' after each failed attempt.
-    :return: None
-    """
-    Repo().remote().push().raise_if_error()
-
-
-def _get_remote_https_url():
-    repo = Repo()
-    repo_name = repo.working_dir.split("/")[-1]
-    if len(repo.remotes) != 1:
-        raise RuntimeError(
-            f"Repo '{repo_name}' doesn't have exactly one remote. Actual number: {len(repo.remotes)}")
-    remote_ssh_url = repo.remotes[0].url
-    repo_path = remote_ssh_url.split(':')[1].removesuffix('.git')
-    return f"https://github.com/{repo_path}"
-
-
-def _get_latest_commit_url():
-    latest_commit_sha = Repo().head.object.hexsha
-    return f"{_get_remote_https_url()}/commit/{latest_commit_sha}"
-
-
-def git_add_commit_and_push(title: str, description: str = "", filepaths: list[str] = None) -> None:
-    """
-    If file changes were made, the method adds, commits, and pushes the files to a repo in a single run.
-    The method must be called from within the repo directory.
-    :param title: Commit title
-    :param description: Commit description
-    :param filepaths: Filepaths to commit
-    :return: None
-    """
-    diff = _git_diff()
-    if not diff:
-        print("Git diff: no changes. No files will be committed.")
-        return
-
-    print(diff.replace("\n", "\r"))
-    _git_add(filepaths)
-    _git_commit(title, description)
-    _git_push()
-    print(f"Pushed a new commit: {_get_latest_commit_url()}")
+        print(self._diff().replace("\n", "\r"))
+        added_files = self._add(filepaths)
+        print(f"Added following files: {added_files}")
+        self._commit(title, description)
+        self._push()
+        print(f"Pushed a new commit: {self._get_latest_commit_url()}")
