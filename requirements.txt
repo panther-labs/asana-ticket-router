@@ -12,3 +12,4 @@ aiohttp==3.8.1
 boto3==1.24.2
 boto3-stubs[sqs,secretsmanager]==1.24.2
 dependency-injector[yaml]==4.39.1
+dataclass-wizard
