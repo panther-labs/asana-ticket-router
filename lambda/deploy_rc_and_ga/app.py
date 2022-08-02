@@ -11,6 +11,7 @@ from semver import VersionInfo
 
 from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module
 from git_util import GitRepo
+from time_util import hours_passed_from_now
 
 
 class RC:
@@ -53,6 +54,12 @@ class DeploymentDetails:
         [
             DeploymentGroup("internal", RC.VERSION),
             DeploymentGroup("alpha", GA.VERSION),
+        ]
+    )
+    DEMO = RepoDetails(
+        "hosted-deployments",
+        "master",
+        [
             DeploymentGroup("demo", GA.VERSION)
         ]
     )
@@ -88,10 +95,17 @@ def is_published(version: VersionInfo, bucket_name: str) -> bool:
         return False
 
 
+def get_version_age_in_hours(version: VersionInfo, bucket_name: str) -> int:
+    client = boto3.client('s3')
+    response = client.get_object(Bucket=bucket_name, Key=f'v{version}/panther.yml')
+    return hours_passed_from_now(response["LastModified"])
+
+
 def get_latest_published_rc(bucket_name: str) -> VersionInfo or None:
     available_versions = get_available_versions(bucket_name)
     for version in available_versions:
         if not is_ga_version(version) and is_published(version, bucket_name):
+            print(f"Latest published RC: v{version}")
             return version
 
 
@@ -99,7 +113,20 @@ def get_latest_published_ga(bucket_name: str) -> VersionInfo or None:
     available_versions = get_available_versions(bucket_name)
     for version in available_versions:
         if is_ga_version(version) and is_published(version, bucket_name):
+            print(f"Latest published GA: v{version}")
             return version
+
+
+def get_stable_ga(bucket_name: str, min_version_age_in_hours: int) -> VersionInfo or None:
+    available_versions = get_available_versions(bucket_name)
+    for version in available_versions:
+        if is_ga_version(version) and is_published(version, bucket_name):
+            version_age_in_hours = get_version_age_in_hours(version, bucket_name)
+            if version_age_in_hours < min_version_age_in_hours:
+                print(f"Skipping GA version 'v{version}' as it's only {version_age_in_hours} hours old")
+            else:
+                print(f"Latest stable GA: v{version} ({version_age_in_hours} hours old)")
+                return version
 
 
 def generate_and_lint_configs(repo_path: str) -> None:
@@ -123,16 +150,12 @@ def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> b
     return target_version.compare(current_version) == -1
 
 
-def upgrade_groups(repo_details: RepoDetails, rc: VersionInfo, ga: VersionInfo, is_demo_deployment: bool) -> None:
+def upgrade_groups(repo_details: RepoDetails, rc: VersionInfo, ga: VersionInfo) -> None:
     current_dir = get_current_dir()
     with tempfile.TemporaryDirectory() as tmp_dir:
         repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
         change_dir(repo.path)
         for group in repo_details.groups:
-            if group.name == "demo" and not is_demo_deployment:
-                print("Skipping 'demo' group deployment")
-                continue
-
             print(f"Checking deployment group '{group.name}'")
             config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups", f"{group.name}.yml")
             with open(config_file_path, "r") as config_file:
@@ -150,25 +173,31 @@ def upgrade_groups(repo_details: RepoDetails, rc: VersionInfo, ga: VersionInfo, 
                 yaml.dump(config, config_file, sort_keys=False)
 
         generate_and_lint_configs(repo.path)
-        repo.add_commit_and_push("Upgrade to newest RC and GA versions")
+        filepaths_to_add = [
+            join_paths(repo.path, "deployment-metadata", "deployment-groups"),
+            join_paths(repo.path, "deployment-metadata", "generated")
+        ]
+        repo.add_commit_and_push(title="Upgrade to newest RC and GA versions", filepaths=filepaths_to_add)
     change_dir(current_dir)
 
 
 def lambda_handler(event, _):
     latest_rc = get_latest_published_rc(RC.BUCKET)
-    print(f"Latest RC: {latest_rc}")
 
-    latest_ga = get_latest_published_ga(GA.BUCKET)
-    print(f"Latest GA: {latest_ga}")
+    if event.get("is_demo_deployment", False):
+        latest_ga = get_stable_ga(GA.BUCKET, min_version_age_in_hours=48)
 
-    # If the latest GA is higher (newer) than the latest RC, use it, otherwise, keep RC as is
-    if latest_ga.compare(latest_rc) == 1:
-        print(f"Using latest GA '{latest_ga}' as RC version")
-        latest_rc = latest_ga
+        upgrade_groups(repo_details=DeploymentDetails.DEMO, rc=latest_rc, ga=latest_ga)
+    else:
+        latest_ga = get_latest_published_ga(GA.BUCKET)
 
-    is_demo_deployment = event.get("is_demo_deployment", False)
-    upgrade_groups(DeploymentDetails.HOSTED, latest_rc, latest_ga, is_demo_deployment)
-    upgrade_groups(DeploymentDetails.STAGING, latest_rc, latest_ga, is_demo_deployment)
+        # If the latest GA is higher (newer) than the latest RC, use it, otherwise, keep RC as is
+        if latest_ga.compare(latest_rc) == 1:
+            print(f"Using latest GA 'v{latest_ga}' as RC version")
+            latest_rc = latest_ga
+
+        upgrade_groups(repo_details=DeploymentDetails.HOSTED, rc=latest_rc, ga=latest_ga)
+        upgrade_groups(repo_details=DeploymentDetails.STAGING, rc=latest_rc, ga=latest_ga)
 
     event["latest_rc"] = str(latest_rc)
     event["latest_ga"] = str(latest_ga)
