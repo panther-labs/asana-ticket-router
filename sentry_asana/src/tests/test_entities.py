@@ -23,6 +23,6 @@ from ..common.components.entities.containers import EntitiesContainer
 def container_with_mock() -> EntitiesContainer:
   return EntitiesContainer(logger=LoggerContainer().logger)
 
-def test_TeamsServiceInit(container_with_mock: EntitiesContainer):
+def test_TeamsServiceInit(container_with_mock: EntitiesContainer) -> None:
   teams_service = container_with_mock.teams_service()
   assert teams_service.DefaultService() != []
