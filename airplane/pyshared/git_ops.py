@@ -101,13 +101,17 @@ class AirplaneCloneGitTask(AirplaneTask):
 
     def main(self):
         with tmp_change_dir(change_dir=self.git_dir):
-            self.main_within_cloned_dir()
+            return self.main_within_cloned_dir()
 
 
 class AirplaneModifyGitTask(AirplaneCloneGitTask):
 
     def get_git_title(self):
         raise NotImplementedError
+
+    @staticmethod
+    def get_git_description(self):
+        return ""
 
     def change_files(self) -> List[str]:
         """Will be called between a git clone and a git push, and execution of this function will take place within the
@@ -123,4 +127,7 @@ class AirplaneModifyGitTask(AirplaneCloneGitTask):
     def main_within_cloned_dir(self):
         """Make a change to files in a repo then commit them (if the environment is staging or prod)."""
         modified_files = self.change_files()
-        git_add_commit_push(files=modified_files, title=self.get_git_title(), test_run=self.is_test_run())
+        return git_add_commit_push(files=modified_files,
+                                   title=self.get_git_title(),
+                                   description=self.get_git_description(),
+                                   test_run=self.is_test_run())

@@ -1,6 +1,6 @@
-name: CloudFormation Parameter Update
-slug: cfn_param_update
-description: Change a CloudFormation parameter for a customer and redeploy the customer to get that change
+name: CloudFormation Parameter Update View Only
+slug: cfn_param_update_view_only
+description: Change a CloudFormation parameter for a customer and view the changes.
 parameters:
 - name: Fairytale Name
   slug: fairytale_name
@@ -18,6 +18,6 @@ parameters:
   type: shorttext
   regex: '^(([^,]+=[^,]+),*)+$'
 python:
-  entrypoint: cfn_param_update.py
-requireRequests: true
+  entrypoint: cfn_param_update_view_only.py
+requireRequests: false
 allowSelfApprovals: false
