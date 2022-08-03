@@ -59,14 +59,14 @@ Resources:
         RegularSchedule:
           Type: Schedule
           Properties:
-            # Every 5 minutes, 9am-3pm PDT, Mon-Fri
-            Schedule: cron(0/5 16-22 ? * MON-FRI *)
+            # Every 5 minutes, 9am-4pm PDT, Mon-Fri
+            Schedule: cron(0/5 16-23 ? * MON-FRI *)
         GAFridaysSchedule:
           Type: Schedule
           Properties:
             Input: '{"is_demo_deployment": true}'
-            # Every 5 minutes, 3pm-4pm PDT on Fri
-            Schedule: cron(0/5 22-23 ? * FRI *)
+            # Every 15 minutes, 2am-3am PDT on Tue-Fri
+            Schedule: cron(0/15 9-10 ? * TUE-FRI *)
       Layers:
         - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:git:14
 
