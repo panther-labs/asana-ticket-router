@@ -13,7 +13,9 @@ class AirplaneTask:
     AIRPLANE_BASE_URL = "https://app.airplane.dev"
     test_roles = {}
 
-    def __init__(self):
+    def __init__(self, api_use_only=False):
+        if api_use_only and not AirplaneEnv.is_api_user_execution():
+            raise RuntimeError("This Airplane task is only executable by the airplane API!")
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.task_dir = self.tmp_dir.name
         os.chdir(self.task_dir)

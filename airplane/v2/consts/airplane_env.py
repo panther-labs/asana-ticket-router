@@ -24,3 +24,7 @@ class AirplaneEnv:
     @classmethod
     def get_task_run_url(cls):
         return os.path.join(cls.AIRPLANE_BASE_URL, "runs", cls.AIRPLANE_RUN_ID)
+
+    @classmethod
+    def is_api_user_execution(cls):
+        return "service-user" in cls.AIRPLANE_RUNNER_EMAIL
