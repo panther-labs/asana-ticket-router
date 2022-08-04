@@ -23,33 +23,44 @@ class ValidatorService:
         hmac: Callable[..., HMAC],
         # returns private instance, so we have to use Any
         digest: Callable[..., Any],
-        key: str
+        sentry_key: str,
+        datadog_key: str
     ) -> None:
         self._loop = loop
         self._logger = logger
         self._development = development
         self._hmac = hmac
         self._digest = digest
-        self._key = key
+        self._sentry_key = sentry_key
+        self._datadog_key = datadog_key
 
-    async def validate(self, message: str, signature: str) -> bool:
-        """Get the secret specified by the environment"""
+    async def validate_sentry(self, message: str, signature: str) -> bool:
+        """Validate Sentry signature"""
         if self._development is True:
             self._logger.warning(
                 "Development mode enabled, skipping signature validation")
             return True
 
-        hashed = await self.hash(message)
+        hashed = await self.hash(self._sentry_key, message)
         self._logger.debug("Validating signature %s == %s", signature, hashed)
         return signature == hashed
 
-    async def hash(self, message: str) -> str:
+    async def validate_datadog(self, signature: str) -> bool:
+        """Validate Datadog signature"""
+        if self._development is True:
+            self._logger.warning(
+                "Development mode enabled, skipping signature validation")
+            return True
+
+        return signature == self._datadog_key
+
+    async def hash(self, key:str, message: str) -> str:
         """Hash a message with a given key"""
         hashed = await self._loop().run_in_executor(
             None,
             partial(
                 self._hmac,
-                key=self._key.encode('utf-8'),
+                key=key.encode('utf-8'),
                 msg=message.encode('utf-8'),
                 digestmod=self._digest
             )

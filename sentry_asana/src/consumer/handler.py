@@ -12,10 +12,12 @@ from typing import Dict, Any, List, Union, Callable
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
+from consumer.components.datadog.service import DatadogService
 from consumer.components.sentry.service import SentryService
 from consumer.components.requests.containers import RequestsContainer
 from consumer.components.asana.service import AsanaService
 from consumer.components.application import ApplicationContainer
+from consumer.components.asana.entities import AsanaFields
 
 # Initialize in global state so Lambda can use on hot invocations
 app = ApplicationContainer()
@@ -95,6 +97,85 @@ async def main(
 @ inject
 async def process(
     record: Dict,
+    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service]
+) -> Dict[str, Union[bool, str]]:
+
+    """Inspect the payload and process as Sentry or Datadog Alert Event"""
+    log = logger.get()
+    message_id = record['messageId']
+    try:
+        message_attributes: Dict = record['messageAttributes']
+        alert_type: str = message_attributes.get('AlertType', {}).get('stringValue', '')
+        if alert_type not in ['SENTRY', 'DATADOG']:
+            raise ValueError(f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.')
+
+        if alert_type == 'SENTRY':
+            return await process_sentry_alert(record)
+
+        if alert_type == 'DATADOG':
+            return await process_datadog_alert(record)
+
+        log.error(f'Failed to identify alert type and link alert ({message_id}) with asana task.')
+        return {
+            'success': False,
+            'message': f'Failed to identify alert type and link alert ({message_id}) with asana task.',
+            'message_id': message_id
+        }
+
+    # Catch all other exceptions and return a bad status to retry the record.
+    # pylint: disable=broad-except
+    except Exception as err:
+        # NOTE: Logging an 'exception' doesn't cause CloudWatch alarm to alert.
+        #
+        # This is intentional as we don't want to be notified for ANY exception.
+        # Failed alerts will be retried and put in a DLQ where we WILL get alerted
+        # and the log statements will help with debugging.
+        log.exception(err)
+        return {
+            'success': False,
+            'message': f'{str(err)}\n{traceback.format_exc()}',
+            'message_id': message_id
+        }
+
+
+@inject
+async def process_datadog_alert(
+    record: Dict,
+    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
+    serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
+    datadog: DatadogService = Provide[ApplicationContainer.datadog_container.container.datadog_service],
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service]
+) -> Dict[str, Union[bool, str]]:
+    """Process a Datadog event and create an Asana Task"""
+
+    log = logger.get()
+
+    body: str = record['body']
+    message_id: str = record['messageId']
+    try:
+        datadog_event: Dict = serializer.parse(body)
+        log.info(f'Parsed the following Datadog Event: {datadog_event}')
+
+        asana_fields: AsanaFields = await asana.extract_datadog_fields(datadog_event)
+        log.info(f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}')
+
+        datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
+        log.info(f'Got the following fields back from get_event_details call: {datadog_event_details}')
+
+        return {
+            'success': True,
+            'message': 'Processed an alert from Datadog and did absolutely nothing.',
+            'message_id': message_id
+        }
+    except Exception as err:
+        raise err
+
+
+
+
+@ inject
+async def process_sentry_alert(
+    record: Dict,
     logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
     serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
     sentry: SentryService = Provide[ApplicationContainer.sentry_container.sentry_service],
@@ -103,10 +184,13 @@ async def process(
     """Process a Sentry event and create an Asana Task"""
 
     log = logger.get()
+
     body: str = record['body']
     message_id: str = record['messageId']
     try:
+
         sentry_event: Dict = serializer.parse(body)
+
         data: Dict = sentry_event['data']
         event: Dict = data['event']
         issue_id: str = event['issue_id']
@@ -131,7 +215,8 @@ async def process(
             root_asana_link = asana_link
 
         # Next, create a new asana task
-        new_task_gid = await asana.create_task(event, root_asana_link, asana_link)
+        asana_fields: AsanaFields = await asana.extract_sentry_fields(event)
+        new_task_gid = await asana.create_task(asana_fields, root_asana_link, asana_link)
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)
@@ -143,24 +228,11 @@ async def process(
                 'message_id': message_id
             }
 
-        log.error('Linking failed!')
+        log.error(f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})')
         return {
             'success': False,
             'message': f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})',
             'message_id': message_id
         }
-
-    # Catch all other exceptions and return a bad status to retry the record.
-    # pylint: disable=broad-except
     except Exception as err:
-        # NOTE: Logging an 'exception' doesn't cause CloudWatch alarm to alert.
-        #
-        # This is intentional as we don't want to be notified for ANY exception.
-        # Failed alerts will be retried and put in a DLQ where we WILL get alerted
-        # and the log statements will help with debugging.
-        log.exception(err)
-        return {
-            'success': False,
-            'message': f'{str(err)}\n{traceback.format_exc()}',
-            'message_id': message_id
-        }
+        raise err

@@ -21,7 +21,7 @@ class QueueService:
         self._client = client
         self._queue_url = queue_url
 
-    async def put(self, message: str) -> SendMessageResultTypeDef:
+    async def put(self, message: str, alert_type: str) -> SendMessageResultTypeDef:
         """Put a message onto a queue"""
         self._logger.info("Sending to queue")
         return await self._loop().run_in_executor(
@@ -30,5 +30,11 @@ class QueueService:
                 self._client.send_message,
                 QueueUrl=self._queue_url,
                 MessageBody=message,
+                MessageAttributes={
+                    'AlertType': {
+                        'StringValue': alert_type,
+                        'DataType': 'String'
+                    }
+                }
             )
         )

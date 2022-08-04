@@ -97,13 +97,12 @@ class AsanaService:
 
     async def create_task(
             self,
-            sentry_event: Dict,
+            asana_fields: AsanaFields,
             root_asana_link: Optional[str],
             prev_asana_link: Optional[str]
     ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task"""
         self._logger.info('Constructing an asana task')
-        asana_fields = await self._extract_fields(sentry_event)
         notes = self._create_task_note(
             asana_fields,
             root_asana_link,
@@ -113,7 +112,63 @@ class AsanaService:
         response = await self._create_asana_task(task_body)
         return response['gid']
 
-    async def _extract_fields(
+    async def extract_datadog_fields(
+        self,
+        datadog_event: Dict
+    ) -> AsanaFields:
+        """Extract relevent fields from the datadog event"""
+        self._logger.debug('Extracting fields')
+        url = datadog_event['link']
+
+        tags = {}
+        for tag in datadog_event['tags'].split(','):
+            key: str = tag
+            value: str = ''
+
+            if ':' in tag:
+                key = tag.split(':')[0]
+                value = tag.split(':')[1]
+
+            tags[key] = value
+
+        aws_region = tags.get('region', 'Unknown')
+        aws_account_id = tags.get('aws_account', 'Unknown')
+        customer = tags.get('customer_name', 'Unknown')
+        display_name = parse.quote(customer)
+        event_datetime = datetime.fromtimestamp(int(datadog_event['date'])/1000).strftime('%Y-%m-%dT%H:%M:%S')
+        title = datadog_event['title']
+        level = datadog_event['level'].lower()
+        priority = self._get_task_priority(level)
+        environment = tags.get('env', 'Unknown').lower()
+        assigned_team = self._get_owning_team(
+            server_name=tags.get('functionname', None),
+            url=tags.get('url', None),
+            service=tags.get('service', None),
+            team=tags.get('team', None),
+        )
+        project_gids = await self._get_project_ids(
+            environment,
+            level,
+            assigned_team
+        )
+        runbook_url = RUNBOOK_URL
+        return AsanaFields(
+            assigned_team=assigned_team,
+            aws_account_id=aws_account_id,
+            aws_region=aws_region,
+            customer=customer,
+            display_name=display_name,
+            environment=environment,
+            event_datetime=event_datetime,
+            priority=priority,
+            project_gids=project_gids,
+            runbook_url=runbook_url,
+            tags=tags,
+            title=title,
+            url=url,
+        )
+
+    async def extract_sentry_fields(
         self,
         sentry_event: Dict
     ) -> AsanaFields:

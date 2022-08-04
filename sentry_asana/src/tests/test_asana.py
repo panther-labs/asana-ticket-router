@@ -310,7 +310,7 @@ async def test_extract_fields(container: AsanaContainer) -> None:
     service: AsanaService = container.asana_service()
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
-    fields = await service._extract_fields(data['data']['event'])
+    fields = await service.extract_sentry_fields(data['data']['event'])
 
     assert fields == AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
@@ -424,7 +424,9 @@ async def test_create_task(container: AsanaContainer) -> None:
     service: AsanaService = container.asana_service()
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
-    response = await service.create_task(data['data']['event'], None, None)
+
+    asana_fields: AsanaFields = await service.extract_sentry_fields(data['data']['event'])
+    response = await service.create_task(asana_fields, None, None)
     assert response == 'new_project_gid'
 
 

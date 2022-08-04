@@ -44,20 +44,33 @@ async def main(
 ) -> Dict[str, int]:
     """Main async program"""
     log = logger.get()
-
     # Using Lambda Proxy Integration, the body in the event of lambda
     # is a stringified payload of the original request, not JSON.
     #
     # NOTE: When debugging, make sure you stringify the 'body' payload in
     # the request to the lambda
+
     body: str = event.get('body', '')
     headers: Dict = event.get('headers', {})
-    signature: str = headers.get('sentry-hook-signature', '')
 
-    valid = await validator.validate(body, signature)
+    sentry_signature: str = headers.get('sentry-hook-signature', '')
+    datadog_signature: str = headers.get('datadog-secret-token', '')
+
+    alert_type: str = ''
+    valid: bool = False
+    if sentry_signature:
+        alert_type = 'SENTRY'
+        valid = await validator.validate_sentry(body, sentry_signature)
+    elif datadog_signature:
+        alert_type = 'DATADOG'
+        valid = await validator.validate_datadog(datadog_signature)
+
+    if not alert_type:
+        raise ValueError('Request missing sentry-hook-signature or datadog-secret-token headers.')
+
     if not valid:
-        raise ValueError('Signature mismatch')
+        raise ValueError(f'{alert_type} webhook payload signature mismatch')
 
-    response = await queue.put(body)
+    response = await queue.put(body, alert_type)
     log.info("Success!")
     return response

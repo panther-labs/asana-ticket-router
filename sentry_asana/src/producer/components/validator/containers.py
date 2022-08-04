@@ -16,6 +16,9 @@ from . import service
 sentry_client_secret: Callable[[Dict],
                                str] = lambda keys: keys['SENTRY_CLIENT_SECRET']
 
+datadog_secret_token: Callable[[Dict],
+                               str] = lambda keys: keys['DATADOG_SECRET_TOKEN']
+
 
 class ValidatorContainer(containers.DeclarativeContainer):
     """Validator Container"""
@@ -37,5 +40,6 @@ class ValidatorContainer(containers.DeclarativeContainer):
         development=development,
         hmac=hmac.new,
         digest=sha256,
-        key=providers.Resource(sentry_client_secret, keys)
+        sentry_key=providers.Resource(sentry_client_secret, keys),
+        datadog_key=providers.Resource(datadog_secret_token, keys)
     )
