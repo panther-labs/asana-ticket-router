@@ -59,9 +59,9 @@ Resources:
         RegularSchedule:
           Type: Schedule
           Properties:
-            # Every 5 minutes, 9am-4pm PDT, Mon-Fri
-            Schedule: cron(0/5 16-23 ? * MON-FRI *)
-        GAFridaysSchedule:
+            # Every 5 minutes, 6am-4pm PDT, Mon-Fri
+            Schedule: cron(0/5 13-23 ? * MON-FRI *)
+        DemoSchedule:
           Type: Schedule
           Properties:
             Input: '{"is_demo_deployment": true}'
