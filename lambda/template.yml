@@ -59,8 +59,8 @@ Resources:
         RegularSchedule:
           Type: Schedule
           Properties:
-            # Every 5 minutes, 6am-4pm PDT, Mon-Fri
-            Schedule: cron(0/5 13-23 ? * MON-FRI *)
+            # Every 5 minutes, 1am-4pm PDT, Mon-Fri
+            Schedule: cron(0/5 8-23 ? * MON-FRI *)
         DemoSchedule:
           Type: Schedule
           Properties:
@@ -100,8 +100,8 @@ Resources:
   PagerDutySubscription:
     Type: AWS::SNS::Subscription
     Properties:
-      # Deployment Team endpoint
-      Endpoint: https://events.pagerduty.com/integration/3bb41e5c1aeb4a01c0232cc056728ecd/enqueue
+      # Deployment - Working Hours endpoint
+      Endpoint: https://events.pagerduty.com/integration/8ebdad11dc9f480bc0c33f8972eef906/enqueue
       Protocol: "https"
       RawMessageDelivery: false
       TopicArn: !Ref AlarmTopic
