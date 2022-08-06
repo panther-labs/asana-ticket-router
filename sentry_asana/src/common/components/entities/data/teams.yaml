@@ -1,25 +1,169 @@
-# Teams.yaml is a list of engineering teams.
-# The data model is:
-# ---
-# teams:
-#  'Observability':
-#    email: "team-platform-observability@panther.io"
-#    # Your team ID in Asana
-#    AsanaTeamId: "1201305154831712"
-#    # The ID of your backlog project
-#    AsanaBacklogId: "1201267919523642"
-#    # The ID of your current Sprint project.
-#    AsanaSprintId: "1201680804234024"
+# Teams.yaml configures teams, as well as entity ownership.
+# -
+#  name: "YOUR_TEAM_NAME HERE"
+#  # The ID of your Asana backlog project; we route low-tickets into this project.
+#  AsanaBacklogId: "12345"
+#  # The ID of your Asana Sprint portfolio; we route important tickets into your current sprint, and we need this to figure out what your current sprint is.
+#  AsanaSprintPortfolioId: "12345"
+#  # The ID of your Asana Team, we need this to assign tickets properly.
+#  AsanaTeamId: "12345"
+#  # The Entities your team is responsible for; don't worry this has its own documentation
+#  Entities: [
+#    Tags: ['some', 'list:of', 'tags'], # This defines one group of entities you own.
+#    Tags: ['another', 'list', 'of', 'tags:andvalues'], # This defines another group of entities you own.
+#  ]
+
+# Common "How Do I's?":
+# Q: I just want to match my lambda function? How?
+# A: Tags: ["service:<YOUR_LAMBDA_NAME"] should match your lambda function with no fuss.
+# Q: I want to get tickets for frontend errors, how?
+# A: Tags: ["url:/your_url_path"] should match urls in similar fashion to the previous system.
 
 ---
-- 
-  # Your team name
-  name: "Observability"
-  # Your team's contact email.
-  Email: "team-platform-observability@panther.io"
-  # Your team's ID in Asana
-  AsanaTeamId: "1201305154831712"
-  # The ID of your backlog project
-  AsanaBacklogId: "1201267919523642"
-  # The ID of your current Sprint project.
-  AsanaSprintId: "1201680804234024"
+-
+  name: "Adoption"
+  AsanaBacklogId: '1201267919523621'
+  AsanaSprintPortfolioId: '1201675315244004'
+  AsanaTeamId: '1201305154831714'
+  Entities: [
+    Tags: ["service:panther-apitoken-authorizer"],
+    Tags: ["service:panther-cn-router"],
+    Tags: ["service:panther-graph-api"],
+    Tags: ["service:panther-metrics-api"],
+    Tags: ["service:panther-organization-api"],
+    Tags: ["service:panther-token-authorizer"],
+    Tags: ["service:panther-users-api"],
+    Tags: ["url:/api-tokens/"],
+  ]
+-
+  name: "Data Platform"
+  AsanaBacklogId: '1201282881828563'
+  AsanaSprintPortfolioId: '1201680779826585'
+  AsanaTeamId: '1201305154831715'
+  Entities: []
+-
+  name: "Detections"
+  AsanaBacklogId: '1200908948600035'
+  AsanaSprintPortfolioId: '1201675315243996'
+  AsanaTeamId: '1199906290951721'
+  Entities: [
+    Tags: ["service:panther-analysis-api"],
+    Tags: ["service:panther-aws-event-processor"],
+    Tags: ["service:panther-cloudsecurity-datalake-forwarder"],
+    Tags: ["service:panther-compliance-api"],
+    Tags: ["service:panther-detections-engine"],
+    Tags: ["service:panther-layer-manager"],
+    Tags: ["service:panther-pip-layer-builder"],
+    Tags: ["service:panther-policy-engine"],
+    Tags: ["service:panther-python-executor-tests"],
+    Tags: ["service:panther-replay-api"],
+    Tags: ["service:panther-replay-detections-engine"],
+    Tags: ["service:panther-replay-log-pusher"],
+    Tags: ["service:panther-replay-results-api"],
+    Tags: ["service:panther-replay-results-processor"],
+    Tags: ["service:panther-reports-api"],
+    Tags: ["service:panther-reports-processor"],
+    Tags: ["service:panther-resources-api"],
+    Tags: ["service:panther-resource-processor"],
+    Tags: ["service:panther-rules-engine"],
+    Tags: ["service:panther-slow-rule-detector"],
+    Tags: ["url:/analysis/"],
+    Tags: ["url:/data-models/"],
+    Tags: ["url:/destinations/"],
+    Tags: ["url:/detections/"],
+    Tags: ["url:/helpers/"],
+    Tags: ["url:/overview/"],
+    Tags: ["url:/resources/"],
+  ]
+-
+  name: "Ingestion"
+  AsanaBacklogId: '1200908948600021'
+  AsanaSprintPortfolioId: '1201675315243992'
+  AsanaTeamId: '1199906290951709'
+  Entities: [
+    Tags: ["service:panther-cloud-puller"],
+    Tags: ["service:panther-data-archiver"],
+    Tags: ["service:panther-holding-tank"],
+    Tags: ["service:panther-logtypes-api"],
+    Tags: ["service:panther-log-processor"],
+    Tags: ["service:panther-log-puller"],
+    Tags: ["service:panther-log-router"],
+    Tags: ["service:panther-message-forwarder"],
+    Tags: ["service:panther-snapshot-pollers"],
+    Tags: ["service:panther-snapshot-scheduler"],
+    Tags: ["service:panther-source-api"],
+    Tags: ["service:panther-system-status"],
+    Tags: ["service:panther-rbac-datalake-sync"],
+    Tags: ["url:/cloud-accounts/"],
+    Tags: ["url:/data-schemas/"],
+    Tags: ["url:/log-sources/"],
+  ]
+-
+  name: "Investigations"
+  AsanaBacklogId: '1200908948600028'
+  AsanaSprintPortfolioId: '1201675315244000'
+  AsanaTeamId: '1199906290951706'
+  Entities: [
+    Tags: ["service:panther-alerts-api"],
+    Tags: ["service:panther-alerts-migration"],
+    Tags: ["service:panther-alert-delivery-api"],
+    Tags: ["service:panther-athena-admin-api"],
+    Tags: ["service:panther-athena-api"],
+    Tags: ["service:.compute.internal"],
+    Tags: ["service:Panther-EFS"],
+    Tags: ["service:panther-database-workflow"],
+    Tags: ["service:panther-datacatalog-compactor"],
+    Tags: ["service:panther-datacatalog-compactor-callbacks"],
+    Tags: ["service:panther-datacatalog-compactor-reaper"],
+    Tags: ["service:panther-datacatalog-updater"],
+    Tags: ["service:.ec2.internal"],
+    Tags: ["service:panther-greynoise-processor"],
+    Tags: ["service:panther-log-alert-forwarder"],
+    Tags: ["service:panther-lookup-tables-api"],
+    Tags: ["service:panther-outputs-api"],
+    Tags: ["service:panther-snowflake-admin-api"],
+    Tags: ["service:panther-snowflake-api"],
+    Tags: ["url:/alerts-and-errors/"],
+    Tags: ["url:/enrichment/"],
+    Tags: ["url:/explorer/"],
+    Tags: ["url:/indicator-search/"],
+    Tags: ["url:/query-history/"],
+    Tags: ["url:/saved-queries/"],
+  ]
+-
+  name: "Observability and Performance"
+  AsanaBacklogId: '1201267919523642'
+  AsanaSprintPortfolioId: '1201680804234024'
+  AsanaTeamId: '1201305154831712'
+  Entities: [
+    Tags: ["service:panther-alarm-logger"],
+  ]
+-
+  name: "Productivity"
+  AsanaBacklogId: '1201267919523628'
+  AsanaSprintPortfolioId: '1201680804234034'
+  AsanaTeamId: '1201305154831711'
+  Entities: [
+    Tags: ["service:panther-cfn-custom-resources"],
+    Tags: ["service:panther-cfn-stack-policy"],
+    Tags: ["service:panther-ops-tools"],
+    Tags: ["service:splitio"],
+  ]
+-
+  name: "Deployment"
+  AsanaBacklogId: '1202423273325597'
+  AsanaSprintPortfolioId: '1202671247671153'
+  AsanaTeamId: '1202496475295943'
+  Entities: []
+-
+  name: "Quality"
+  AsanaBacklogId: '1201267919523635'
+  AsanaSprintPortfolioId: '1201680804234029'
+  AsanaTeamId: '1201305154831713'
+  Entities: []
+-
+  name: "Security, IT, and Compliance"
+  AsanaBacklogId: '1200908948600049'
+  AsanaSprintPortfolioId: '1201680804234039'
+  AsanaTeamId: '1200813282274945'
+  Entities: []

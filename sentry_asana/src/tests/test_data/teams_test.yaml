@@ -4,27 +4,26 @@
   Email: "team-platform-observability@panther.io"
   AsanaTeamId: "1201305154831712"
   AsanaBacklogId: "1201267919523642"
-  AsanaSprintId: "1201680804234024"
-  Entities:
-    - type: "EntityMatcher"
-      Tags: []
+  AsanaSprintPortfolioId: "1201680804234024"
+  Entities: [
+    Tags: [],
+  ]
 -
   name: "TestTeam"
   Email: "some-test-email@example.org"
   AsanaTeamId: "12345"
   AsanaBacklogId: "12345"
-  AsanaSprintId: "12345"
-  Entities:
-    - type: "EntityMatcher"
-      Tags: ['service:panther-lambda-func']
+  AsanaSprintPortfolioId: "12345"
+  Entities: [
+    Tags: ['service:panther-lambda-func'],
+  ]
 -
   name: "OtherTeam"
   Email: "...."
   AsanaTeamId: "12345"
   AsanaBacklogId: "12345"
-  AsanaSprintId: "12345"
-  Entities:
-    - type: "EntityMatcher"
-      Tags: ['region:us-east-2', 'platform:snowflake']
-    - type: "EntityMatcher"
-      Tags: ['team:foo']
+  AsanaSprintPortfolioId: "12345"
+  Entities: [
+    Tags: ['region:us-east-2', 'platform:snowflake'],
+    Tags: ['team:foo'],
+  ]

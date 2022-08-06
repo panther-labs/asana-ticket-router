@@ -13,14 +13,11 @@ def team_data_file() -> io.StringIO:
     Email: "team-platform-observability@panther.io"
     AsanaTeamId: "1201305154831712"
     AsanaBacklogId: "1201267919523642"
-    AsanaSprintId: "1201680804234024"
-    Entities: 
-      -
-        type: "EntityMatcher"
-        Tags: ["service:sentry2asana"]
-      -
-        type: "EntityMatcher"
-        Tags: ["foo"]
+    AsanaSprintPortfolioId: "1201680804234024"
+    Entities: [
+      Tags: ["services:sentry2asana"],
+      Tags: ["foo"],
+    ]
   """)
 
 @pytest.fixture

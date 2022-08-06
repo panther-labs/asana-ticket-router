@@ -62,7 +62,7 @@ class EntityMatcher(dataclass_wizard.YAMLWizard):
         return 1
 
     def MatchRank(self, resource: dict) -> Optional[MatchResult]:
-        """MatchRank returns the number of tags that matched this entity to a resource."""
+        """MatchRank returns a MatchResult if this matchers matches resource."""
         try:
             matches = {
                 k: v for k, v in self._tags().items() if k in resource and resource[k] == v
@@ -79,10 +79,9 @@ class EngTeam(dataclass_wizard.YAMLWizard):
 
     # See data/teams.yaml for more complete documentation.
     Name: str
-    Email: str
     AsanaTeamId: str
     AsanaBacklogId: str
-    AsanaSprintId: str
+    AsanaSprintPortfolioId: str
     Entities: list[EntityMatcher]
 
 class TeamService:
