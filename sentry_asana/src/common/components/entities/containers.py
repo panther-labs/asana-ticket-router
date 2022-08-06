@@ -5,16 +5,29 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 # mypy: ignore-errors
+# pylint: disable=no-member
 
+import io
 from dependency_injector import containers, providers
-from . import service
+from sentry_asana.src.common.components.entities import service
+
+
+def _wrap_io(param):
+    """Return a file-like object.
+
+    For prod, we read from files; but for testing we read from io.StringIOs.
+    Do the right thing depending on type.
+    """
+    if isinstance(param, io.StringIO):
+        return param
+    # Assume param is a file and open it for read.
+    return open(param, "rb")
 
 
 class EntitiesContainer(containers.DeclarativeContainer):
-    """Entities Container"""
-
-    logger = providers.Dependency()
+    """EntitiesContainer"""
+    config = providers.Configuration(strict=True)
     teams_service = providers.Singleton(
         service.TeamService,
-        logger=logger,
+        team_data=providers.Resource(_wrap_io, config.entities.team_data_file),
     )

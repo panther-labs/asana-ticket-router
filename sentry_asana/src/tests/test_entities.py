@@ -1,28 +1,66 @@
-import asyncio
+import io
 import pytest
-from unittest import mock
+from sentry_asana.src.common.components.entities import heuristics
 
-from ..common.components.secrets.service import SecretsManagerService
-from ..common.components.secrets.containers import SecretsManagerContainer
-from ..common.components.serializer.service import SerializerService
-from ..common.components.serializer.containers import SerializerContainer
-from ..common.components.logger.service import LoggerService
-from ..common.components.logger.containers import LoggerContainer
-from ..consumer.components.application import ApplicationContainer
-from ..consumer.components.sentry.containers import SentryContainer
-from ..consumer.components.requests.containers import RequestsContainer
-from ..consumer.components.sentry.service import SentryService
-from ..consumer.components.asana.containers import AsanaContainer
-from ..consumer.components.asana.service import AsanaService
+from sentry_asana.src.common.components.entities.service import TeamService
+from sentry_asana.src.common.components.entities.containers import EntitiesContainer
 
-from ..common.components.entities.service import TeamService
-from ..common.components.entities.containers import EntitiesContainer
-
+def team_data_file() -> io.StringIO:
+  return io.StringIO("""
+---
+  - 
+    Name: "Observability"
+    Email: "team-platform-observability@panther.io"
+    AsanaTeamId: "1201305154831712"
+    AsanaBacklogId: "1201267919523642"
+    AsanaSprintId: "1201680804234024"
+    Entities: 
+      -
+        type: "EntityMatcher"
+        Tags: ["service:sentry2asana"]
+      -
+        type: "EntityMatcher"
+        Tags: ["foo"]
+  """)
 
 @pytest.fixture
 def container_with_mock() -> EntitiesContainer:
-  return EntitiesContainer(logger=LoggerContainer().logger)
+  return EntitiesContainer(
+    config={
+      'entities': {
+        'team_data_file': team_data_file(),
+      },
+    })
 
-def test_TeamsServiceInit(container_with_mock: EntitiesContainer) -> None:
-  teams_service = container_with_mock.teams_service()
-  assert teams_service.DefaultService() != []
+@pytest.fixture
+def container_with_data() -> EntitiesContainer:
+  return EntitiesContainer(
+    config={
+      'entities': {
+         'team_data_file': 'sentry_asana/src/tests/test_data/teams_test.yaml'
+      },
+    })
+
+def test_TeamServiceInit(container_with_mock: EntitiesContainer) -> None:
+  teams_service: TeamService = container_with_mock.teams_service()
+  assert teams_service.DefaultTeam() != [], ""
+
+def test_TeamServiceAccessors(container_with_mock: EntitiesContainer) -> None:
+  teams_service: TeamService = container_with_mock.teams_service()
+  teams = teams_service.GetTeams()
+  assert len(teams) != 0
+  assert teams[0].Name == 'Observability'
+
+def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
+  teams_service: TeamService = container_with_data.teams_service()
+  
+  entity = {'service':'panther-lambda-func'}
+  assert heuristics.GetTeam(teams_service, entity).Name == 'TestTeam'
+
+  # Ensure precedence prefers team tag over service tag.
+  entity = {'service':'panther-lambda-func','team': 'foo'}
+  assert heuristics.GetTeam(teams_service, entity).Name == 'OtherTeam'
+
+  # Ensure entities with no matches get default team assignment.
+  entity = {'this-is-not-a-real-tag': None} # type: ignore
+  assert heuristics.GetTeam(teams_service, entity).Name == 'Observability'
