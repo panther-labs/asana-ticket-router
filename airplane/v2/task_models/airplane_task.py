@@ -10,10 +10,12 @@ from v2.pyshared.aws_secrets import get_secret_value
 
 class AirplaneTask:
 
-    def __init__(self, is_dry_run: bool = False):
+    def __init__(self, is_dry_run: bool = False, api_use_only=False):
         """
         :param is_dry_run: Flag indicating a dry run
         """
+        if api_use_only and not AirplaneEnv.is_api_user_execution():
+            raise RuntimeError("This Airplane task is only executable by the airplane API!")
         self.is_dry_run = is_dry_run
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.task_dir = self.tmp_dir.name

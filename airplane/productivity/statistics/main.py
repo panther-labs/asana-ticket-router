@@ -7,19 +7,14 @@ from pyshared.aws_creds import get_credentialed_client
 
 
 class DeploymentStatistics(AirplaneTask):
-    def main(self, params):
-        print("parameters:", params)
-        time_range = params["range"]
-        date = self.get_date(time_range)
-        print(f"Filtering from {date}")
-
+    def statistics(ro_arn, state_machine_arn, date):
         client = get_credentialed_client(service_name="stepfunctions",
-                                         arns=get_aws_const("STEP_FUNCTION_RO_ROLE_ARN"),
+                                         arns=get_aws_const(ro_arn),
                                          desc="deployment_statistics",
                                          region="us-west-2")
 
         paginator = client.get_paginator('list_executions')
-        arn = 'arn:aws:states:us-west-2:255674391660:stateMachine:AutomatedDeploymentStateMachine-y5bh5L9a5z41'
+        arn = get_aws_const(state_machine_arn)
 
         iterator = paginator.paginate(
             stateMachineArn=arn,
@@ -41,6 +36,19 @@ class DeploymentStatistics(AirplaneTask):
         success = total - failed
 
         return {"total": total, "failed": failed, "success": success, "human_rate": f"{round(success / total * 100, 4)}%"}
+
+
+    def main(self, params):
+        print("parameters:", params)
+        time_range = params["range"]
+        date = self.get_date(time_range)
+        print(f"Filtering from {date}")
+
+        return {
+            "hosted": statistics("STEP_FUNCTION_HOSTED_RO_ROLE_ARN", "STATE_MACHINE_HOSTED_ARN", date),
+            "internal": statistics("STEP_FUNCTION_INTERNAL_RO_ROLE_ARN", "STATE_MACHINE_INTERNAL_ARN", date)
+        }
+
 
     @staticmethod
     def get_date(time_range):

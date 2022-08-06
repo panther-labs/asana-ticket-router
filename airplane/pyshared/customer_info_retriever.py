@@ -72,9 +72,15 @@ class AllCustomerAccountsInfo:
     def get_notion_results(include_deprovisioned=True) -> dict[str, AccountsDatabaseSchema]:
         return {
             account.Fairytale_Name: account
-            for account in get_accounts_database().query().execute()
-            if (account.Fairytale_Name and (include_deprovisioned or not account.is_deprovision()))
+            for account in AllCustomerAccountsInfo.get_notion_results_list(include_deprovisioned)
         }
+
+    @staticmethod
+    def get_notion_results_list(include_deprovisioned=True) -> list[AccountsDatabaseSchema]:
+        return [
+            account for account in get_accounts_database().query().execute()
+            if (account.Fairytale_Name and (include_deprovisioned or not account.is_deprovision()))
+        ]
 
     @staticmethod
     def get_notion_duplicates() -> list[str]:

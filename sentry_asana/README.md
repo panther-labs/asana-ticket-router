@@ -34,6 +34,9 @@ The service requires the following secrets:
   - `SENTRY_CLIENT_SECRET`: found in the custom integration setup in Sentry. See https://sentry.io/settings/panther-labs/developer-settings/ to view all custom integrations. `Sentry-Asana-Prod` is the integration that corresponds to the service deployed in the `hosted-ops` account (i.e. 'Prod'). For development, please use the Client Secret in `Sentry-Asana-Dev`.
   - `ASANA_PAT`: the PAT used as the bearer token during Asana API calls. Create a PAT here https://app.asana.com/0/my-apps
   - `SENTRY_PAT`: the PAT used as the bearer token during Sentry API. Create a PAT here https://sentry.io/settings/account/api/auth-tokens/
+  - `DATADOG_SECRET_TOKEN`: the $DATADOG_SECRET_TOKEN value we have defined as a custom header in our Datadog webhook. See https://app.datadoghq.com/integrations/webhooks?search=webhook to get this value.
+  - `DATADOG_API_KEY`: the Datadog API Key used during Datadog API calls. Create an API key here: https://app.datadoghq.com/organization-settings/api-keys
+  - `DATADOG_APP_KEY`: the Datadog App Key used during Datadog API calls. Create an App key here: https://app.datadoghq.com/organization-settings/application-keys
 
 ## Deploying The Service
 

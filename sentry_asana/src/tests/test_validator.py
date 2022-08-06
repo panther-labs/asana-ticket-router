@@ -25,7 +25,7 @@ def container() -> ValidatorContainer:
     )
     secretsmanager_client_mock = mock.Mock()
     secretsmanager_client_mock.get_secret_value.return_value = {
-        "SecretString": "{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\"}"
+        "SecretString": "{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\", \"DATADOG_SECRET_TOKEN\": \"MySuperSecretString\" }"
     }
     secretsmanager_container.secretsmanager_client.override(
         secretsmanager_client_mock)
@@ -39,12 +39,11 @@ def container() -> ValidatorContainer:
 
 
 @pytest.mark.asyncio
-async def test_validate(container: ValidatorContainer) -> None:
-    """Test getting a secret"""
-
+async def test_validate_tokens(container: ValidatorContainer) -> None:
+    """Test validating a sentry token"""
     service = await container.validator_service()  # type: ignore
     signature = '64634bbddfd3a1bb0d6360839371aa12ea16d785c7f94bb6f2eac7ed5f3d235c'  # hmac-sha256
-    is_valid = await service.validate('Hello World', signature)
+    is_valid = await service.validate_sentry('Hello World', signature)
     assert is_valid is True
 
     # When in development mode, test that we bypass the signature check
@@ -52,5 +51,19 @@ async def test_validate(container: ValidatorContainer) -> None:
         # Reset our singleton and create a new one that takes the override
         container.validator_service.reset()
         service = await container.validator_service()  # type: ignore
-        is_valid = await service.validate('Hello World', 'Bad Signature')
+        is_valid = await service.validate_sentry('Hello World', 'Bad Signature')
+    assert is_valid is True
+
+    """Test validating a datadog token"""
+    container.validator_service.reset()
+    service = await container.validator_service()  # type: ignore
+    is_valid = await service.validate_datadog('MySuperSecretString')
+    assert is_valid is True
+
+    # When in development mode, test that we bypass the signature check
+    with container.development.override(True):
+        # Reset our singleton and create a new one that takes the override
+        container.validator_service.reset()
+        service = await container.validator_service()  # type: ignore
+        is_valid = await service.validate_datadog('ThisIsTheWrongSecretString')
     assert is_valid is True

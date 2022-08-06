@@ -15,6 +15,7 @@ from ..consumer.components.requests.containers import RequestsContainer
 from ..consumer.components.sentry.service import SentryService
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
+from ..consumer.components.datadog.service import DatadogService
 
 
 @pytest.fixture
@@ -34,7 +35,11 @@ def container() -> ApplicationContainer:
     # Need to provide mock value because creating a ValidatorContainer
     # depends on these values to be provided asynchronously
     secretsmanager_client_mock.get_secret_value.return_value = {
-        'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\",\"ASANA_PAT\": \"Some PAT\",\"SENTRY_PAT\": \"Some PAT\"}'
+        'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\",'
+                        '\"ASANA_PAT\": \"Some PAT\",'
+                        '\"SENTRY_PAT\": \"Some PAT\",'
+                        '\"DATADOG_API_KEY\": \"MyDatadogAPIKey\", '
+                        '\"DATADOG_APP_KEY\": \"MyDatadogAppKey\"}'
     }
     secretsmanager_container.secretsmanager_client.override(
         secretsmanager_client_mock)
@@ -76,11 +81,13 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     # on an async initialization from the secretsmanager service
     sentry_service = await container.sentry_container.sentry_service()
     asana_service = await container.asana_container.asana_service()
+    datadog_service = await container.datadog_container.datadog_service()
     assert isinstance(logger_service, LoggerService)
     assert isinstance(secretsmanager_service, SecretsManagerService)
     assert isinstance(serializer_service, SerializerService)
     assert isinstance(sentry_service, SentryService)
     assert isinstance(asana_service, AsanaService)
+    assert isinstance(datadog_service, DatadogService)
 
     # Test that our services are singletons
     logger_service2 = container.logger_container.logger_service()
@@ -90,8 +97,10 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     # on an async initialization from the secretsmanager service
     sentry_service2 = await container.sentry_container.sentry_service()
     asana_service2 = await container.asana_container.asana_service()
+    datadog_service2 = await container.datadog_container.datadog_service()
     assert logger_service == logger_service2
     assert secretsmanager_service == secretsmanager_service2
     assert serializer_service == serializer_service2
     assert sentry_service == sentry_service2
     assert asana_service == asana_service2
+    assert datadog_service == datadog_service2

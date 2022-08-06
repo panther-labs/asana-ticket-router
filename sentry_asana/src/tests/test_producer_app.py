@@ -39,7 +39,7 @@ def container() -> ApplicationContainer:
     # Need to provide mock value because creating a ValidatorContainer
     # depends on these values to be provided asynchronously
     secretsmanager_client_mock.get_secret_value.return_value = {
-        'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\"}'
+        'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\", \"DATADOG_SECRET_TOKEN\": \"MySuperSecretString\" }'
     }
     secretsmanager_container.secretsmanager_client.override(
         secretsmanager_client_mock)

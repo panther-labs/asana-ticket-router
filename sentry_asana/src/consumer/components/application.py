@@ -12,6 +12,7 @@ from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
 from .asana.containers import AsanaContainer
 from .sentry.containers import SentryContainer
+from .datadog.containers import DatadogContainer
 from .requests.containers import RequestsContainer
 
 
@@ -53,6 +54,14 @@ class ApplicationContainer(containers.DeclarativeContainer):
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
         requests=requests_container.requests_service,
+        keys=secretsmanager_container.keys
+    )
+
+    # Datadog
+    datadog_container = providers.Container(
+        DatadogContainer,
+        logger=logger_container.logger,
+        serializer=serializer_container.serializer_service,
         keys=secretsmanager_container.keys
     )
 

@@ -41,7 +41,7 @@ class SentryService:
 
     async def add_link(self, issue_id: str, asana_task_id: str) -> Dict:
         """Link an asana task Id to a Sentry issue"""
-        self._logger.info('Adding asana link to issue: %s', issue_id)
+        self._logger.info(f'Adding link to asana task {asana_task_id} in sentry issue {issue_id}')
         response = await self._client.request(
             'POST',
             f'https://sentry.io/api/0/issues/{issue_id}/plugins/asana/link/',

@@ -32,7 +32,7 @@ async def test_que_put(container: QueueContainer) -> None:
 
     with container.sqs_client.override(sqs_client_mock):
         service = container.queue_service()
-        response = await service.put("test message")
+        response = await service.put("test message", "DATADOG")
 
     assert response == {
         'response': 'success'

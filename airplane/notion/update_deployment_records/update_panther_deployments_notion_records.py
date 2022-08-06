@@ -9,6 +9,7 @@ from notional.text import FullColor
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.deployments_file import DeploymentsRepo
 from pyshared.git_ops import AirplaneMultiCloneGitTask
+from pyshared.notion_auth import NotionSession
 from pyshared.notion_databases import are_text_objects_equal, create_date_time_value, create_rtf_value, \
     get_accounts_database, get_display_rtf_value
 
@@ -24,6 +25,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
     def main(self, params):
         self.add_missing_notion_entries()
+        self.remove_duplicate_notion_entries()
         # Only get all the accounts after missing accounts have been added
         self.all_accounts = AllCustomerAccountsInfo(hosted_deploy_dir=self.git_dirs[DeploymentsRepo.HOSTED],
                                                     staging_deploy_dir=self.git_dirs[DeploymentsRepo.STAGING],
@@ -57,6 +59,25 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             print(f"Adding missing account, '{fairytale_name}', to Notion")
             if not self.is_test_run():
                 notion_db.create(Fairytale_Name=fairytale_name)
+
+    @staticmethod
+    def remove_duplicate_notion_entries():
+        """Search for duplicate accounts not managed by this script and remove them"""
+        all_accounts = AllCustomerAccountsInfo.get_notion_results_list()
+        duplicate_accounts = {}
+        for account in all_accounts:
+            if account.Fairytale_Name in duplicate_accounts:
+                remove_account = None
+                if not account.Account_Info_Auto_Updated:
+                    remove_account = account
+                elif not duplicate_accounts[account.Fairytale_Name].Account_Info_Auto_Updated:
+                    remove_account = duplicate_accounts[account.Fairytale_Name]
+                    duplicate_accounts[account.Fairytale_Name] = account
+                if remove_account:
+                    notion_page = UpdateDeploymentRecords._get_notion_page(remove_account)
+                    NotionSession().session.pages.delete(notion_page)
+            else:
+                duplicate_accounts[account.Fairytale_Name] = account
 
     def update_notion_entries(self):
         for account_info in self.all_accounts:
@@ -112,10 +133,8 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
     def get_notion_value(attr, account_info):
         if attr in ("Account_Name", "Support_Role", "Expected_Version", "Actual_Version"):
             page_prop = attr.replace("_", " ")
-            # This private member used to be public, and to my knowledge, is the only way to get the actual
-            # contents of a rich text field rather than just the text.
-            # noinspection PyProtectedMember
-            text_object = account_info.notion_info._notional__page.properties[page_prop].rich_text
+            text_object = UpdateDeploymentRecords._get_notion_page(
+                account_info.notion_info).properties[page_prop].rich_text
             if text_object:
                 return text_object[0] if isinstance(text_object, list) else text_object
             else:
@@ -199,6 +218,13 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
     def get_failure_slack_channel(self):
         return "#triage-productivity"
+
+    @staticmethod
+    def _get_notion_page(notion_info):
+        # This private member used to be public, and to my knowledge, is the only way to get the actual
+        # contents of a rich text field rather than just the text (or delete the page).
+        # noinspection PyProtectedMember
+        return notion_info._notional__page
 
 
 def main(_):
