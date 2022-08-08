@@ -7,7 +7,7 @@ from pyshared.aws_creds import get_credentialed_client
 
 
 class DeploymentStatistics(AirplaneTask):
-    def statistics(ro_arn, state_machine_arn, date):
+    def statistics(self, ro_arn, state_machine_arn, date):
         client = get_credentialed_client(service_name="stepfunctions",
                                          arns=get_aws_const(ro_arn),
                                          desc="deployment_statistics",
@@ -44,9 +44,23 @@ class DeploymentStatistics(AirplaneTask):
         date = self.get_date(time_range)
         print(f"Filtering from {date}")
 
+        hosted = self.statistics("STEP_FUNCTION_HOSTED_RO_ROLE_ARN", "STATE_MACHINE_HOSTED_ARN", date)
+        internal = self.statistics("STEP_FUNCTION_INTERNAL_RO_ROLE_ARN", "STATE_MACHINE_INTERNAL_ARN", date)
+
+        total_count = hosted["total"] + internal["total"]
+        total_failed = hosted["failed"] + internal["failed"]
+        total_success = hosted["success"] + internal["success"]
+        total_human = f"{round(total_success / total_count * 100, 4)}%"
+
         return {
-            "hosted": statistics("STEP_FUNCTION_HOSTED_RO_ROLE_ARN", "STATE_MACHINE_HOSTED_ARN", date),
-            "internal": statistics("STEP_FUNCTION_INTERNAL_RO_ROLE_ARN", "STATE_MACHINE_INTERNAL_ARN", date)
+            "hosted": hosted,
+            "internal": internal,
+            "total": {
+                "total": total_count,
+                "failed": total_failed,
+                "success": total_success,
+                "human_rate": total_human,
+            }
         }
 
 
