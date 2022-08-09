@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Teams.yaml configures teams, as well as entity ownership.
 # -
 #  name: "YOUR_TEAM_NAME HERE"
@@ -10,15 +9,19 @@
 #  AsanaTeamId: "12345"
 #  # The Entities your team is responsible for; don't worry this has its own documentation
 #  Entities: [
-#    Tags: ['some', 'list:of', 'tags'], # This defines one group of entities you own.
-#    Tags: ['another', 'list', 'of', 'tags:andvalues'], # This defines another group of entities you own.
+#    Matchers: ['some', 'list:of', 'tags'], # This defines one group of entities you own.
+#    Matchers: ['another', 'list', 'of', 'tags:andvalues'], # This defines another group of entities you own.
 #  ]
 
 # Common "How Do I's?":
 # Q: I just want to match my lambda function? How?
-# A: Tags: ["service:<YOUR_LAMBDA_NAME"] should match your lambda function with no fuss.
+# A: Matchers: ["server_name:<YOUR_LAMBDA_NAME"] should match your lambda function with no fuss for now.
 # Q: I want to get tickets for frontend errors, how?
-# A: Tags: ["url:/your_url_path"] should match urls in similar fashion to the previous system.
+# A: Matchers: ["url://your_url_path/"] should match urls in similar fashion to the previous system.
+# Q: I want to regexp match on a value, how?
+# A: Matchers: ["tag:/pattern/"] will apply re.search(pattern, text)
+# Q: I want to regexp match a tag name, how?
+# A: You cannot do this right now, please sync up with Observability team to discuss your use case.
 
 ---
 -
@@ -27,14 +30,14 @@
   AsanaSprintPortfolioId: '1201675315244004'
   AsanaTeamId: '1201305154831714'
   Entities: [
-    Tags: ["service:panther-apitoken-authorizer"],
-    Tags: ["service:panther-cn-router"],
-    Tags: ["service:panther-graph-api"],
-    Tags: ["service:panther-metrics-api"],
-    Tags: ["service:panther-organization-api"],
-    Tags: ["service:panther-token-authorizer"],
-    Tags: ["service:panther-users-api"],
-    Tags: ["url:/api-tokens/"],
+    Matchers: ["server_name:panther-apitoken-authorizer"],
+    Matchers: ["server_name:panther-cn-router"],
+    Matchers: ["server_name:panther-graph-api"],
+    Matchers: ["server_name:panther-metrics-api"],
+    Matchers: ["server_name:panther-organization-api"],
+    Matchers: ["server_name:panther-token-authorizer"],
+    Matchers: ["server_name:panther-users-api"],
+    Matchers: ["url://api-tokens/"],
   ]
 -
   name: "Data Platform"
@@ -48,33 +51,33 @@
   AsanaSprintPortfolioId: '1201675315243996'
   AsanaTeamId: '1199906290951721'
   Entities: [
-    Tags: ["service:panther-analysis-api"],
-    Tags: ["service:panther-aws-event-processor"],
-    Tags: ["service:panther-cloudsecurity-datalake-forwarder"],
-    Tags: ["service:panther-compliance-api"],
-    Tags: ["service:panther-detections-engine"],
-    Tags: ["service:panther-layer-manager"],
-    Tags: ["service:panther-pip-layer-builder"],
-    Tags: ["service:panther-policy-engine"],
-    Tags: ["service:panther-python-executor-tests"],
-    Tags: ["service:panther-replay-api"],
-    Tags: ["service:panther-replay-detections-engine"],
-    Tags: ["service:panther-replay-log-pusher"],
-    Tags: ["service:panther-replay-results-api"],
-    Tags: ["service:panther-replay-results-processor"],
-    Tags: ["service:panther-reports-api"],
-    Tags: ["service:panther-reports-processor"],
-    Tags: ["service:panther-resources-api"],
-    Tags: ["service:panther-resource-processor"],
-    Tags: ["service:panther-rules-engine"],
-    Tags: ["service:panther-slow-rule-detector"],
-    Tags: ["url:/analysis/"],
-    Tags: ["url:/data-models/"],
-    Tags: ["url:/destinations/"],
-    Tags: ["url:/detections/"],
-    Tags: ["url:/helpers/"],
-    Tags: ["url:/overview/"],
-    Tags: ["url:/resources/"],
+    Matchers: ["server_name:panther-analysis-api"],
+    Matchers: ["server_name:panther-aws-event-processor"],
+    Matchers: ["server_name:panther-cloudsecurity-datalake-forwarder"],
+    Matchers: ["server_name:panther-compliance-api"],
+    Matchers: ["server_name:panther-detections-engine"],
+    Matchers: ["server_name:panther-layer-manager"],
+    Matchers: ["server_name:panther-pip-layer-builder"],
+    Matchers: ["server_name:panther-policy-engine"],
+    Matchers: ["server_name:panther-python-executor-tests"],
+    Matchers: ["server_name:panther-replay-api"],
+    Matchers: ["server_name:panther-replay-detections-engine"],
+    Matchers: ["server_name:panther-replay-log-pusher"],
+    Matchers: ["server_name:panther-replay-results-api"],
+    Matchers: ["server_name:panther-replay-results-processor"],
+    Matchers: ["server_name:panther-reports-api"],
+    Matchers: ["server_name:panther-reports-processor"],
+    Matchers: ["server_name:panther-resources-api"],
+    Matchers: ["server_name:panther-resource-processor"],
+    Matchers: ["server_name:panther-rules-engine"],
+    Matchers: ["server_name:panther-slow-rule-detector"],
+    Matchers: ["url://analysis/"],
+    Matchers: ["url://data-models/"],
+    Matchers: ["url://destinations/"],
+    Matchers: ["url://detections/"],
+    Matchers: ["url://helpers/"],
+    Matchers: ["url://overview/"],
+    Matchers: ["url://resources/"],
   ]
 -
   name: "Ingestion"
@@ -82,22 +85,22 @@
   AsanaSprintPortfolioId: '1201675315243992'
   AsanaTeamId: '1199906290951709'
   Entities: [
-    Tags: ["service:panther-cloud-puller"],
-    Tags: ["service:panther-data-archiver"],
-    Tags: ["service:panther-holding-tank"],
-    Tags: ["service:panther-logtypes-api"],
-    Tags: ["service:panther-log-processor"],
-    Tags: ["service:panther-log-puller"],
-    Tags: ["service:panther-log-router"],
-    Tags: ["service:panther-message-forwarder"],
-    Tags: ["service:panther-snapshot-pollers"],
-    Tags: ["service:panther-snapshot-scheduler"],
-    Tags: ["service:panther-source-api"],
-    Tags: ["service:panther-system-status"],
-    Tags: ["service:panther-rbac-datalake-sync"],
-    Tags: ["url:/cloud-accounts/"],
-    Tags: ["url:/data-schemas/"],
-    Tags: ["url:/log-sources/"],
+    Matchers: ["server_name:panther-cloud-puller"],
+    Matchers: ["server_name:panther-data-archiver"],
+    Matchers: ["server_name:panther-holding-tank"],
+    Matchers: ["server_name:panther-logtypes-api"],
+    Matchers: ["server_name:panther-log-processor"],
+    Matchers: ["server_name:panther-log-puller"],
+    Matchers: ["server_name:panther-log-router"],
+    Matchers: ["server_name:panther-message-forwarder"],
+    Matchers: ["server_name:panther-snapshot-pollers"],
+    Matchers: ["server_name:panther-snapshot-scheduler"],
+    Matchers: ["server_name:panther-source-api"],
+    Matchers: ["server_name:panther-system-status"],
+    Matchers: ["server_name:panther-rbac-datalake-sync"],
+    Matchers: ["url://cloud-accounts/"],
+    Matchers: ["url://data-schemas/"],
+    Matchers: ["url://log-sources/"],
   ]
 -
   name: "Investigations"
@@ -105,31 +108,31 @@
   AsanaSprintPortfolioId: '1201675315244000'
   AsanaTeamId: '1199906290951706'
   Entities: [
-    Tags: ["service:panther-alerts-api"],
-    Tags: ["service:panther-alerts-migration"],
-    Tags: ["service:panther-alert-delivery-api"],
-    Tags: ["service:panther-athena-admin-api"],
-    Tags: ["service:panther-athena-api"],
-    Tags: ["service:.compute.internal"],
-    Tags: ["service:Panther-EFS"],
-    Tags: ["service:panther-database-workflow"],
-    Tags: ["service:panther-datacatalog-compactor"],
-    Tags: ["service:panther-datacatalog-compactor-callbacks"],
-    Tags: ["service:panther-datacatalog-compactor-reaper"],
-    Tags: ["service:panther-datacatalog-updater"],
-    Tags: ["service:.ec2.internal"],
-    Tags: ["service:panther-greynoise-processor"],
-    Tags: ["service:panther-log-alert-forwarder"],
-    Tags: ["service:panther-lookup-tables-api"],
-    Tags: ["service:panther-outputs-api"],
-    Tags: ["service:panther-snowflake-admin-api"],
-    Tags: ["service:panther-snowflake-api"],
-    Tags: ["url:/alerts-and-errors/"],
-    Tags: ["url:/enrichment/"],
-    Tags: ["url:/explorer/"],
-    Tags: ["url:/indicator-search/"],
-    Tags: ["url:/query-history/"],
-    Tags: ["url:/saved-queries/"],
+    Matchers: ["server_name:panther-alerts-api"],
+    Matchers: ["server_name:panther-alerts-migration"],
+    Matchers: ["server_name:panther-alert-delivery-api"],
+    Matchers: ["server_name:panther-athena-admin-api"],
+    Matchers: ["server_name:panther-athena-api"],
+    Matchers: ["server_name:.compute.internal"],
+    Matchers: ["server_name:Panther-EFS"],
+    Matchers: ["server_name:panther-database-workflow"],
+    Matchers: ["server_name:panther-datacatalog-compactor"],
+    Matchers: ["server_name:panther-datacatalog-compactor-callbacks"],
+    Matchers: ["server_name:panther-datacatalog-compactor-reaper"],
+    Matchers: ["server_name:panther-datacatalog-updater"],
+    Matchers: ["server_name:.ec2.internal"],
+    Matchers: ["server_name:panther-greynoise-processor"],
+    Matchers: ["server_name:panther-log-alert-forwarder"],
+    Matchers: ["server_name:panther-lookup-tables-api"],
+    Matchers: ["server_name:panther-outputs-api"],
+    Matchers: ["server_name:panther-snowflake-admin-api"],
+    Matchers: ["server_name:panther-snowflake-api"],
+    Matchers: ["url://alerts-and-errors/"],
+    Matchers: ["url://enrichment/"],
+    Matchers: ["url://explorer/"],
+    Matchers: ["url://indicator-search/"],
+    Matchers: ["url://query-history/"],
+    Matchers: ["url://saved-queries/"],
   ]
 -
   name: "Observability and Performance"
@@ -137,7 +140,7 @@
   AsanaSprintPortfolioId: '1201680804234024'
   AsanaTeamId: '1201305154831712'
   Entities: [
-    Tags: ["service:panther-alarm-logger"],
+    Matchers: ["server_name:panther-alarm-logger"],
   ]
 -
   name: "Productivity"
@@ -145,10 +148,10 @@
   AsanaSprintPortfolioId: '1201680804234034'
   AsanaTeamId: '1201305154831711'
   Entities: [
-    Tags: ["service:panther-cfn-custom-resources"],
-    Tags: ["service:panther-cfn-stack-policy"],
-    Tags: ["service:panther-ops-tools"],
-    Tags: ["service:splitio"],
+    Matchers: ["server_name:panther-cfn-custom-resources"],
+    Matchers: ["server_name:panther-cfn-stack-policy"],
+    Matchers: ["server_name:panther-ops-tools"],
+    Matchers: ["server_name:splitio"],
   ]
 -
   name: "Deployment"
@@ -168,30 +171,3 @@
   AsanaSprintPortfolioId: '1201680804234039'
   AsanaTeamId: '1200813282274945'
   Entities: []
-=======
-# Teams.yaml is a list of engineering teams.
-# The data model is:
-# ---
-# teams:
-#  'Observability':
-#    email: "team-platform-observability@panther.io"
-#    # Your team ID in Asana
-#    AsanaTeamId: "1201305154831712"
-#    # The ID of your backlog project
-#    AsanaBacklogId: "1201267919523642"
-#    # The ID of your current Sprint project.
-#    AsanaSprintId: "1201680804234024"
-
----
-- 
-  # Your team name
-  name: "Observability"
-  # Your team's contact email.
-  Email: "team-platform-observability@panther.io"
-  # Your team's ID in Asana
-  AsanaTeamId: "1201305154831712"
-  # The ID of your backlog project
-  AsanaBacklogId: "1201267919523642"
-  # The ID of your current Sprint project.
-  AsanaSprintId: "1201680804234024"
->>>>>>> main
