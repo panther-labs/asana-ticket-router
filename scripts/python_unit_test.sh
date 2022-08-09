@@ -9,7 +9,7 @@ set -o errexit
 # Use the error status of the first failure, rather than that of the last item in a pipeline.
 set -o pipefail
 
-PYTHONPATH=sentry_asana/src python -m pytest -vv --cov-report term-missing \
+PYTHONPATH=sentry_asana/src python3 -m pytest -vv --cov-report term-missing \
   --cov=sentry_asana/src/consumer \
   --cov=sentry_asana/src/producer \
   --cov=sentry_asana/src/common \
