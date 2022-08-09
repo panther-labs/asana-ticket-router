@@ -3,7 +3,8 @@
 #  name: "YOUR_TEAM_NAME HERE"
 #  # The ID of your Asana backlog project; we route low-tickets into this project.
 #  AsanaBacklogId: "12345"
-#  # The ID of your Asana Sprint portfolio; we route important tickets into your current sprint, and we need this to figure out what your current sprint is.
+#  # The ID of your Asana Sprint portfolio; we route important tickets into your current sprint
+#  and we need this to figure out what your current sprint is.
 #  AsanaSprintPortfolioId: "12345"
 #  # The ID of your Asana Team, we need this to assign tickets properly.
 #  AsanaTeamId: "12345"
@@ -21,13 +22,15 @@
 # Q: I want to regexp match on a value, how?
 # A: Matchers: ["tag:/pattern/"] will apply re.search(pattern, text)
 # Q: I want to regexp match a tag name, how?
-# A: You cannot do this right now, please sync up with Observability team to discuss your use case.
+# A: You cannot do this right now, please sync up with Observability
+#    team to discuss your use case.
 
 ---
 -
   name: "Adoption"
   AsanaBacklogId: '1201267919523621'
   AsanaSprintPortfolioId: '1201675315244004'
+  AsanaSandboxPortfolioId: '1201700591175670'
   AsanaTeamId: '1201305154831714'
   Entities: [
     Matchers: ["server_name:panther-apitoken-authorizer"],
@@ -43,12 +46,14 @@
   name: "Data Platform"
   AsanaBacklogId: '1201282881828563'
   AsanaSprintPortfolioId: '1201680779826585'
+  AsanaSandboxPortfolioId: '1201700591175709'
   AsanaTeamId: '1201305154831715'
   Entities: []
 -
   name: "Detections"
   AsanaBacklogId: '1200908948600035'
   AsanaSprintPortfolioId: '1201675315243996'
+  AsanaSandboxPortfolioId: '1201700591175694'
   AsanaTeamId: '1199906290951721'
   Entities: [
     Matchers: ["server_name:panther-analysis-api"],
@@ -83,6 +88,7 @@
   name: "Ingestion"
   AsanaBacklogId: '1200908948600021'
   AsanaSprintPortfolioId: '1201675315243992'
+  AsanaSandboxPortfolioId: '1201700591175697'
   AsanaTeamId: '1199906290951709'
   Entities: [
     Matchers: ["server_name:panther-cloud-puller"],
@@ -106,6 +112,7 @@
   name: "Investigations"
   AsanaBacklogId: '1200908948600028'
   AsanaSprintPortfolioId: '1201675315244000'
+  AsanaSandboxPortfolioId: '1201700591175689'
   AsanaTeamId: '1199906290951706'
   Entities: [
     Matchers: ["server_name:panther-alerts-api"],
@@ -138,6 +145,7 @@
   name: "Observability and Performance"
   AsanaBacklogId: '1201267919523642'
   AsanaSprintPortfolioId: '1201680804234024'
+  AsanaSandboxPortfolioId: '1201700591175706'
   AsanaTeamId: '1201305154831712'
   Entities: [
     Matchers: ["server_name:panther-alarm-logger"],
@@ -146,6 +154,7 @@
   name: "Productivity"
   AsanaBacklogId: '1201267919523628'
   AsanaSprintPortfolioId: '1201680804234034'
+  AsanaSandboxPortfolioId: '1201700591175700'
   AsanaTeamId: '1201305154831711'
   Entities: [
     Matchers: ["server_name:panther-cfn-custom-resources"],
@@ -157,17 +166,20 @@
   name: "Deployment"
   AsanaBacklogId: '1202423273325597'
   AsanaSprintPortfolioId: '1202671247671153'
+  AsanaSandboxPortfolioId: '1201700591175703'
   AsanaTeamId: '1202496475295943'
   Entities: []
 -
   name: "Quality"
   AsanaBacklogId: '1201267919523635'
   AsanaSprintPortfolioId: '1201680804234029'
+  AsanaSandboxPortfolioId: '1201700591175703'
   AsanaTeamId: '1201305154831713'
   Entities: []
 -
   name: "Security, IT, and Compliance"
   AsanaBacklogId: '1200908948600049'
   AsanaSprintPortfolioId: '1201680804234039'
+  AsanaSandboxPortfolioId: '1201700591175712'
   AsanaTeamId: '1200813282274945'
   Entities: []

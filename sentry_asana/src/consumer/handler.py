@@ -18,6 +18,8 @@ from consumer.components.requests.containers import RequestsContainer
 from consumer.components.asana.service import AsanaService
 from consumer.components.application import ApplicationContainer
 from consumer.components.asana.entities import AsanaFields
+from sentry_asana.src.common.components.entities import heuristics
+from sentry_asana.src.common.components.entities.service import TeamService
 
 # Initialize in global state so Lambda can use on hot invocations
 app = ApplicationContainer()
@@ -144,7 +146,8 @@ async def process_datadog_alert(
     logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
     serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
     datadog: DatadogService = Provide[ApplicationContainer.datadog_container.container.datadog_service],
-    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service]
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
+    entities: TeamService = Provide[ApplicationContainer.entities_container.team_service]
 ) -> Dict[str, Union[bool, str]]:
     """Process a Datadog event and create an Asana Task"""
 
@@ -158,7 +161,8 @@ async def process_datadog_alert(
 
         asana_fields: AsanaFields = await asana.extract_datadog_fields(datadog_event)
         log.info(f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}')
-
+        # Next, create a new asana task
+        team = heuristics.get_team(entities, datadog_event)
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
         log.info(f'Got the following fields back from get_event_details call: {datadog_event_details}')
 
@@ -179,7 +183,8 @@ async def process_sentry_alert(
     logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
     serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
     sentry: SentryService = Provide[ApplicationContainer.sentry_container.sentry_service],
-    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service]
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
+    entities: TeamService = Provide[ApplicationContainer.entities_container.team_service],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Sentry event and create an Asana Task"""
 
@@ -215,7 +220,8 @@ async def process_sentry_alert(
             root_asana_link = asana_link
 
         # Next, create a new asana task
-        asana_fields: AsanaFields = await asana.extract_sentry_fields(event)
+        team = heuristics.get_team(entities, event)
+        asana_fields: AsanaFields = await asana.extract_sentry_fields(event, team)
         new_task_gid = await asana.create_task(asana_fields, root_asana_link, asana_link)
 
         # Finally, link the newly created asana task back to the sentry issue

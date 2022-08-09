@@ -10,6 +10,7 @@ from dependency_injector import containers, providers
 from common.components.logger.containers import LoggerContainer
 from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
+from sentry_asana.src.common.components.entities.containers import EntitiesContainer
 from .asana.containers import AsanaContainer
 from .sentry.containers import SentryContainer
 from .datadog.containers import DatadogContainer
@@ -63,6 +64,12 @@ class ApplicationContainer(containers.DeclarativeContainer):
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
         keys=secretsmanager_container.keys
+    )
+
+    # Entities
+    entities_container = providers.Container(
+        EntitiesContainer,
+        config=config,
     )
 
     # Asana
