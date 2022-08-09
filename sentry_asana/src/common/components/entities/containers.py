@@ -26,6 +26,7 @@ def _wrap_io(param):
 
 class EntitiesContainer(containers.DeclarativeContainer):
     """EntitiesContainer"""
+
     config = providers.Configuration(strict=True)
     teams_service = providers.Singleton(
         service.TeamService,

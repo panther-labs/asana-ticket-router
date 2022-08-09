@@ -1,22 +1,21 @@
 """Heuristics maps a 'resource' to 'team'"""
-# pylint: disable=invalid-name
 
 from typing import Optional
 from sentry_asana.src.common.components.entities import service
 
-
-def GetTeam(teams_service: service.TeamService, resource: dict) -> service.EngTeam:
+def get_team(teams_service: service.TeamService, resource: dict) -> service.EngTeam:
     """GetTeam returns the engTeam for a given resource, or a default EngTeam if no owning team could be found."""
-    team = _PrecedenceMatchTeam(teams_service, resource)
+    team = precedence_match_team(teams_service, resource)
     if team is None:
-        return teams_service.DefaultTeam()
+        return teams_service.default_team()
     return team
 
 
-def _PrecedenceMatchTeam(
+def precedence_match_team(
     teams_service: service.TeamService, resource: dict
 ) -> Optional[service.EngTeam]:
     """PrecedenceMatchTeam implements tag-precedence as loosely described in the tech spec.
+    https://www.notion.so/pantherlabs/Datadog2Asana-7a206f017b1b4befaedba417b2dd5e3e
 
     Consider some examples:
 
@@ -26,7 +25,8 @@ def _PrecedenceMatchTeam(
 
     Both teams will match the entity with the same number of matchers (1), but team has a higher precedence, so the team matcher 'wins'.
 
-    imagine a case where we have lots of tags (so specific!) but not the team tag!
+    Imagine a case where we have lots of tags (so specific!) but not the team tag!
+
     Team1: {Entities: [EntityMatcher: {Tags: ['specific1:12345', 'specific2:39742', 'specific3:134974']}]}
     Team2: {Entities: [EntityMatcher: {Tags: ['team:bar','specific1:12345']}]}
     entity={'team': 'bar', 'specific1':'12345', 'specific2':'39742', 'specific3':'134974}
@@ -36,11 +36,11 @@ def _PrecedenceMatchTeam(
     """
     ranks = []
     # Try to match this resource against all known entity matchers.
-    for t in teams_service.GetTeams():
-        for matcher in t.Entities:
-            matches = matcher.MatchRank(resource)
+    for team in teams_service.get_teams():
+        for matcher in team.Entities:
+            matches = matcher.match_rank(resource)
             if matches is not None:
-                ranks.append((t, matches))
+                ranks.append((team, matches))
     # sort by precedence, then by rank.
     ranks = sorted(ranks, key=lambda x: (x[1].Precedence, x[1].Count), reverse=True)
     if ranks:

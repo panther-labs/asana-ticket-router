@@ -6,7 +6,7 @@
   AsanaBacklogId: "1201267919523642"
   AsanaSprintPortfolioId: "1201680804234024"
   Entities: [
-    Tags: [],
+    Matchers: [],
   ]
 -
   name: "TestTeam"
@@ -15,7 +15,7 @@
   AsanaBacklogId: "12345"
   AsanaSprintPortfolioId: "12345"
   Entities: [
-    Tags: ['service:panther-lambda-func'],
+    Matchers: ['service:panther-lambda-func'],
   ]
 -
   name: "OtherTeam"
@@ -24,6 +24,7 @@
   AsanaBacklogId: "12345"
   AsanaSprintPortfolioId: "12345"
   Entities: [
-    Tags: ['region:us-east-2', 'platform:snowflake'],
-    Tags: ['team:foo'],
+    Matchers: ['region:us-east-2', 'platform:snowflake'],
+    Matchers: ['team:foo'],
+    Matchers: ['url://some/'],
   ]

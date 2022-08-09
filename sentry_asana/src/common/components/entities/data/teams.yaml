@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Teams.yaml configures teams, as well as entity ownership.
 # -
 #  name: "YOUR_TEAM_NAME HERE"
@@ -167,3 +168,30 @@
   AsanaSprintPortfolioId: '1201680804234039'
   AsanaTeamId: '1200813282274945'
   Entities: []
+=======
+# Teams.yaml is a list of engineering teams.
+# The data model is:
+# ---
+# teams:
+#  'Observability':
+#    email: "team-platform-observability@panther.io"
+#    # Your team ID in Asana
+#    AsanaTeamId: "1201305154831712"
+#    # The ID of your backlog project
+#    AsanaBacklogId: "1201267919523642"
+#    # The ID of your current Sprint project.
+#    AsanaSprintId: "1201680804234024"
+
+---
+- 
+  # Your team name
+  name: "Observability"
+  # Your team's contact email.
+  Email: "team-platform-observability@panther.io"
+  # Your team's ID in Asana
+  AsanaTeamId: "1201305154831712"
+  # The ID of your backlog project
+  AsanaBacklogId: "1201267919523642"
+  # The ID of your current Sprint project.
+  AsanaSprintId: "1201680804234024"
+>>>>>>> main
