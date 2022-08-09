@@ -17,7 +17,7 @@
 # Q: I just want to match my lambda function? How?
 # A: Matchers: ["server_name:<YOUR_LAMBDA_NAME"] should match your lambda function with no fuss for now.
 # Q: I want to get tickets for frontend errors, how?
-# A: Matchers: ["url://your_url_path/"] should match urls in similar fashion to the previous system.
+# A: Matchers: ["url://your_url_path//"] should match urls in similar fashion to the previous system.
 # Q: I want to regexp match on a value, how?
 # A: Matchers: ["tag:/pattern/"] will apply re.search(pattern, text)
 # Q: I want to regexp match a tag name, how?
@@ -37,7 +37,7 @@
     Matchers: ["server_name:panther-organization-api"],
     Matchers: ["server_name:panther-token-authorizer"],
     Matchers: ["server_name:panther-users-api"],
-    Matchers: ["url://api-tokens/"],
+    Matchers: ["url://api-tokens//"],
   ]
 -
   name: "Data Platform"
@@ -71,13 +71,13 @@
     Matchers: ["server_name:panther-resource-processor"],
     Matchers: ["server_name:panther-rules-engine"],
     Matchers: ["server_name:panther-slow-rule-detector"],
-    Matchers: ["url://analysis/"],
-    Matchers: ["url://data-models/"],
-    Matchers: ["url://destinations/"],
-    Matchers: ["url://detections/"],
-    Matchers: ["url://helpers/"],
-    Matchers: ["url://overview/"],
-    Matchers: ["url://resources/"],
+    Matchers: ["url://analysis//"],
+    Matchers: ["url://data-models//"],
+    Matchers: ["url://destinations//"],
+    Matchers: ["url://detections//"],
+    Matchers: ["url://helpers//"],
+    Matchers: ["url://overview//"],
+    Matchers: ["url://resources//"],
   ]
 -
   name: "Ingestion"
@@ -98,9 +98,9 @@
     Matchers: ["server_name:panther-source-api"],
     Matchers: ["server_name:panther-system-status"],
     Matchers: ["server_name:panther-rbac-datalake-sync"],
-    Matchers: ["url://cloud-accounts/"],
-    Matchers: ["url://data-schemas/"],
-    Matchers: ["url://log-sources/"],
+    Matchers: ["url://cloud-accounts//"],
+    Matchers: ["url://data-schemas//"],
+    Matchers: ["url://log-sources//"],
   ]
 -
   name: "Investigations"
@@ -127,12 +127,12 @@
     Matchers: ["server_name:panther-outputs-api"],
     Matchers: ["server_name:panther-snowflake-admin-api"],
     Matchers: ["server_name:panther-snowflake-api"],
-    Matchers: ["url://alerts-and-errors/"],
-    Matchers: ["url://enrichment/"],
-    Matchers: ["url://explorer/"],
-    Matchers: ["url://indicator-search/"],
-    Matchers: ["url://query-history/"],
-    Matchers: ["url://saved-queries/"],
+    Matchers: ["url://alerts-and-errors//"],
+    Matchers: ["url://enrichment//"],
+    Matchers: ["url://explorer//"],
+    Matchers: ["url://indicator-search//"],
+    Matchers: ["url://query-history//"],
+    Matchers: ["url://saved-queries//"],
   ]
 -
   name: "Observability and Performance"
