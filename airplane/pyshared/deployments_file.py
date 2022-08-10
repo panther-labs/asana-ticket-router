@@ -42,7 +42,7 @@ def gen_cfgs():
 
 def alter_deployment_file(deployments_repo: str,
                           ap_params: Dict[str, str],
-                          alter_callable: Callable[str],
+                          alter_callable: Callable[[str], None],
                           commit_title: str,
                           apply_to_generated_file: bool = False):
     """Alter a deployment file in some way. The alter_callable is a function that, given the deployment file, will
@@ -55,4 +55,4 @@ def alter_deployment_file(deployments_repo: str,
                 get_deployment_filepath(fairytale_name=ap_params["fairytale_name"], get_generated_filepath=True))
         gen_cfgs()
 
-        git_add_commit_push(files=("deployment-metadata",), title=commit_title, test_run=is_test_run(ap_params))
+        git_add_commit_push(files=("deployment-metadata", ), title=commit_title, test_run=is_test_run(ap_params))
