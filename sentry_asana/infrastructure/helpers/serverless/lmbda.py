@@ -8,8 +8,14 @@ from typing import Optional
 import pulumi_aws as aws
 import pulumi
 
-from sentry_asana.infrastructure.globals import LAMBDA_TIMEOUT_SECONDS, \
-    LAMBDA_ARCHITECTURE, LAMBDA_RUNTIME, LAMBDA_FILE, LAMBDA_HANDLER, BATCH_SECONDS
+from sentry_asana.infrastructure.globals import (
+    LAMBDA_TIMEOUT_SECONDS,
+    LAMBDA_ARCHITECTURE,
+    LAMBDA_RUNTIME,
+    LAMBDA_FILE,
+    LAMBDA_HANDLER,
+    BATCH_SECONDS,
+)
 from sentry_asana.infrastructure.helpers.serverless.util import create_lambda_package
 
 
@@ -25,9 +31,11 @@ def create(
     return aws.lambda_.Function(
         resource_name=name,
         name=name,
-        code=pulumi.AssetArchive({
-            '.': pulumi.FileArchive(create_lambda_package(archive_path)),
-        }),
+        code=pulumi.AssetArchive(
+            {
+                '.': pulumi.FileArchive(create_lambda_package(archive_path)),
+            }
+        ),
         environment=environment,
         runtime=LAMBDA_RUNTIME,
         architectures=[LAMBDA_ARCHITECTURE],
@@ -39,7 +47,9 @@ def create(
     )
 
 
-def add_invoke_permission(name: str, lambda_name: str, opts: pulumi.ResourceOptions) -> aws.lambda_.Permission:
+def add_invoke_permission(
+    name: str, lambda_name: str, opts: pulumi.ResourceOptions
+) -> aws.lambda_.Permission:
     """Add API Gateway invoke permissions to lambda"""
     return aws.lambda_.Permission(
         resource_name=f'{name}-apigw-invoke-lamda-permission',
@@ -50,7 +60,9 @@ def add_invoke_permission(name: str, lambda_name: str, opts: pulumi.ResourceOpti
     )
 
 
-def add_sqs_permission(name: str, lambda_name: str, opts: pulumi.ResourceOptions) -> aws.lambda_.Permission:
+def add_sqs_permission(
+    name: str, lambda_name: str, opts: pulumi.ResourceOptions
+) -> aws.lambda_.Permission:
     """Add SQS invoke permissions to lambda"""
     return aws.lambda_.Permission(
         resource_name=f'{name}-sqs-lambda-invoke-permission',
@@ -61,7 +73,9 @@ def add_sqs_permission(name: str, lambda_name: str, opts: pulumi.ResourceOptions
     )
 
 
-def add_sqs_event_mapping(name: str, que: aws.sqs.Queue, lambda_arn: str, opts: pulumi.ResourceOptions) -> aws.lambda_.EventSourceMapping:
+def add_sqs_event_mapping(
+    name: str, que: aws.sqs.Queue, lambda_arn: str, opts: pulumi.ResourceOptions
+) -> aws.lambda_.EventSourceMapping:
     """Add an SQS event mapping to a lambda"""
     return aws.lambda_.EventSourceMapping(
         resource_name=f'{name}-event-source-mapping',
@@ -70,5 +84,5 @@ def add_sqs_event_mapping(name: str, que: aws.sqs.Queue, lambda_arn: str, opts: 
         maximum_batching_window_in_seconds=BATCH_SECONDS,
         # Set to allow partial retry of failed batch messages
         function_response_types=['ReportBatchItemFailures'],
-        opts=opts
+        opts=opts,
     )

@@ -23,7 +23,7 @@ class SecretsManagerService:
         logger: Logger,
         client: SecretsManagerClient,
         secret_name: str,
-        serializer: SerializerService
+        serializer: SerializerService,
     ):
         self._loop = loop
         self._logger = logger
@@ -41,9 +41,5 @@ class SecretsManagerService:
         """Get a secret"""
         self._logger.info("Getting AWS Secret")
         return await self._loop().run_in_executor(
-            None,
-            partial(
-                self._client.get_secret_value,
-                SecretId=self._secret_name
-            )
+            None, partial(self._client.get_secret_value, SecretId=self._secret_name)
         )

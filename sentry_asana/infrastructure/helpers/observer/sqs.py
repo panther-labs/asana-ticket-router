@@ -26,11 +26,17 @@ def create(
             receive_wait_time_seconds=10,
             # The DLQ at this point is still waiting to be created, therefore we use
             # the 'apply' helper to grab the output at runtime.
-            redrive_policy=dlq.arn.apply(lambda arn: json.dumps({
-                "deadLetterTargetArn": arn,
-                "maxReceiveCount": 10,
-            })) if dlq else None,
-            visibility_timeout_seconds=SQS_VISIBILITY_TIMEOUT_SECONDS
+            redrive_policy=dlq.arn.apply(
+                lambda arn: json.dumps(
+                    {
+                        "deadLetterTargetArn": arn,
+                        "maxReceiveCount": 10,
+                    }
+                )
+            )
+            if dlq
+            else None,
+            visibility_timeout_seconds=SQS_VISIBILITY_TIMEOUT_SECONDS,
         ),
-        opts=opts
+        opts=opts,
     )

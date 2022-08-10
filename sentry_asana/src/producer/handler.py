@@ -14,11 +14,7 @@ from producer.components.application import ApplicationContainer
 
 # Initialize in global state so Lambda can use on hot invocations
 app = ApplicationContainer()
-app.config.from_yaml(
-    'producer/config.yml',
-    required=True,
-    envs_required=True
-)
+app.config.from_yaml('producer/config.yml', required=True, envs_required=True)
 app.logger_container.configure_logger()  # pylint: disable=no-member
 
 
@@ -40,7 +36,7 @@ async def main(
     ],
     validator: ValidatorService = Provide[
         ApplicationContainer.validator_container.validator_service  # pylint: disable=no-member
-    ]
+    ],
 ) -> Dict[str, int]:
     """Main async program"""
     log = logger.get()
@@ -66,7 +62,9 @@ async def main(
         valid = await validator.validate_datadog(datadog_signature)
 
     if not alert_type:
-        raise ValueError('Request missing sentry-hook-signature or datadog-secret-token headers.')
+        raise ValueError(
+            'Request missing sentry-hook-signature or datadog-secret-token headers.'
+        )
 
     if not valid:
         raise ValueError(f'{alert_type} webhook payload signature mismatch')

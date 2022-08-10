@@ -36,30 +36,29 @@ def container() -> ApplicationContainer:
     # depends on these values to be provided asynchronously
     secretsmanager_client_mock.get_secret_value.return_value = {
         'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\",'
-                        '\"ASANA_PAT\": \"Some PAT\",'
-                        '\"SENTRY_PAT\": \"Some PAT\",'
-                        '\"DATADOG_API_KEY\": \"MyDatadogAPIKey\", '
-                        '\"DATADOG_APP_KEY\": \"MyDatadogAppKey\"}'
+        '\"ASANA_PAT\": \"Some PAT\",'
+        '\"SENTRY_PAT\": \"Some PAT\",'
+        '\"DATADOG_API_KEY\": \"MyDatadogAPIKey\", '
+        '\"DATADOG_APP_KEY\": \"MyDatadogAppKey\"}'
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     sentry_container = SentryContainer(
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
         requests=requests_container,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     asana_container = AsanaContainer(
         config={
             'development': 'false',
             'dev_asana_sentry_project': '123',
-            'release_testing_portfolio': '123'
+            'release_testing_portfolio': '123',
         },
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     container = ApplicationContainer()
@@ -91,7 +90,9 @@ async def test_application_instance(container: ApplicationContainer) -> None:
 
     # Test that our services are singletons
     logger_service2 = container.logger_container.logger_service()
-    secretsmanager_service2 = container.secretsmanager_container.secretsmanager_service()
+    secretsmanager_service2 = (
+        container.secretsmanager_container.secretsmanager_service()
+    )
     serializer_service2 = container.serializer_container.serializer_service()
     # Must await on the sentry and asana services because they depend
     # on an async initialization from the secretsmanager service

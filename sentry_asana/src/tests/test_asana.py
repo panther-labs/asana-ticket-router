@@ -5,7 +5,15 @@ from typing import Any, Dict, List
 from unittest.mock import Mock
 import pytest
 from asana.error import ForbiddenError, NotFoundError
-from ..consumer.components.asana.entities import CUSTOMFIELD, ENG_TEAMS, FE_SERVICE, PRIORITY, SERVICE, TEAM, AsanaFields
+from ..consumer.components.asana.entities import (
+    CUSTOMFIELD,
+    ENG_TEAMS,
+    FE_SERVICE,
+    PRIORITY,
+    SERVICE,
+    TEAM,
+    AsanaFields,
+)
 from ..common.components.secrets.containers import SecretsManagerContainer
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.containers import LoggerContainer
@@ -13,12 +21,9 @@ from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
 
 
-ASANA_TASK = os.path.join(os.path.dirname(
-    __file__), 'test_data', 'asana_task.json')
-SENTRY_ISSUE = os.path.join(os.path.dirname(
-    __file__), 'test_data', 'sentry_issue.json')
-SENTRY_EVENT = os.path.join(os.path.dirname(
-    __file__), 'test_data', 'sentry_event.json')
+ASANA_TASK = os.path.join(os.path.dirname(__file__), 'test_data', 'asana_task.json')
+SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
+SENTRY_EVENT = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_event.json')
 
 
 def raise_forbidden_except(*args: Any) -> Exception:
@@ -49,7 +54,7 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
                 "resource_type": "project",
                 "archived": True,
                 "created_at": "2022-01-03T00:00:00.000Z",
-            }
+            },
         ]
     if id == 'release_board':
         return [
@@ -82,7 +87,7 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
             "resource_type": "project",
             "archived": False,
             "created_at": "2022-01-03T00:00:00.000Z",
-        }
+        },
     ]
 
 
@@ -90,8 +95,25 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
 def asana_fields() -> AsanaFields:
     return AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
-        tags={'aws_account_id': '758312592604', 'aws_org_id': 'o-wyibehgf3h', 'aws_partition': 'aws', 'aws_region': 'us-west-2', 'commit_sha': '556d327fa', 'data_lake': 'snowflake-self-hosted', 'debug_enabled': 'false', 'environment': 'dev', 'fips_enabled': 'false',
-              'lambda_memory_mb': '2048', 'level': 'error', 'os.name': 'linux', 'runtime': 'go go1.17.1', 'runtime.name': 'go', 'server_name': 'panther-snowflake-api', 'url': 'https://web-930307996.us-west-2.elb.amazonaws.com', 'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb'},
+        tags={
+            'aws_account_id': '758312592604',
+            'aws_org_id': 'o-wyibehgf3h',
+            'aws_partition': 'aws',
+            'aws_region': 'us-west-2',
+            'commit_sha': '556d327fa',
+            'data_lake': 'snowflake-self-hosted',
+            'debug_enabled': 'false',
+            'environment': 'dev',
+            'fips_enabled': 'false',
+            'lambda_memory_mb': '2048',
+            'level': 'error',
+            'os.name': 'linux',
+            'runtime': 'go go1.17.1',
+            'runtime.name': 'go',
+            'server_name': 'panther-snowflake-api',
+            'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
+            'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
+        },
         aws_region='us-west-2',
         aws_account_id='758312592604',
         customer='Unknown',
@@ -121,9 +143,7 @@ def container() -> AsanaContainer:
     with open(ASANA_TASK, encoding='utf-8') as file:
         data = json.load(file)
         tasks_mock.find_by_id.return_value = data
-        tasks_mock.create_task.return_value = {
-            'gid': 'new_project_gid'
-        }
+        tasks_mock.create_task.return_value = {'gid': 'new_project_gid'}
 
     asana_client_mock = Mock()
     asana_client_mock.portfolios = portfolios_mock
@@ -145,7 +165,7 @@ def container() -> AsanaContainer:
     return container
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_projects_in_portfolio(container: AsanaContainer) -> None:
     """Test _get_projects_in_portfolio"""
 
@@ -154,7 +174,7 @@ async def test_get_projects_in_portfolio(container: AsanaContainer) -> None:
     assert len(projects) == 3
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_latest_project_id(container: AsanaContainer) -> None:
     """Test _get_latest_project_id"""
 
@@ -171,7 +191,7 @@ async def test_get_latest_project_id(container: AsanaContainer) -> None:
     assert project_id == None
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_dev_project_ids(container: AsanaContainer) -> None:
     """Test _get_dev_project_ids"""
 
@@ -180,7 +200,7 @@ async def test_get_dev_project_ids(container: AsanaContainer) -> None:
     assert project_ids == ['sprint_gid_3', 'dev_board']
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_staging_project_ids(container: AsanaContainer) -> None:
     """Test _get_staging_project_ids"""
 
@@ -195,7 +215,7 @@ async def test_get_staging_project_ids(container: AsanaContainer) -> None:
     assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_production_project_ids(container: AsanaContainer) -> None:
     """Test _get_production_project_ids"""
 
@@ -207,25 +227,33 @@ async def test_get_production_project_ids(container: AsanaContainer) -> None:
     assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_project_ids(container: AsanaContainer) -> None:
     """Test _get_project_ids"""
 
     service: AsanaService = container.asana_service()
-    project_ids = await service._get_project_ids('dev', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF])
+    project_ids = await service._get_project_ids(
+        'dev', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    )
     assert project_ids == ['sprint_gid_3', 'dev_board']
 
-    project_ids = await service._get_project_ids('staging', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF])
+    project_ids = await service._get_project_ids(
+        'staging', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    )
     assert project_ids == ['sprint_gid_3', 'release_gid_1']
 
-    project_ids = await service._get_project_ids('prod', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF])
+    project_ids = await service._get_project_ids(
+        'prod', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    )
     assert project_ids == ['1201267919523642']  # Backlog id
 
-    project_ids = await service._get_project_ids('prod', 'high', ENG_TEAMS[TEAM.OBSERVABILITY_PERF])
+    project_ids = await service._get_project_ids(
+        'prod', 'high', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    )
     assert project_ids == ['sprint_gid_3']
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_task_priority(container: AsanaContainer) -> None:
     """Test _get_task_priority"""
 
@@ -237,63 +265,67 @@ async def test_get_task_priority(container: AsanaContainer) -> None:
     assert priority == PRIORITY.MEDIUM
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_owning_team_from_service(container: AsanaContainer) -> None:
     """Test _get_owning_team_from_service"""
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team_from_service('not a valid service')
-    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
+    assert (
+        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    ), 'Should route to default observability'
 
-    team = service._get_owning_team_from_service(
-        SERVICE.ALERT_DELIVERY_API.value)
+    team = service._get_owning_team_from_service(SERVICE.ALERT_DELIVERY_API.value)
     assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
 
     # Test partial match for fargate
-    team = service._get_owning_team_from_service(
-        "ip-10-24-34-0.ec2.internal")
+    team = service._get_owning_team_from_service("ip-10-24-34-0.ec2.internal")
     assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
     team = service._get_owning_team_from_service(
-        "ip-10-24-34-0.us-west-2.compute.internal")
+        "ip-10-24-34-0.us-west-2.compute.internal"
+    )
     assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_owning_team_from_fe_service(container: AsanaContainer) -> None:
     """Test _get_owning_team_from_fe_service"""
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team_from_fe_service('not a valid FE service')
-    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
+    assert (
+        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    ), 'Should route to default observability'
 
     team = service._get_owning_team_from_fe_service(
-        f'https://foo.bar{FE_SERVICE.DATA_SCHEMAS.value}param?key=val')
+        f'https://foo.bar{FE_SERVICE.DATA_SCHEMAS.value}param?key=val'
+    )
     assert team == ENG_TEAMS[TEAM.INGESTION]
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_get_owning_team(container: AsanaContainer) -> None:
     """Test _get_owning_team"""
 
     service: AsanaService = container.asana_service()
     team = service._get_owning_team(None, None, None, None)
-    assert team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF], 'Should route to default observability'
+    assert (
+        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
+    ), 'Should route to default observability'
 
     team = service._get_owning_team(None, FE_SERVICE.DATA_SCHEMAS.value, None, None)
     assert team is ENG_TEAMS[TEAM.INGESTION], 'Should route to INGESTION'
 
-    team = service._get_owning_team(
-        SERVICE.DETECTIONS_ENGINE.value, None, None, None)
+    team = service._get_owning_team(SERVICE.DETECTIONS_ENGINE.value, None, None, None)
     assert team is ENG_TEAMS[TEAM.DETECTIONS], 'Should route to DETECTIONS'
 
     team = service._get_owning_team(
-        SERVICE.ATHENA_ADMIN_API.value, FE_SERVICE.DATA_SCHEMAS.value, None, None)
+        SERVICE.ATHENA_ADMIN_API.value, FE_SERVICE.DATA_SCHEMAS.value, None, None
+    )
     assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
 
     # Test new service tag.
-    team = service._get_owning_team(
-        None, None, SERVICE.ATHENA_ADMIN_API.value, None
-    )
+    team = service._get_owning_team(None, None, SERVICE.ATHENA_ADMIN_API.value, None)
     assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
 
     # Test team routing and preference order.
@@ -303,7 +335,7 @@ async def test_get_owning_team(container: AsanaContainer) -> None:
     assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_extract_fields(container: AsanaContainer) -> None:
     """Test _extract_fields"""
 
@@ -314,8 +346,25 @@ async def test_extract_fields(container: AsanaContainer) -> None:
 
     assert fields == AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
-        tags={'aws_account_id': '758312592604', 'aws_org_id': 'o-wyibehgf3h', 'aws_partition': 'aws', 'aws_region': 'us-west-2', 'commit_sha': '556d327fa', 'data_lake': 'snowflake-self-hosted', 'debug_enabled': 'false', 'environment': 'dev', 'fips_enabled': 'false',
-              'lambda_memory_mb': '2048', 'level': 'error', 'os.name': 'linux', 'runtime': 'go go1.17.1', 'runtime.name': 'go', 'server_name': 'panther-snowflake-api', 'url': 'https://web-930307996.us-west-2.elb.amazonaws.com', 'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb'},
+        tags={
+            'aws_account_id': '758312592604',
+            'aws_org_id': 'o-wyibehgf3h',
+            'aws_partition': 'aws',
+            'aws_region': 'us-west-2',
+            'commit_sha': '556d327fa',
+            'data_lake': 'snowflake-self-hosted',
+            'debug_enabled': 'false',
+            'environment': 'dev',
+            'fips_enabled': 'false',
+            'lambda_memory_mb': '2048',
+            'level': 'error',
+            'os.name': 'linux',
+            'runtime': 'go go1.17.1',
+            'runtime.name': 'go',
+            'server_name': 'panther-snowflake-api',
+            'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
+            'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
+        },
         aws_region='us-west-2',
         aws_account_id='758312592604',
         customer='Unknown',
@@ -330,13 +379,17 @@ async def test_extract_fields(container: AsanaContainer) -> None:
     )
 
 
-@ pytest.mark.asyncio
-async def test_create_task_note(container: AsanaContainer, asana_fields: AsanaFields) -> None:
+@pytest.mark.asyncio
+async def test_create_task_note(
+    container: AsanaContainer, asana_fields: AsanaFields
+) -> None:
     """Test _create_task_note"""
 
     service: AsanaService = container.asana_service()
     note = service._create_task_note(asana_fields, None, None)
-    assert note == """Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
+    assert (
+        note
+        == """Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
 
 Event Datetime: 2022-01-29t00:19:22.986521z
 
@@ -349,13 +402,12 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
 """
-    # Test with root and previous asana links in the payload
-    note = service._create_task_note(
-        asana_fields,
-        'root_asana_link',
-        'prev_asana_link'
     )
-    assert note == """Previous Asana Task: prev_asana_link
+    # Test with root and previous asana links in the payload
+    note = service._create_task_note(asana_fields, 'root_asana_link', 'prev_asana_link')
+    assert (
+        note
+        == """Previous Asana Task: prev_asana_link
 
 Root Asana Task: root_asana_link
 
@@ -372,10 +424,13 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
 """
+    )
 
 
-@ pytest.mark.asyncio
-async def test_create_task_body(container: AsanaContainer, asana_fields: AsanaFields) -> None:
+@pytest.mark.asyncio
+async def test_create_task_body(
+    container: AsanaContainer, asana_fields: AsanaFields
+) -> None:
     """Test _create_task_body"""
 
     service: AsanaService = container.asana_service()
@@ -391,12 +446,14 @@ async def test_create_task_body(container: AsanaContainer, asana_fields: AsanaFi
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
-        'notes': 'some notes'
+        'notes': 'some notes',
     }
 
 
-@ pytest.mark.asyncio
-async def test_create_asana_task(container: AsanaContainer, asana_fields: AsanaFields) -> None:
+@pytest.mark.asyncio
+async def test_create_asana_task(
+    container: AsanaContainer, asana_fields: AsanaFields
+) -> None:
     """Test _create_asana_task"""
 
     service: AsanaService = container.asana_service()
@@ -411,13 +468,13 @@ async def test_create_asana_task(container: AsanaContainer, asana_fields: AsanaF
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
-        'notes': 'some notes'
+        'notes': 'some notes',
     }
     response = await service._create_asana_task(body)
     assert response['gid'] == 'new_project_gid'
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_create_task(container: AsanaContainer) -> None:
     """Test create_task"""
 
@@ -425,12 +482,14 @@ async def test_create_task(container: AsanaContainer) -> None:
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
 
-    asana_fields: AsanaFields = await service.extract_sentry_fields(data['data']['event'])
+    asana_fields: AsanaFields = await service.extract_sentry_fields(
+        data['data']['event']
+    )
     response = await service.create_task(asana_fields, None, None)
     assert response == 'new_project_gid'
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_find_asana_task(container: AsanaContainer) -> None:
     """Test _find_asana_task"""
 
@@ -463,7 +522,7 @@ async def test_find_asana_task(container: AsanaContainer) -> None:
         assert response is None
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def test_extract_root_asana_link(container: AsanaContainer) -> None:
     """Test extract_root_asana_link"""
 
@@ -490,16 +549,12 @@ async def test_extract_root_asana_link(container: AsanaContainer) -> None:
 
     # Test if 'notes' attribute exists
     tasks_mock.find_by_id.side_effect = None
-    tasks_mock.find_by_id.return_value = {
-        "foo": "bar"
-    }
+    tasks_mock.find_by_id.return_value = {"foo": "bar"}
     response = await service.extract_root_asana_link('some task gid')
     assert response == None
 
     # Test if regex 'search' failed on the `Root Asana Task`
-    tasks_mock.find_by_id.return_value = {
-        "notes": "foobar"
-    }
+    tasks_mock.find_by_id.return_value = {"notes": "foobar"}
     response = await service.extract_root_asana_link('some task gid')
     assert response == None
 
@@ -511,7 +566,7 @@ async def test_extract_root_asana_link(container: AsanaContainer) -> None:
     assert response == 'https://app.asana.com/1/2/3'
 
 
-@ pytest.mark.asyncio
+@pytest.mark.asyncio
 async def tests_asana_client() -> None:
     """Test asana_client loads proper dependencies"""
 
@@ -528,8 +583,7 @@ async def tests_asana_client() -> None:
     secretsmanager_client_mock.get_secret_value.return_value = {
         "SecretString": "{\"ASANA_PAT\": \"Some Asana PAT\"}"
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     container = AsanaContainer(
         config={
@@ -539,7 +593,7 @@ async def tests_asana_client() -> None:
         },
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     # Must await because we depend on the mocked secrets manager's keys

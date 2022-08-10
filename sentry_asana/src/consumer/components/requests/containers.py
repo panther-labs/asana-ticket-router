@@ -18,7 +18,5 @@ class RequestsContainer(containers.DeclarativeContainer):
     session = providers.Dependency(default=None)
 
     requests_service = providers.Singleton(
-        service.RequestsService,
-        logger=logger,
-        session=session
+        service.RequestsService, logger=logger, session=session
     )

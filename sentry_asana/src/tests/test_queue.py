@@ -14,10 +14,7 @@ def container() -> QueueContainer:
     """Queue Container overrides"""
     # pylint: disable=redefined-outer-name
     container = QueueContainer(
-        config={
-            "queue_url": "some queue url"
-        },
-        logger=LoggerContainer.logger
+        config={"queue_url": "some queue url"}, logger=LoggerContainer.logger
     )
     return container
 
@@ -26,14 +23,10 @@ def container() -> QueueContainer:
 async def test_que_put(container: QueueContainer) -> None:
     """Test queue put"""
     sqs_client_mock = mock.Mock()
-    sqs_client_mock.send_message.return_value = {
-        'response': 'success'
-    }
+    sqs_client_mock.send_message.return_value = {'response': 'success'}
 
     with container.sqs_client.override(sqs_client_mock):
         service = container.queue_service()
         response = await service.put("test message", "DATADOG")
 
-    assert response == {
-        'response': 'success'
-    }
+    assert response == {'response': 'success'}

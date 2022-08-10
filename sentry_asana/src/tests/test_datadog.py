@@ -29,13 +29,12 @@ def container() -> DatadogContainer:
     secretsmanager_client_mock.get_secret_value.return_value = {
         "SecretString": "{\"DATADOG_API_KEY\": \"MyDatadogAPIKey\", \"DATADOG_APP_KEY\": \"MyDatadogAppKey\" }"
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     container = DatadogContainer(
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     return container
@@ -43,7 +42,7 @@ def container() -> DatadogContainer:
 
 @pytest.mark.asyncio
 async def test_get_event_details(container: DatadogContainer) -> None:
-    """ Test get_event_details method """
+    """Test get_event_details method"""
 
     datadog_client_response = Mock()
     datadog_client_response.to_dict.return_value = {'foo': 'bar'}

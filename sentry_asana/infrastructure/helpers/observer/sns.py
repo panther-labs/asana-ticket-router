@@ -25,7 +25,7 @@ def create_subscription(
     label: str,
     email_address: str,
     topic_arn: str,
-    opts: pulumi.ResourceOptions
+    opts: pulumi.ResourceOptions,
 ) -> aws.sns.TopicSubscription:
     """Create a new SNS Subscription"""
     return aws.sns.TopicSubscription(
@@ -37,16 +37,19 @@ def create_subscription(
     )
 
 
-def configure(name: str, sns_topic_arn: str, deployment_params: Any, opts: pulumi.ResourceOptions) -> List[str]:
+def configure(
+    name: str, sns_topic_arn: str, deployment_params: Any, opts: pulumi.ResourceOptions
+) -> List[str]:
     """Congigure the SNS Topic with additional parameters specified by the deployment parameters"""
     topic_arns = [sns_topic_arn]
 
     if deployment_params and deployment_params.get('alarmActionsTopic'):
-        topic_arns.extend(
-            list(deployment_params.get('alarmActionsTopic')))
+        topic_arns.extend(list(deployment_params.get('alarmActionsTopic')))
 
     if deployment_params and deployment_params.get('alarmEmailSubscriptions'):
-        for itr, email_address in enumerate(list(deployment_params.get('alarmEmailSubscriptions'))):
+        for itr, email_address in enumerate(
+            list(deployment_params.get('alarmEmailSubscriptions'))
+        ):
             create_subscription(
                 name,
                 str(itr + 1),

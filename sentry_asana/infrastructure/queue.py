@@ -26,21 +26,14 @@ class Queue(pulumi.ComponentResource):
         ##################################
         # Create DLQ
         self.dlq = sqs.create(
-            name,
-            is_dlq=True,
-            opts=pulumi.ResourceOptions(
-                parent=self
-            )
+            name, is_dlq=True, opts=pulumi.ResourceOptions(parent=self)
         )
 
         # Then, create our message queue with the DLQ specified as a redrive policy
         self.que = sqs.create(
             name,
             dlq=self.dlq,
-            opts=pulumi.ResourceOptions(
-                parent=self,
-                depends_on=[self.dlq]
-            )
+            opts=pulumi.ResourceOptions(parent=self, depends_on=[self.dlq]),
         )
 
         # Add alarm for the DQL to notify SNS if messages are present
@@ -48,17 +41,13 @@ class Queue(pulumi.ComponentResource):
             name=name,
             queue_name=self.dlq.name,
             topic_arns=sns.get_topic_arns(),
-            opts=pulumi.ResourceOptions(
-                parent=self.dlq,
-                depends_on=[self.dlq]
-            )
+            opts=pulumi.ResourceOptions(parent=self.dlq, depends_on=[self.dlq]),
         )
 
         # Register the queues
-        self.register_outputs({
-            f'{name}-dlq-arn': self.dlq.arn,
-            f'{name}-arn': self.que.arn
-        })
+        self.register_outputs(
+            {f'{name}-dlq-arn': self.dlq.arn, f'{name}-arn': self.que.arn}
+        )
 
     def get_que(self) -> aws.sqs.Queue:
         """Get the message queue from the resource"""

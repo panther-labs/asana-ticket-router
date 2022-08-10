@@ -8,7 +8,9 @@ import pulumi_aws as aws
 import pulumi
 
 
-def create(name: str, lambda_arn: str, opts: pulumi.ResourceOptions) -> aws.apigatewayv2.Api:
+def create(
+    name: str, lambda_arn: str, opts: pulumi.ResourceOptions
+) -> aws.apigatewayv2.Api:
     """Create an API Gateway endpoint"""
     return aws.apigatewayv2.Api(
         resource_name=f'{name}-api',

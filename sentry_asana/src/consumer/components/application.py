@@ -22,10 +22,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     config = providers.Configuration(strict=True)
 
     # Logger
-    logger_container = providers.Container(
-        LoggerContainer,
-        config=config
-    )
+    logger_container = providers.Container(LoggerContainer, config=config)
 
     # JSON serializer
     serializer_container = providers.Container(
@@ -54,7 +51,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
         requests=requests_container.requests_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     # Datadog
@@ -62,7 +59,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         DatadogContainer,
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     # Asana
@@ -71,5 +68,5 @@ class ApplicationContainer(containers.DeclarativeContainer):
         config=config.common,
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )

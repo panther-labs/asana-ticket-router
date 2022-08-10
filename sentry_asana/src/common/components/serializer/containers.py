@@ -17,6 +17,5 @@ class SerializerContainer(containers.DeclarativeContainer):
     serializer_client = providers.Dependency(default=json)
 
     serializer_service = providers.Singleton(
-        service.SerializerService,
-        client=serializer_client
+        service.SerializerService, client=serializer_client
     )

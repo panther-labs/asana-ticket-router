@@ -26,8 +26,7 @@ class SecretsManagerContainer(containers.DeclarativeContainer):
     serializer = providers.Dependency()
 
     secretsmanager_client = providers.Singleton(
-        boto3.client,
-        service_name="secretsmanager"
+        boto3.client, service_name="secretsmanager"
     )
 
     secretsmanager_service = providers.Singleton(
@@ -36,10 +35,7 @@ class SecretsManagerContainer(containers.DeclarativeContainer):
         logger=logger,
         client=secretsmanager_client,
         secret_name=config.secret_name,
-        serializer=serializer
+        serializer=serializer,
     )
 
-    keys = providers.Resource(
-        init,
-        secretsmanager_service
-    )
+    keys = providers.Resource(init, secretsmanager_service)

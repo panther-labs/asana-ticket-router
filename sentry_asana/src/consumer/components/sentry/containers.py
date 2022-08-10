@@ -21,10 +21,12 @@ class SentryContainer(containers.DeclarativeContainer):
     requests = providers.Dependency()
     keys = providers.Dependency()
 
-    sentry_service: Callable[..., Awaitable[service.SentryService]] = providers.Singleton(
+    sentry_service: Callable[
+        ..., Awaitable[service.SentryService]
+    ] = providers.Singleton(
         service.SentryService,
         logger=logger,
         client=requests,
         serializer=serializer,
-        bearer=providers.Resource(sentry_pat, keys)
+        bearer=providers.Resource(sentry_pat, keys),
     )

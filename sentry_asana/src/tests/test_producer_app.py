@@ -23,8 +23,7 @@ def container() -> ApplicationContainer:
 
     # Need to provide a mock client for SQS
     queue_container = QueueContainer(
-        config={'queue_url': 'QUEUE_URL'},
-        logger=logger_container.logger
+        config={'queue_url': 'QUEUE_URL'}, logger=logger_container.logger
     )
     sqs_client_mock = mock.Mock()
     queue_container.sqs_client.override(sqs_client_mock)
@@ -41,13 +40,12 @@ def container() -> ApplicationContainer:
     secretsmanager_client_mock.get_secret_value.return_value = {
         'SecretString': '{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\", \"DATADOG_SECRET_TOKEN\": \"MySuperSecretString\" }'
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     validator_container = ValidatorContainer(
         logger=logger_container.logger,
         development=False,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     container = ApplicationContainer()
@@ -78,7 +76,9 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     # Test that our services are singletons
     logger_service2 = container.logger_container.logger_service()
     queue_service2 = container.queue_container.queue_service()
-    secretsmanager_service2 = container.secretsmanager_container.secretsmanager_service()
+    secretsmanager_service2 = (
+        container.secretsmanager_container.secretsmanager_service()
+    )
     serializer_service2 = container.serializer_container.serializer_service()
     # Must await on the validator because it depends on an async initialization
     # from the secretsmanager service

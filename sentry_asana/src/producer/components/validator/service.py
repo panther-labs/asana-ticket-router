@@ -24,7 +24,7 @@ class ValidatorService:
         # returns private instance, so we have to use Any
         digest: Callable[..., Any],
         sentry_key: str,
-        datadog_key: str
+        datadog_key: str,
     ) -> None:
         self._loop = loop
         self._logger = logger
@@ -38,7 +38,8 @@ class ValidatorService:
         """Validate Sentry signature"""
         if self._development is True:
             self._logger.warning(
-                "Development mode enabled, skipping signature validation")
+                "Development mode enabled, skipping signature validation"
+            )
             return True
 
         hashed = await self.hash(self._sentry_key, message)
@@ -49,12 +50,13 @@ class ValidatorService:
         """Validate Datadog signature"""
         if self._development is True:
             self._logger.warning(
-                "Development mode enabled, skipping signature validation")
+                "Development mode enabled, skipping signature validation"
+            )
             return True
 
         return signature == self._datadog_key
 
-    async def hash(self, key:str, message: str) -> str:
+    async def hash(self, key: str, message: str) -> str:
         """Hash a message with a given key"""
         hashed = await self._loop().run_in_executor(
             None,
@@ -62,7 +64,7 @@ class ValidatorService:
                 self._hmac,
                 key=key.encode('utf-8'),
                 msg=message.encode('utf-8'),
-                digestmod=self._digest
-            )
+                digestmod=self._digest,
+            ),
         )
         return hashed.hexdigest()

@@ -21,7 +21,7 @@ def container_with_mock() -> RequestsContainer:
     container = RequestsContainer(
         logger=LoggerContainer().logger,
         serializer=SerializerContainer.serializer_service,
-        session=session_mock
+        session=session_mock,
     )
     return container
 
@@ -33,7 +33,7 @@ def container() -> RequestsContainer:
     return RequestsContainer(
         logger=LoggerContainer().logger,
         serializer=SerializerContainer.serializer_service,
-        session=None
+        session=None,
     )
 
 
@@ -47,9 +47,7 @@ async def test_request(container_with_mock: RequestsContainer) -> None:
     assert service._session is not None
     assert service._session.request.called, 'Should have been called'  # type: ignore
     service._session.request.assert_called_once_with(  # type: ignore
-        'POST',
-        'https://asdf.io',
-        json=payload
+        'POST', 'https://asdf.io', json=payload
     )
 
     assert isinstance(response, ClientResponse)

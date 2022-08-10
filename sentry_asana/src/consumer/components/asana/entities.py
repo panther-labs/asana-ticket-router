@@ -15,6 +15,7 @@ RUNBOOK_URL = 'https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a
 
 class PRIORITY(Enum):
     """Mapping to Asana Severity IDs"""
+
     HIGH = '1159524604627933'
     MEDIUM = '1159524604627934'
     LOW = '1159524604627935'  # Not used
@@ -22,6 +23,7 @@ class PRIORITY(Enum):
 
 class TEAM(Enum):
     """Mapping of all engineering teams"""
+
     ADOPTION = 'ADOPTION'
     DATA_PLATFORM = 'DATA_PLATFORM'
     DETECTIONS = 'DETECTIONS'
@@ -37,6 +39,7 @@ class TEAM(Enum):
 @dataclass
 class EngTeam:
     """Asana IDs for the team and its associated backlog."""
+
     team_id: str
     backlog_id: str
     sprint_portfolio_id: str
@@ -46,6 +49,7 @@ class EngTeam:
 @dataclass
 class AsanaFields:  # pylint: disable=too-many-instance-attributes
     """Class for storing the relevant asana fields for creating a task"""
+
     assigned_team: EngTeam
     aws_account_id: str
     aws_region: str
@@ -67,61 +71,61 @@ ENG_TEAMS: Dict[TEAM, EngTeam] = {
         team_id='1201305154831714',
         backlog_id='1201267919523621',
         sprint_portfolio_id='1201675315244004',
-        sprint_portfolio_id_dev='1201700591175670'
+        sprint_portfolio_id_dev='1201700591175670',
     ),
     TEAM.DATA_PLATFORM: EngTeam(
         team_id='1201305154831715',
         backlog_id='1201282881828563',
         sprint_portfolio_id='1201680779826585',
-        sprint_portfolio_id_dev='1201700591175709'
+        sprint_portfolio_id_dev='1201700591175709',
     ),
     TEAM.DETECTIONS: EngTeam(
         team_id='1199906290951721',
         backlog_id='1200908948600035',
         sprint_portfolio_id='1201675315243996',
-        sprint_portfolio_id_dev='1201700591175694'
+        sprint_portfolio_id_dev='1201700591175694',
     ),
     TEAM.INGESTION: EngTeam(
         team_id='1199906290951709',
         backlog_id='1200908948600021',
         sprint_portfolio_id='1201675315243992',
-        sprint_portfolio_id_dev='1201700591175697'
+        sprint_portfolio_id_dev='1201700591175697',
     ),
     TEAM.INVESTIGATIONS: EngTeam(
         team_id='1199906290951706',
         backlog_id='1200908948600028',
         sprint_portfolio_id='1201675315244000',
-        sprint_portfolio_id_dev='1201700591175689'
+        sprint_portfolio_id_dev='1201700591175689',
     ),
     TEAM.OBSERVABILITY_PERF: EngTeam(
         team_id='1201305154831712',
         backlog_id='1201267919523642',
         sprint_portfolio_id='1201680804234024',
-        sprint_portfolio_id_dev='1201700591175706'
+        sprint_portfolio_id_dev='1201700591175706',
     ),
     TEAM.PRODUCTIVITY: EngTeam(
         team_id='1201305154831711',
         backlog_id='1201267919523628',
         sprint_portfolio_id='1201680804234034',
-        sprint_portfolio_id_dev='1201700591175700'
+        sprint_portfolio_id_dev='1201700591175700',
     ),
     TEAM.DEPLOYMENT: EngTeam(
         team_id='1202496475295943',
         backlog_id='1202423273325597',
         sprint_portfolio_id='1202671247671153',
-        sprint_portfolio_id_dev='1201700591175703'
+        sprint_portfolio_id_dev='1201700591175703',
     ),
     TEAM.QUALITY: EngTeam(
         team_id='1201305154831713',
         backlog_id='1201267919523635',
         sprint_portfolio_id='1201680804234029',
-        sprint_portfolio_id_dev='1201700591175703'
+        sprint_portfolio_id_dev='1201700591175703',
     ),
     TEAM.SECURITY_IT_COMPLIANCE: EngTeam(
         team_id='1200813282274945',
         backlog_id='1200908948600049',
         sprint_portfolio_id='1201680804234039',
-        sprint_portfolio_id_dev='1201700591175712'
+        sprint_portfolio_id_dev='1201700591175712',
     ),
 }
 
@@ -140,6 +144,7 @@ SELF_HOSTED_ACCOUNTS_IDS = [
 
 class SERVICE(Enum):
     """Mapping of services"""
+
     # Fargate (convention only in us-east-1)
     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-naming.html
     EC2_INTERNAL = ".ec2.internal"
@@ -237,7 +242,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.RESOURCES_API,
         SERVICE.RESOURCE_PROCESSOR,
         SERVICE.RULES_ENGINE,
-        SERVICE.SLOW_RULE_DETECTOR
+        SERVICE.SLOW_RULE_DETECTOR,
     ],
     TEAM.INGESTION: [
         SERVICE.CLOUD_PULLER,
@@ -252,7 +257,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.SNAPSHOT_SCHEDULER,
         SERVICE.SOURCE_API,
         SERVICE.SYSTEM_STATUS,
-        SERVICE.RBAC_DATALAKE_SYNC
+        SERVICE.RBAC_DATALAKE_SYNC,
     ],
     TEAM.INVESTIGATIONS: [
         SERVICE.ALERTS_API,
@@ -273,7 +278,7 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.LOOKUP_TABLES_API,
         SERVICE.OUTPUTS_API,
         SERVICE.SNOWFLAKE_ADMIN_API,
-        SERVICE.SNOWFLAKE_API
+        SERVICE.SNOWFLAKE_API,
     ],
     TEAM.ADOPTION: [
         SERVICE.APITOKEN_AUTHORIZER,
@@ -282,28 +287,28 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.METRICS_API,
         SERVICE.ORGANIZATION_API,
         SERVICE.TOKEN_AUTHORIZER,
-        SERVICE.USERS_API
+        SERVICE.USERS_API,
     ],
-    TEAM.OBSERVABILITY_PERF: [
-        SERVICE.ALARM_LOGGER
-    ],
+    TEAM.OBSERVABILITY_PERF: [SERVICE.ALARM_LOGGER],
     TEAM.PRODUCTIVITY: [
         SERVICE.CFN_CUSTOM_RESOURCES,
         SERVICE.CFN_STACK_POLICY,
         SERVICE.OPS_TOOLS,
         SERVICE.SPLIT_IO_SDK,
-    ]
+    ],
 }
 
 # Obtain mapping of individual services values to teams
 SERVICE_TO_TEAM: Dict[str, TEAM] = {
-    service.value: team for team, services in _TEAM_TO_SERVICE.items()
+    service.value: team
+    for team, services in _TEAM_TO_SERVICE.items()
     for service in services
 }
 
 
 class FE_SERVICE(Enum):  # pylint: disable=invalid-name
     """Mapping of FE Services"""
+
     ALERTS_AND_ERRORS = '/alerts-and-errors/'
     ANALYSIS = '/analysis/'
     API_TOKENS = '/api-tokens/'
@@ -324,9 +329,7 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
 
 
 _TEAM_TO_FE_SERVICE: Dict[TEAM, List[FE_SERVICE]] = {
-    TEAM.ADOPTION: [
-        FE_SERVICE.API_TOKENS
-    ],
+    TEAM.ADOPTION: [FE_SERVICE.API_TOKENS],
     TEAM.DETECTIONS: [
         FE_SERVICE.ANALYSIS,
         FE_SERVICE.DATA_MODELS,
@@ -348,18 +351,20 @@ _TEAM_TO_FE_SERVICE: Dict[TEAM, List[FE_SERVICE]] = {
         FE_SERVICE.CLOUD_ACCOUNTS,
         FE_SERVICE.DATA_SCHEMAS,
         FE_SERVICE.LOG_SOURCES,
-    ]
+    ],
 }
 
 # Obtain mapping of individual FE services values to teams
 FE_SERVICE_TO_TEAM: Dict[str, TEAM] = {
-    service.value: team for team, services in _TEAM_TO_FE_SERVICE.items()
+    service.value: team
+    for team, services in _TEAM_TO_FE_SERVICE.items()
     for service in services
 }
 
 
 class CUSTOMFIELD(Enum):
     """Mapping of Custom Asana Field IDs"""
+
     ESTIMATE = '1199944595440874'
     ON_CALL = '1202118168254133'
     PRIORITY = '1159524604627932'

@@ -27,13 +27,12 @@ def container() -> ValidatorContainer:
     secretsmanager_client_mock.get_secret_value.return_value = {
         "SecretString": "{\"SENTRY_CLIENT_SECRET\": \"Some Private Key\", \"DATADOG_SECRET_TOKEN\": \"MySuperSecretString\" }"
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     container = ValidatorContainer(
         logger=LoggerContainer.logger,
         development=False,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
     return container
 

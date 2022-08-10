@@ -16,13 +16,11 @@ from .validator.containers import ValidatorContainer
 
 class ApplicationContainer(containers.DeclarativeContainer):
     """Producer Application Container"""
+
     config = providers.Configuration(strict=True)
 
     # Logger
-    logger_container = providers.Container(
-        LoggerContainer,
-        config=config
-    )
+    logger_container = providers.Container(LoggerContainer, config=config)
 
     # JSON serializer
     serializer_container = providers.Container(
@@ -31,9 +29,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     # SQS
     queue_container = providers.Container(
-        QueueContainer,
-        logger=logger_container.logger,
-        config=config.services.sqs
+        QueueContainer, logger=logger_container.logger, config=config.services.sqs
     )
 
     # SecretsManager
@@ -41,7 +37,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         SecretsManagerContainer,
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        config=config.services.secrets
+        config=config.services.secrets,
     )
 
     # Payload Validator
@@ -49,5 +45,5 @@ class ApplicationContainer(containers.DeclarativeContainer):
         ValidatorContainer,
         logger=logger_container.logger,
         config=config.common,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )

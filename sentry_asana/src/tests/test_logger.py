@@ -11,17 +11,8 @@ def container() -> LoggerContainer:
     """Logger Container overrides"""
     container = LoggerContainer(
         config={
-            'common': {
-                'is_lambda': 'true',
-                'development': 'false',
-                'debug': 'false'
-            },
-            'logging': {
-                'root': {
-                    'level': 'DEBUG',
-                    'handlers': ['console']
-                }
-            }
+            'common': {'is_lambda': 'true', 'development': 'false', 'debug': 'false'},
+            'logging': {'root': {'level': 'DEBUG', 'handlers': ['console']}},
         },
     )
     return container
@@ -55,34 +46,29 @@ async def test_configure_logger(container: LoggerContainer) -> None:
     assert log.level == INFO
 
     # Test local logger (with config override)
-    with container.config.override({
-        'common': {
-            'is_lambda': 'false',
-            'development': 'false',
-            'debug': 'false'
-        },
-        'logging': {
-            'version': 1,
-            'formatters': {
-                'console': {
-                    'class': 'logging.Formatter',
-                    'format': '[%(levelname)s] [%(asctime)s.%(msecs)03dZ] [%(pathname)s:%(funcName)s:%(lineno)d] %(message)s'
-                }
+    with container.config.override(
+        {
+            'common': {'is_lambda': 'false', 'development': 'false', 'debug': 'false'},
+            'logging': {
+                'version': 1,
+                'formatters': {
+                    'console': {
+                        'class': 'logging.Formatter',
+                        'format': '[%(levelname)s] [%(asctime)s.%(msecs)03dZ] [%(pathname)s:%(funcName)s:%(lineno)d] %(message)s',
+                    }
+                },
+                'handlers': {
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                        'level': 'INFO',
+                        'formatter': 'console',
+                        'stream': 'ext://sys.stdout',
+                    }
+                },
+                'root': {'level': 'DEBUG', 'handlers': ['console']},
             },
-            'handlers': {
-                'console': {
-                    'class': 'logging.StreamHandler',
-                    'level': 'INFO',
-                    'formatter': 'console',
-                    'stream': 'ext://sys.stdout'
-                }
-            },
-            'root': {
-                'level': 'DEBUG',
-                'handlers': ['console']
-            }
         }
-    }):
+    ):
         container.configure_logger()
         service = container.logger_service()
         log = service.get()

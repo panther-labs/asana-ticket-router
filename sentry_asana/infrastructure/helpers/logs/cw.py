@@ -9,17 +9,18 @@ import pulumi_aws as aws
 import pulumi
 
 
-def create_log_group(name: str, opts: pulumi.ResourceOptions) -> aws.cloudwatch.LogGroup:
+def create_log_group(
+    name: str, opts: pulumi.ResourceOptions
+) -> aws.cloudwatch.LogGroup:
     """Create a new LogGroup"""
     return aws.cloudwatch.LogGroup(
-        name=name,
-        resource_name=name,
-        retention_in_days=0,
-        opts=opts
+        name=name, resource_name=name, retention_in_days=0, opts=opts
     )
 
 
-def create_alarm_for_lambda(name: str, lambda_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions) -> aws.cloudwatch.MetricAlarm:
+def create_alarm_for_lambda(
+    name: str, lambda_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions
+) -> aws.cloudwatch.MetricAlarm:
     """Create a new CW Metric Alarm for Lambda"""
     return aws.cloudwatch.MetricAlarm(
         resource_name=f'{name}-lambda-alarm',
@@ -35,14 +36,14 @@ def create_alarm_for_lambda(name: str, lambda_name: str, topic_arns: List[str], 
         treat_missing_data='missing',
         alarm_description='Sentry Asana Lambda function encountered an error',
         alarm_actions=topic_arns,
-        dimensions={
-            'FunctionName': lambda_name
-        },
+        dimensions={'FunctionName': lambda_name},
         opts=opts,
     )
 
 
-def create_alarm_for_sqs(name: str, queue_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions) -> aws.cloudwatch.MetricAlarm:
+def create_alarm_for_sqs(
+    name: str, queue_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions
+) -> aws.cloudwatch.MetricAlarm:
     """Create a new CW Threshold Alarm for SQS"""
     return aws.cloudwatch.MetricAlarm(
         resource_name=f'{name}-sqs-alarm',
@@ -58,8 +59,6 @@ def create_alarm_for_sqs(name: str, queue_name: str, topic_arns: List[str], opts
         treat_missing_data='missing',
         alarm_description='Sentry Asana SQS has messages. Please investigate and re-queue.',
         alarm_actions=topic_arns,
-        dimensions={
-            'QueueName': queue_name
-        },
+        dimensions={'QueueName': queue_name},
         opts=opts,
     )

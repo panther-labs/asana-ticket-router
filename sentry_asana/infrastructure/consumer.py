@@ -23,10 +23,20 @@ class Consumer(pulumi.ComponentResource):
     """
 
     # pylint: disable=too-many-arguments
-    def __init__(self, name: str, que: Queue, sns: Sns, is_debug: str, opts: Optional[pulumi.ResourceOptions] = None):
+    def __init__(
+        self,
+        name: str,
+        que: Queue,
+        sns: Sns,
+        is_debug: str,
+        opts: Optional[pulumi.ResourceOptions] = None,
+    ):
         super().__init__(f'Resources for {name}', name, None, opts)
-        opts = pulumi.ResourceOptions(parent=self) if opts is None else pulumi.ResourceOptions.merge(
-            opts, pulumi.ResourceOptions(parent=self))
+        opts = (
+            pulumi.ResourceOptions(parent=self)
+            if opts is None
+            else pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(parent=self))
+        )
 
         ##################################
         # Constructed ARNs
@@ -36,44 +46,30 @@ class Consumer(pulumi.ComponentResource):
         ##################################
         region = aws.config.region  # type: ignore
         account = aws.get_caller_identity().account_id
-        secret_arn = f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
+        secret_arn = (
+            f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
+        )
 
         ##################################
         # Log Group
         ##################################
-        log_group = cw.create_log_group(
-            name=f'/aws/lambda/{name}',
-            opts=opts
-        )
+        log_group = cw.create_log_group(name=f'/aws/lambda/{name}', opts=opts)
 
         ##################################
         # IAM Policies
         ##################################
         inline_policies: List[aws.iam.RoleInlinePolicyArgs] = [
             # like the AWSLambdaBasicExecutionRole managed policy, but restricted to just our log group
-            inline.add_log_groups(
-                name,
-                log_group
-            ),
-            inline.add_secretsmanager(
-                name,
-                secret_arn
-            ),
-            inline.add_sqs_consumer(
-                name,
-                que.get_que()
-            )
+            inline.add_log_groups(name, log_group),
+            inline.add_secretsmanager(name, secret_arn),
+            inline.add_sqs_consumer(name, que.get_que()),
         ]
 
         ##################################
         # IAM Roles
         ##################################
         # Create the role for the Lambda to assume
-        lambda_role = role.create(
-            name,
-            inline_policies,
-            opts
-        )
+        lambda_role = role.create(name, inline_policies, opts)
 
         ##################################
         # Serverless (Lambda)
@@ -101,7 +97,7 @@ class Consumer(pulumi.ComponentResource):
                     'DEV_ASANA_SENTRY_PROJECT': '1200611106362920',
                     'RELEASE_TESTING_PORTFOLIO': '1199961111326835',
                 }
-            )
+            ),
         )
 
         ##################################
@@ -111,7 +107,7 @@ class Consumer(pulumi.ComponentResource):
             name,
             lambda_function.name,
             sns.get_topic_arns(),
-            opts=pulumi.ResourceOptions(parent=lambda_function)
+            opts=pulumi.ResourceOptions(parent=lambda_function),
         )
 
         ##################################
@@ -121,9 +117,7 @@ class Consumer(pulumi.ComponentResource):
             name,
             que.get_que(),
             lambda_function.arn,
-            opts=pulumi.ResourceOptions(parent=sns.get_sns_topic())
+            opts=pulumi.ResourceOptions(parent=sns.get_sns_topic()),
         )
 
-        self.register_outputs({
-            'consumer lamda': lambda_function.arn
-        })
+        self.register_outputs({'consumer lamda': lambda_function.arn})

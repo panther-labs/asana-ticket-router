@@ -15,7 +15,13 @@ from mypy_boto3_sqs.type_defs import SendMessageResultTypeDef
 class QueueService:
     """Message Service"""
 
-    def __init__(self, loop: Callable[[], AbstractEventLoop], logger: Logger, client: SQSClient, queue_url: str):
+    def __init__(
+        self,
+        loop: Callable[[], AbstractEventLoop],
+        logger: Logger,
+        client: SQSClient,
+        queue_url: str,
+    ):
         self._loop = loop
         self._logger = logger
         self._client = client
@@ -31,10 +37,7 @@ class QueueService:
                 QueueUrl=self._queue_url,
                 MessageBody=message,
                 MessageAttributes={
-                    'AlertType': {
-                        'StringValue': alert_type,
-                        'DataType': 'String'
-                    }
-                }
-            )
+                    'AlertType': {'StringValue': alert_type, 'DataType': 'String'}
+                },
+            ),
         )

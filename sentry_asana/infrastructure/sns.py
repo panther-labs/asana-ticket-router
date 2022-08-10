@@ -23,10 +23,7 @@ class Sns(pulumi.ComponentResource):
         ##################################
         # SNS
         ##################################
-        self.sns_topic = sns.create_topic(
-            name,
-            opts
-        )
+        self.sns_topic = sns.create_topic(name, opts)
 
         # Configure subscriptions based on deployment params
         config = pulumi.Config()
@@ -36,14 +33,13 @@ class Sns(pulumi.ComponentResource):
             name,
             self.sns_topic.arn,
             deployment_params,
-            opts=pulumi.ResourceOptions(parent=self.sns_topic)
+            opts=pulumi.ResourceOptions(parent=self.sns_topic),
         )
 
         # Register the SNS Topics
-        self.register_outputs({
-            f'{name}-sns-topic': self.sns_topic.arn,
-            'topic-arns': self.topic_arns
-        })
+        self.register_outputs(
+            {f'{name}-sns-topic': self.sns_topic.arn, 'topic-arns': self.topic_arns}
+        )
 
     def get_topic_arns(self) -> List[str]:
         """Get a list of topic arns"""

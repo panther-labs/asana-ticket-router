@@ -24,16 +24,15 @@ class DatadogContainer(containers.DeclarativeContainer):
     serializer = providers.Dependency()
     keys = providers.Dependency()
 
-    client = providers.Singleton(
-        ApiClient,
-        configuration=Configuration()
-    )
+    client = providers.Singleton(ApiClient, configuration=Configuration())
 
-    datadog_service: Callable[..., Awaitable[service.DatadogService]] = providers.Singleton(
+    datadog_service: Callable[
+        ..., Awaitable[service.DatadogService]
+    ] = providers.Singleton(
         service.DatadogService,
         logger=logger,
         serializer=serializer,
         client=client,
         datadog_api_key=providers.Resource(datadog_api_key, keys),
-        datadog_app_key=providers.Resource(datadog_app_key, keys)
+        datadog_app_key=providers.Resource(datadog_app_key, keys),
     )

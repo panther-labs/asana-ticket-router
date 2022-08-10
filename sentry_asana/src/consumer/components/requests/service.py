@@ -13,11 +13,7 @@ from aiohttp import ClientSession, ClientResponse
 class RequestsService:
     """HTTP Requests Service"""
 
-    def __init__(
-        self,
-        logger: Logger,
-        session: Optional[ClientSession]
-    ):
+    def __init__(self, logger: Logger, session: Optional[ClientSession]):
         self._logger = logger
         self._session = session
 
@@ -37,9 +33,5 @@ class RequestsService:
         """Make a request"""
         self._logger.debug("Dispatching request")
         if self._session is None:
-            raise RuntimeError(
-                "No session. Please use the `with_session` helper.")
-        return await self._session.request(
-            *args,
-            **kwargs
-        )
+            raise RuntimeError("No session. Please use the `with_session` helper.")
+        return await self._session.request(*args, **kwargs)

@@ -18,12 +18,10 @@ def container() -> SecretsManagerContainer:
     }
 
     container = SecretsManagerContainer(
-        config={
-            "secret_name": "some secret name"
-        },
+        config={"secret_name": "some secret name"},
         logger=LoggerContainer.logger,
         serializer=SerializerContainer.serializer_service,
-        secretsmanager_client=secretsmanager_client_mock
+        secretsmanager_client=secretsmanager_client_mock,
     )
     return container
 

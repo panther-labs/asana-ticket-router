@@ -7,8 +7,13 @@
 import os
 import subprocess  # nosec: True
 import shutil
-from sentry_asana.infrastructure.globals import PROJECT_ROOT, \
-    SRC_FOLDER_NAME, LAMBDA_DEPLOYMENT_PACKAGE_DIR, INIT_PATH, COMMON_PATH
+from sentry_asana.infrastructure.globals import (
+    PROJECT_ROOT,
+    SRC_FOLDER_NAME,
+    LAMBDA_DEPLOYMENT_PACKAGE_DIR,
+    INIT_PATH,
+    COMMON_PATH,
+)
 
 
 def create_lambda_package(src_path: str) -> str:
@@ -16,25 +21,18 @@ def create_lambda_package(src_path: str) -> str:
     lambda_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, src_path)
     common_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, COMMON_PATH)
     init_path = os.path.join(PROJECT_ROOT, SRC_FOLDER_NAME, INIT_PATH)
-    package_path = os.path.join(
-        LAMBDA_DEPLOYMENT_PACKAGE_DIR, src_path)
+    package_path = os.path.join(LAMBDA_DEPLOYMENT_PACKAGE_DIR, src_path)
     shutil.rmtree(package_path, ignore_errors=True)
     os.makedirs(package_path)
 
     # Copy all src files into new dir; shutil.copytree, the most suggested way of doing this
     # in python, apparently has some issues that cause unexpected headaches
-    subprocess.call(  # nosec: True
-        ['cp', '-r', lambda_path, package_path], shell=False
-    )
+    subprocess.call(['cp', '-r', lambda_path, package_path], shell=False)  # nosec: True
 
-    subprocess.call(  # nosec: True
-        ['cp', '-r', common_path, package_path], shell=False
-    )
+    subprocess.call(['cp', '-r', common_path, package_path], shell=False)  # nosec: True
 
     # Copy over __init__.py file
-    subprocess.call(  # nosec: True
-        ['cp', '-r', init_path, package_path], shell=False
-    )
+    subprocess.call(['cp', '-r', init_path, package_path], shell=False)  # nosec: True
     # Install the wheels for linux + arm64 for Graviton2.
     # NOTE: this is not compatible with x86.
     subprocess.call(  # nosec: True
@@ -47,8 +45,8 @@ def create_lambda_package(src_path: str) -> str:
             '-r',
             os.path.join(lambda_path, 'requirements.txt'),
             '-t',
-            package_path
+            package_path,
         ],
-        shell=False
+        shell=False,
     )
     return package_path

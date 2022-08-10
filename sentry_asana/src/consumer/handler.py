@@ -21,28 +21,23 @@ from consumer.components.asana.entities import AsanaFields
 
 # Initialize in global state so Lambda can use on hot invocations
 app = ApplicationContainer()
-app.config.from_yaml(
-    'consumer/config.yml',
-    required=True,
-    envs_required=True
-)
+app.config.from_yaml('consumer/config.yml', required=True, envs_required=True)
 app.logger_container.configure_logger()
 
 
-def handler(
-    *args: Any,
-    **kwargs: Any
-) -> Dict:
+def handler(*args: Any, **kwargs: Any) -> Dict:
     """AWS Lambda entry point"""
     app.wire(modules=[__name__])
     wrapped = use_session(callback=partial(main, *args, **kwargs))
     return asyncio.run(wrapped)
 
 
-@ inject
+@inject
 async def use_session(
     callback: Callable,
-    requests_container: RequestsContainer = Provide[ApplicationContainer.requests_container],
+    requests_container: RequestsContainer = Provide[
+        ApplicationContainer.requests_container
+    ],
 ) -> Dict[Any, Any]:
     """Uses an HTTP Session via context"""
     # Initialize a new singleton request service
@@ -56,11 +51,13 @@ async def use_session(
         return await callback()
 
 
-@ inject
+@inject
 async def main(
     event: Dict,
     _context: Any,
-    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
+    logger: LoggerService = Provide[
+        ApplicationContainer.logger_container.logger_service
+    ],
 ) -> Dict:
     """Main async program"""
     log = logger.get()
@@ -73,8 +70,9 @@ async def main(
     statuses = list(status_tuples)
 
     # Filter list of status to get only failed
-    failed = list(filter(lambda status: status.get(
-        'success', False) is False, statuses))
+    failed = list(
+        filter(lambda status: status.get('success', False) is False, statuses)
+    )
 
     if len(failed) > 0:
         log.warning('Failed to process records: %s', failed)
@@ -82,9 +80,9 @@ async def main(
     # Map to get the structure AWS Expects:
     # https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
     response = {
-        'batchItemFailures': list(map(lambda status: {
-            'itemIdentifier': status['message_id']
-        }, failed)),
+        'batchItemFailures': list(
+            map(lambda status: {'itemIdentifier': status['message_id']}, failed)
+        ),
     }
 
     log.info('SQS response: %s', response)
@@ -94,10 +92,12 @@ async def main(
     return response
 
 
-@ inject
+@inject
 async def process(
     record: Dict,
-    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service]
+    logger: LoggerService = Provide[
+        ApplicationContainer.logger_container.logger_service
+    ],
 ) -> Dict[str, Union[bool, str]]:
 
     """Inspect the payload and process as Sentry or Datadog Alert Event"""
@@ -107,7 +107,9 @@ async def process(
         message_attributes: Dict = record['messageAttributes']
         alert_type: str = message_attributes.get('AlertType', {}).get('stringValue', '')
         if alert_type not in ['SENTRY', 'DATADOG']:
-            raise ValueError(f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.')
+            raise ValueError(
+                f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.'
+            )
 
         if alert_type == 'SENTRY':
             return await process_sentry_alert(record)
@@ -115,11 +117,13 @@ async def process(
         if alert_type == 'DATADOG':
             return await process_datadog_alert(record)
 
-        log.error(f'Failed to identify alert type and link alert ({message_id}) with asana task.')
+        log.error(
+            f'Failed to identify alert type and link alert ({message_id}) with asana task.'
+        )
         return {
             'success': False,
             'message': f'Failed to identify alert type and link alert ({message_id}) with asana task.',
-            'message_id': message_id
+            'message_id': message_id,
         }
 
     # Catch all other exceptions and return a bad status to retry the record.
@@ -134,17 +138,23 @@ async def process(
         return {
             'success': False,
             'message': f'{str(err)}\n{traceback.format_exc()}',
-            'message_id': message_id
+            'message_id': message_id,
         }
 
 
 @inject
 async def process_datadog_alert(
     record: Dict,
-    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
-    serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
-    datadog: DatadogService = Provide[ApplicationContainer.datadog_container.container.datadog_service],
-    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service]
+    logger: LoggerService = Provide[
+        ApplicationContainer.logger_container.logger_service
+    ],
+    serializer: SerializerService = Provide[
+        ApplicationContainer.serializer_container.serializer_service
+    ],
+    datadog: DatadogService = Provide[
+        ApplicationContainer.datadog_container.container.datadog_service
+    ],
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Datadog event and create an Asana Task"""
 
@@ -157,29 +167,37 @@ async def process_datadog_alert(
         log.info(f'Parsed the following Datadog Event: {datadog_event}')
 
         asana_fields: AsanaFields = await asana.extract_datadog_fields(datadog_event)
-        log.info(f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}')
+        log.info(
+            f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}'
+        )
 
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
-        log.info(f'Got the following fields back from get_event_details call: {datadog_event_details}')
+        log.info(
+            f'Got the following fields back from get_event_details call: {datadog_event_details}'
+        )
 
         return {
             'success': True,
             'message': 'Processed an alert from Datadog and did absolutely nothing.',
-            'message_id': message_id
+            'message_id': message_id,
         }
     except Exception as err:
         raise err
 
 
-
-
-@ inject
+@inject
 async def process_sentry_alert(
     record: Dict,
-    logger: LoggerService = Provide[ApplicationContainer.logger_container.logger_service],
-    serializer: SerializerService = Provide[ApplicationContainer.serializer_container.serializer_service],
-    sentry: SentryService = Provide[ApplicationContainer.sentry_container.sentry_service],
-    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service]
+    logger: LoggerService = Provide[
+        ApplicationContainer.logger_container.logger_service
+    ],
+    serializer: SerializerService = Provide[
+        ApplicationContainer.serializer_container.serializer_service
+    ],
+    sentry: SentryService = Provide[
+        ApplicationContainer.sentry_container.sentry_service
+    ],
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Sentry event and create an Asana Task"""
 
@@ -216,7 +234,9 @@ async def process_sentry_alert(
 
         # Next, create a new asana task
         asana_fields: AsanaFields = await asana.extract_sentry_fields(event)
-        new_task_gid = await asana.create_task(asana_fields, root_asana_link, asana_link)
+        new_task_gid = await asana.create_task(
+            asana_fields, root_asana_link, asana_link
+        )
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)
@@ -225,14 +245,16 @@ async def process_sentry_alert(
             return {
                 'success': True,
                 'message': f'asana task created ({new_task_gid})',
-                'message_id': message_id
+                'message_id': message_id,
             }
 
-        log.error(f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})')
+        log.error(
+            f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})'
+        )
         return {
             'success': False,
             'message': f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})',
-            'message_id': message_id
+            'message_id': message_id,
         }
     except Exception as err:
         raise err

@@ -19,10 +19,7 @@ class QueueContainer(containers.DeclarativeContainer):
     config = providers.Configuration(strict=True)
     logger = providers.Dependency()
 
-    sqs_client = providers.Singleton(
-        boto3.client,
-        service_name="sqs"
-    )
+    sqs_client = providers.Singleton(boto3.client, service_name="sqs")
 
     queue_service = providers.Singleton(
         service.QueueService,

@@ -18,7 +18,7 @@ class SentryService:
         logger: Logger,
         client: RequestsService,
         serializer: SerializerService,
-        bearer: str
+        bearer: str,
     ):
         self._logger = logger
         self._client = client
@@ -33,7 +33,7 @@ class SentryService:
             f'https://sentry.io/api/0/issues/{issue_id}/',
             headers={
                 'Authorization': f'Bearer {self._bearer}',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
         )
         response.raise_for_status()
@@ -41,18 +41,22 @@ class SentryService:
 
     async def add_link(self, issue_id: str, asana_task_id: str) -> Dict:
         """Link an asana task Id to a Sentry issue"""
-        self._logger.info(f'Adding link to asana task {asana_task_id} in sentry issue {issue_id}')
+        self._logger.info(
+            f'Adding link to asana task {asana_task_id} in sentry issue {issue_id}'
+        )
         response = await self._client.request(
             'POST',
             f'https://sentry.io/api/0/issues/{issue_id}/plugins/asana/link/',
             headers={
                 'Authorization': f'Bearer {self._bearer}',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            data=self._serializer.stringify({
-                'issue_id': asana_task_id,
-                'comment': 'Linked by the Sentry-Asana automation'
-            })
+            data=self._serializer.stringify(
+                {
+                    'issue_id': asana_task_id,
+                    'comment': 'Linked by the Sentry-Asana automation',
+                }
+            ),
         )
         response.raise_for_status()
         return await response.json(loads=self._serializer.parse)
@@ -71,14 +75,14 @@ class SentryService:
             raise ValueError(msg)
 
         asana_issue: Optional[Dict] = next(
-            (issue for issue in plugins if issue.get('id', '') == 'asana'), None)
+            (issue for issue in plugins if issue.get('id', '') == 'asana'), None
+        )
         if asana_issue is None:
             msg = f'No asana plugin found for issue: ({issue_id})'
             self._logger.error(msg)
             raise ValueError(msg)
 
-        asana_link: Optional[str] = asana_issue.get(
-            'issue', {}).get('url', None)
+        asana_link: Optional[str] = asana_issue.get('issue', {}).get('url', None)
 
         if asana_link is None:
             # It is acceptable that we don't find an asana link in the sentry issue

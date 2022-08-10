@@ -30,8 +30,7 @@ class AsanaContainer(containers.DeclarativeContainer):
     )
 
     asana_client = providers.Singleton(
-        asana.Client.access_token,
-        providers.Resource(asana_pat, keys)
+        asana.Client.access_token, providers.Resource(asana_pat, keys)
     )
 
     asana_service = providers.Singleton(

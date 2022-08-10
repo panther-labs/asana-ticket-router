@@ -21,8 +21,7 @@ class DatadogService:
         serializer: SerializerService,
         client: ApiClient,
         datadog_api_key: str,
-        datadog_app_key: str
-
+        datadog_app_key: str,
     ):
         self._logger = logger
         self._serializer = serializer

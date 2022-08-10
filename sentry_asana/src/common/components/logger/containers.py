@@ -21,22 +21,13 @@ class LoggerContainer(containers.DeclarativeContainer):
     log_level = providers.Selector(
         config.common.debug,
         true=providers.Factory(int, logging.DEBUG),
-        false=providers.Factory(int, logging.INFO)
+        false=providers.Factory(int, logging.INFO),
     )
 
-    logger_service = providers.Singleton(
-        service.LoggerService,
-        logger=logger
-    )
+    logger_service = providers.Singleton(service.LoggerService, logger=logger)
 
     configure_logger = providers.Selector(
         config.common.is_lambda,
-        true=providers.Callable(
-            logger().setLevel,
-            log_level
-        ),
-        false=providers.Callable(
-            logging.config.dictConfig,
-            config=config.logging
-        )
+        true=providers.Callable(logger().setLevel, log_level),
+        false=providers.Callable(logging.config.dictConfig, config=config.logging),
     )

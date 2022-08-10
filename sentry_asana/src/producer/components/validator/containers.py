@@ -13,11 +13,9 @@ from hashlib import sha256
 from dependency_injector import containers, providers
 from . import service
 
-sentry_client_secret: Callable[[Dict],
-                               str] = lambda keys: keys['SENTRY_CLIENT_SECRET']
+sentry_client_secret: Callable[[Dict], str] = lambda keys: keys['SENTRY_CLIENT_SECRET']
 
-datadog_secret_token: Callable[[Dict],
-                               str] = lambda keys: keys['DATADOG_SECRET_TOKEN']
+datadog_secret_token: Callable[[Dict], str] = lambda keys: keys['DATADOG_SECRET_TOKEN']
 
 
 class ValidatorContainer(containers.DeclarativeContainer):
@@ -41,5 +39,5 @@ class ValidatorContainer(containers.DeclarativeContainer):
         hmac=hmac.new,
         digest=sha256,
         sentry_key=providers.Resource(sentry_client_secret, keys),
-        datadog_key=providers.Resource(datadog_secret_token, keys)
+        datadog_key=providers.Resource(datadog_secret_token, keys),
     )

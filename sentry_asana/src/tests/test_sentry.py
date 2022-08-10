@@ -35,13 +35,12 @@ def container() -> SentryContainer:
     secretsmanager_client_mock.get_secret_value.return_value = {
         "SecretString": "{\"SENTRY_PAT\": \"Some Sentry PAT\"}"
     }
-    secretsmanager_container.secretsmanager_client.override(
-        secretsmanager_client_mock)
+    secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
     container = SentryContainer(
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
-        keys=secretsmanager_container.keys
+        keys=secretsmanager_container.keys,
     )
 
     return container
@@ -165,39 +164,24 @@ async def test_get_sentry_asana_link(container: SentryContainer) -> None:
 
         with pytest.raises(ValueError):
             response = await service.get_sentry_asana_link('issue_id')
-            assert str(
-                ValueError) == 'Could not find any plugins for issue: (issue_id)'
+            assert str(ValueError) == 'Could not find any plugins for issue: (issue_id)'
             assert response is None
 
     # Next exception
     response_mock.json.return_value = {'pluginIssues': []}
     with pytest.raises(ValueError):
         response = await service.get_sentry_asana_link('issue_id')
-        assert str(
-            ValueError) == 'No asana plugin found for issue: (issue_id)'
+        assert str(ValueError) == 'No asana plugin found for issue: (issue_id)'
         assert response is None
 
     # Test for no asana_link
-    response_mock.json.return_value = {
-        'pluginIssues': [
-            {
-                'id': 'asana'
-            }
-        ]
-    }
+    response_mock.json.return_value = {'pluginIssues': [{'id': 'asana'}]}
     response = await service.get_sentry_asana_link('issue_id')
     assert response is None
 
     # Test found asana_link
     response_mock.json.return_value = {
-        'pluginIssues': [
-            {
-                'id': 'asana',
-                'issue': {
-                    'url': 'asana_url'
-                }
-            }
-        ]
+        'pluginIssues': [{'id': 'asana', 'issue': {'url': 'asana_url'}}]
     }
     response = await service.get_sentry_asana_link('issue_id')
     assert response == 'asana_url'

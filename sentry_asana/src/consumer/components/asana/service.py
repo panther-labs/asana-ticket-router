@@ -15,9 +15,18 @@ from urllib import parse
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
 from common.components.serializer.service import SerializerService
-from .entities import RUNBOOK_URL, TEAM, ENG_TEAMS, EngTeam, \
-    PRIORITY,  FE_SERVICE_TO_TEAM, SERVICE_TO_TEAM, \
-    AsanaFields, CUSTOMFIELD, SELF_HOSTED_ACCOUNTS_IDS
+from .entities import (
+    RUNBOOK_URL,
+    TEAM,
+    ENG_TEAMS,
+    EngTeam,
+    PRIORITY,
+    FE_SERVICE_TO_TEAM,
+    SERVICE_TO_TEAM,
+    AsanaFields,
+    CUSTOMFIELD,
+    SELF_HOSTED_ACCOUNTS_IDS,
+)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -33,7 +42,7 @@ class AsanaService:
         release_testing_portfolio: str,
         logger: Logger,
         client: Client,
-        serializer: SerializerService
+        serializer: SerializerService,
     ):
         self._loop = loop
         self._development = development
@@ -44,9 +53,11 @@ class AsanaService:
         self._client = client
         # Tell Asana to use the latest API changes (opt in, silence warning)
         self._client.headers = {
-            'Asana-Enable': 'new_user_task_lists,new_project_templates'}
+            'Asana-Enable': 'new_user_task_lists,new_project_templates'
+        }
         self._parser = re.compile(
-            r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)")
+            r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)"
+        )
 
     async def _get_projects_in_portfolio(self, portfolio_gid: str) -> List[Dict]:
         """Dispatch a call to find a Sentry issue details by its issue_id"""
@@ -56,9 +67,8 @@ class AsanaService:
             partial(
                 self._client.portfolios.get_items,
                 portfolio_gid,
-                opt_fields=['name', 'resource_type',
-                            'created_at', 'archived']
-            )
+                opt_fields=['name', 'resource_type', 'created_at', 'archived'],
+            ),
         )
 
     async def _find_asana_task(self, task_gid: str) -> Optional[Dict]:
@@ -69,53 +79,36 @@ class AsanaService:
         self._logger.info('Finding asana task')
         try:
             return await self._loop().run_in_executor(
-                None,
-                partial(
-                    self._client.tasks.find_by_id,
-                    task_gid
-                )
+                None, partial(self._client.tasks.find_by_id, task_gid)
             )
         except ForbiddenError as err:
-            self._logger.warning(
-                'Task is Private (most likely deleted): %s', err)
+            self._logger.warning('Task is Private (most likely deleted): %s', err)
             return None
         except NotFoundError as err:
-            self._logger.warning(
-                'Task not found: %s', err)
+            self._logger.warning('Task not found: %s', err)
             return None
 
     async def _create_asana_task(self, task: Dict) -> Dict:
         """Dispatch a call to create a new Asana task"""
         self._logger.info("Creating asana task")
         return await self._loop().run_in_executor(
-            None,
-            partial(
-                self._client.tasks.create_task,
-                task
-            )
+            None, partial(self._client.tasks.create_task, task)
         )
 
     async def create_task(
-            self,
-            asana_fields: AsanaFields,
-            root_asana_link: Optional[str],
-            prev_asana_link: Optional[str]
+        self,
+        asana_fields: AsanaFields,
+        root_asana_link: Optional[str],
+        prev_asana_link: Optional[str],
     ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task"""
         self._logger.info('Constructing an asana task')
-        notes = self._create_task_note(
-            asana_fields,
-            root_asana_link,
-            prev_asana_link
-        )
+        notes = self._create_task_note(asana_fields, root_asana_link, prev_asana_link)
         task_body = self._create_task_body(asana_fields, notes)
         response = await self._create_asana_task(task_body)
         return response['gid']
 
-    async def extract_datadog_fields(
-        self,
-        datadog_event: Dict
-    ) -> AsanaFields:
+    async def extract_datadog_fields(self, datadog_event: Dict) -> AsanaFields:
         """Extract relevent fields from the datadog event"""
         self._logger.debug('Extracting fields')
         url = datadog_event['link']
@@ -135,7 +128,9 @@ class AsanaService:
         aws_account_id = tags.get('aws_account', 'Unknown')
         customer = tags.get('customer_name', 'Unknown')
         display_name = parse.quote(customer)
-        event_datetime = datetime.fromtimestamp(int(datadog_event['date'])/1000).strftime('%Y-%m-%dT%H:%M:%S')
+        event_datetime = datetime.fromtimestamp(
+            int(datadog_event['date']) / 1000
+        ).strftime('%Y-%m-%dT%H:%M:%S')
         title = datadog_event['title']
         level = datadog_event['level'].lower()
         priority = self._get_task_priority(level)
@@ -146,11 +141,7 @@ class AsanaService:
             service=tags.get('service', None),
             team=tags.get('team', None),
         )
-        project_gids = await self._get_project_ids(
-            environment,
-            level,
-            assigned_team
-        )
+        project_gids = await self._get_project_ids(environment, level, assigned_team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=assigned_team,
@@ -168,10 +159,7 @@ class AsanaService:
             url=url,
         )
 
-    async def extract_sentry_fields(
-        self,
-        sentry_event: Dict
-    ) -> AsanaFields:
+    async def extract_sentry_fields(self, sentry_event: Dict) -> AsanaFields:
         """Extract relevent fields from the sentry event"""
         self._logger.debug('Extracting fields')
         issue_id = sentry_event['issue_id']
@@ -192,11 +180,7 @@ class AsanaService:
             service=tags.get('service', None),
             team=tags.get('team', None),
         )
-        project_gids = await self._get_project_ids(
-            environment,
-            level,
-            assigned_team
-        )
+        project_gids = await self._get_project_ids(environment, level, assigned_team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=assigned_team,
@@ -218,7 +202,7 @@ class AsanaService:
         self,
         fields: AsanaFields,
         root_asana_link: Optional[str],
-        prev_asana_link: Optional[str]
+        prev_asana_link: Optional[str],
     ) -> str:
         """Create the note for the asana task"""
         self._logger.debug('Creating asana task notes')
@@ -227,7 +211,8 @@ class AsanaService:
             f'Event Datetime: {fields.event_datetime}\n\n'
             f'Customer Impacted: {fields.customer}\n\n'
             f'Environment: {fields.environment}\n\n'
-            f'Runbook: {fields.runbook_url}\n\n')
+            f'Runbook: {fields.runbook_url}\n\n'
+        )
 
         # if a customer is not self-hosted, add a switch role link
         if fields.aws_account_id not in SELF_HOSTED_ACCOUNTS_IDS:
@@ -265,7 +250,13 @@ class AsanaService:
         prev_link = match.group(2)
         return prev_link
 
-    def _get_owning_team(self, server_name: Optional[str], url: Optional[str], service: Optional[str], team: Optional[str]) -> EngTeam:
+    def _get_owning_team(
+        self,
+        server_name: Optional[str],
+        url: Optional[str],
+        service: Optional[str],
+        team: Optional[str],
+    ) -> EngTeam:
         """Given a server name and event type, returns the Asana team that owns it.
 
         Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
@@ -296,7 +287,9 @@ class AsanaService:
         # If both a `url` and a `server_name` are missing, fallback to the Observability team
         return ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
 
-    async def _get_project_ids(self, environment: str, level: str, owning_team: EngTeam) -> List[str]:
+    async def _get_project_ids(
+        self, environment: str, level: str, owning_team: EngTeam
+    ) -> List[str]:
         """Returns a list of project ids to attach to an Asana task"""
         self._logger.debug("Getting relevant project ids")
         # If we are in local dev mode for sentry-asana, or
@@ -330,7 +323,7 @@ class AsanaService:
         self._logger.debug("Getting latest staging project ids")
         ids = await asyncio.gather(
             self._get_latest_project_id(portfolio_id),
-            self._get_latest_project_id(self._release_testing_portfolio)
+            self._get_latest_project_id(self._release_testing_portfolio),
         )
         project_ids = list(ids)
         filtered = [i for i in project_ids if i is not None]
@@ -363,19 +356,17 @@ class AsanaService:
 
         # Filter unwanted results
         filtered_projects = filter(
-            lambda proj:
-            proj['archived'] is False and
-            proj['resource_type'] == 'project', projects
+            lambda proj: proj['archived'] is False
+            and proj['resource_type'] == 'project',
+            projects,
         )
 
         # Sort by created_at
         sorted_projects = sorted(
             filtered_projects,
-            key=lambda proj:
-            datetime.strptime(
-                proj['created_at'],
-                '%Y-%m-%dT%H:%M:%S.%fZ'
-            )
+            key=lambda proj: datetime.strptime(
+                proj['created_at'], '%Y-%m-%dT%H:%M:%S.%fZ'
+            ),
         )
 
         # Safely return the last item in the iterator (most recent)
@@ -398,26 +389,30 @@ class AsanaService:
                 CUSTOMFIELD.TEAM.value: fields.assigned_team.team_id,
                 CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
             },
-            'notes': notes
+            'notes': notes,
         }
 
     @staticmethod
     def _get_owning_team_from_service(service: str) -> EngTeam:
         """Return the team that owns the specified service by partial service name match.
         Defaults to OBSERVABILITY_PERF if none found"""
-        team = next((val for key, val in SERVICE_TO_TEAM.items()
-                     if key in service), TEAM.OBSERVABILITY_PERF)
+        team = next(
+            (val for key, val in SERVICE_TO_TEAM.items() if key in service),
+            TEAM.OBSERVABILITY_PERF,
+        )
         return ENG_TEAMS[team]
 
     @staticmethod
     def _get_owning_team_from_fe_service(url: str) -> EngTeam:
         """Return the team that owns the specified service by partial url match.
         Defaults to OBSERVABILITY_PERF if none found."""
-        team = next((val for key, val in FE_SERVICE_TO_TEAM.items()
-                     if key in url), TEAM.OBSERVABILITY_PERF)
+        team = next(
+            (val for key, val in FE_SERVICE_TO_TEAM.items() if key in url),
+            TEAM.OBSERVABILITY_PERF,
+        )
         return ENG_TEAMS[team]
 
-    @ staticmethod
+    @staticmethod
     def _get_task_priority(level: str) -> PRIORITY:
         """Returns a PRIORITY Enum based on the Sentry event level provided."""
         return PRIORITY.MEDIUM if level == 'warning' else PRIORITY.HIGH
