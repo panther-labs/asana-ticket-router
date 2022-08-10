@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyshared.date_utils import get_today_str
+from pyshared.date_utils import generate_utc_timestamp
 from pyshared.deployments_file import DeploymentsRepo, get_deployment_filepath, gen_cfgs
 from pyshared.git_ops import AirplaneModifyGitTask
 from pyshared.yaml_utils import change_yaml_file
@@ -20,7 +20,7 @@ class ManualCustomerDeploy(AirplaneModifyGitTask):
     def change_files(self):
         with change_yaml_file(cfg_filepath=get_deployment_filepath(
                 fairytale_name=self.airplane_params.fairytale_name)) as cfg:
-            cfg["ManualDeploy"] = get_today_str()
+            cfg["ManualDeploy"] = generate_utc_timestamp()
         gen_cfgs()
         return ["."]
 
