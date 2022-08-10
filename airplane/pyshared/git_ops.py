@@ -110,7 +110,7 @@ class AirplaneModifyGitTask(AirplaneCloneGitTask):
         raise NotImplementedError
 
     @staticmethod
-    def get_git_description(self):
+    def get_git_description():
         return ""
 
     def change_files(self) -> List[str]:
