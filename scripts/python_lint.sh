@@ -14,6 +14,8 @@ pylint sentry_asana --ignore src --disable duplicate-code,fixme,missing-module-d
 pylint sentry_asana --ignore tests --disable duplicate-code,fixme,missing-module-docstring,too-few-public-methods
 bandit sentry_asana --recursive --exclude tests
 mypy sentry_asana --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --no-error-summary
+black -S --check --diff sentry_asana
+
 # Main Pulumi file linting
 pylint ./__main__.py --disable duplicate-code,fixme,missing-module-docstring,too-few-public-methods
 bandit ./__main__.py
