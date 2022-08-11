@@ -313,6 +313,7 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
     ANALYSIS = '/analysis/'
     API_TOKENS = '/api-tokens/'
     CLOUD_ACCOUNTS = '/cloud-accounts/'
+    DATA_EXPLORER = '/data-explorer/'
     DATA_MODELS = '/data-models/'
     DATA_SCHEMAS = '/data-schemas/'
     DESTINATIONS = '/destinations/'
@@ -321,6 +322,7 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
     EXPLORER = '/explorer/'
     HELPERS = '/helpers/'
     INDICATOR_SEARCH = '/indicator-search/'
+    INVESTIGATE = '/investigate/'
     LOG_SOURCES = '/log-sources/'
     OVERVIEW = '/overview/'
     QUERY_HISTORY = '/query-history/'
@@ -341,11 +343,13 @@ _TEAM_TO_FE_SERVICE: Dict[TEAM, List[FE_SERVICE]] = {
     ],
     TEAM.INVESTIGATIONS: [
         FE_SERVICE.ALERTS_AND_ERRORS,
+        FE_SERVICE.DATA_EXPLORER,
         FE_SERVICE.ENRICHMENT,
         FE_SERVICE.EXPLORER,
         FE_SERVICE.INDICATOR_SEARCH,
         FE_SERVICE.QUERY_HISTORY,
         FE_SERVICE.SAVED_QUERIES,
+        FE_SERVICE.INVESTIGATE,
     ],
     TEAM.INGESTION: [
         FE_SERVICE.CLOUD_ACCOUNTS,
