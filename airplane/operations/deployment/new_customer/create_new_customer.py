@@ -28,6 +28,9 @@ class NewCustomerCreator(AirplaneGitTask):
             "group": params["deploy_group"].lower(),
             "region": params["region"],
             "snowflake_deployment": params["backend"],
+            "sales_customer_id": params["sales_customer_id"],
+            "sales_phase": params["sales_phase"],
+            "sales_opportunity_id": params["sales_opportunity_id"],
         }
 
         if "customer_domain" in params:

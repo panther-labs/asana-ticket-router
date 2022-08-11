@@ -68,6 +68,28 @@ parameters:
   type: shorttext
   description: Fairytale name of the customer - leave blank unless this is a BYOSF customer
   required: false
+- name: Sales Customer ID
+  slug: sales_customer_id
+  type: shorttext
+  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Customer ID [a-zA-Z0-9]
+  regex: ^[A-Za-z\d]{15,18}$
+- name: Sales Opportunity ID
+  slug: sales_opportunity_id
+  type: shorttext
+  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Opportunity ID [a-zA-Z0-9]
+  regex: ^[A-Za-z\d]{15,18}$
+- name: Sales phase
+  slug: sales_phase
+  type: shorttext
+  description: The customer's position in the sales pipeline
+  regex: ^(trial|proof_of_value|contract)$
+  options:
+  - label: Trial
+    value: trial
+  - label: Proof of Value
+    value: proof_of_value
+  - label: Contract
+    value: contract
 python:
   entrypoint: create_new_customer.py
 timeout: 3600
