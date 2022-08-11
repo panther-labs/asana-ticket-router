@@ -108,7 +108,7 @@ class AsanaService:
         return response['gid']
 
     async def extract_datadog_fields(
-        self, datadog_event: Dict, team: EngTeam
+        self, datadog_event: Dict, team: EngTeam, routing_data: str
     ) -> AsanaFields:
         """Extract relevent fields from the datadog event"""
         self._logger.debug('Extracting fields')
@@ -136,11 +136,10 @@ class AsanaService:
         level = datadog_event['level'].lower()
         priority = self._get_task_priority(level)
         environment = tags.get('env', 'Unknown').lower()
-        assigned_team = team
-        project_gids = await self._get_project_ids(environment, level, assigned_team)
+        project_gids = await self._get_project_ids(environment, level, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
-            assigned_team=assigned_team,
+            assigned_team=team,
             aws_account_id=aws_account_id,
             aws_region=aws_region,
             customer=customer,
@@ -153,10 +152,11 @@ class AsanaService:
             tags=tags,
             title=title,
             url=url,
+            routing_data=routing_data,
         )
 
     async def extract_sentry_fields(
-        self, sentry_event: Dict, team: EngTeam
+        self, sentry_event: Dict, team: EngTeam, routing_data: str
     ) -> AsanaFields:
         """Extract relevent fields from the sentry event"""
         self._logger.debug('Extracting fields')
@@ -172,11 +172,10 @@ class AsanaService:
         level = sentry_event['level'].lower()
         priority = self._get_task_priority(level)
         environment = sentry_event['environment'].lower()
-        assigned_team = team
-        project_gids = await self._get_project_ids(environment, level, assigned_team)
+        project_gids = await self._get_project_ids(environment, level, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
-            assigned_team=assigned_team,
+            assigned_team=team,
             aws_account_id=aws_account_id,
             aws_region=aws_region,
             customer=customer,
@@ -189,6 +188,7 @@ class AsanaService:
             tags=tags,
             title=title,
             url=url,
+            routing_data=routing_data,
         )
 
     def _create_task_note(
@@ -221,6 +221,8 @@ class AsanaService:
         # If we had a previous task link, set it in the payload
         if prev_asana_link:
             note = f'Previous Asana Task: {prev_asana_link}\n\n' + note
+        if fields.routing_data:
+            note = note + f'Routed this ticket because of {fields.routing_data}\n\n'
 
         return ''.join(note)
 

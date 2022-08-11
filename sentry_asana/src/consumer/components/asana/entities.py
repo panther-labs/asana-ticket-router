@@ -40,6 +40,7 @@ class AsanaFields:  # pylint: disable=too-many-instance-attributes
     tags: Dict
     title: str
     url: str
+    routing_data: str
 
 
 # A list of hardcoded Account IDs for our self hosted customers, as extracted via

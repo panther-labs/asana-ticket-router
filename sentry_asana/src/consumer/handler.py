@@ -175,10 +175,21 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
 
         # Next, create a new asana task
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
-        team = heuristics.get_team(entities, datadog_event_details)
-        log.info(f'Got team {team} for datadog event {datadog_event_details}')
+
+        try:
+            team, results = heuristics.get_team(entities, datadog_event_details)
+            results = f"Routed to {team} because we matched {results.Matches}"
+        except heuristics.DefaultTeamException:
+            team = entities.default_team()
+            log.info(
+                f"Unable to find a team to match {datadog_event_details}, using {team}"
+            )
+            results = f"Routed to {team} because we did not find any matching teams."
+        log.info(
+            f"Got {team} for sentry issue: {datadog_event_details}, with matchers: {results.Matches}"
+        )
         asana_fields: AsanaFields = await asana.extract_datadog_fields(
-            datadog_event, team
+            datadog_event, team, results
         )
         log.info(
             f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}'
@@ -248,12 +259,23 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
 
         # Next, create a new asana task
         tags = event.get('tags', [])
-        team = heuristics.get_team(entities, dict(tags))
-        log.info(f'Got {team} for sentry issue: {issue_id}')
-        asana_fields: AsanaFields = await asana.extract_sentry_fields(event, team)
+        try:
+            team, results = heuristics.get_team(entities, dict(tags))
+            results = f"Routed to {team} because we matched {results.Matches}"
+        except heuristics.DefaultTeamException:
+            team = entities.default_team()
+            log.info(f"Unable to find a team to match {issue_id}, using {team}")
+            results = f"Routed to {team} because we did not find any matching teams."
+        log.info(
+            f"Got {team} for sentry issue: {issue_id}, with matchers: {results.Matches}"
+        )
+        asana_fields: AsanaFields = await asana.extract_sentry_fields(
+            event, team, routing_data=results
+        )
         new_task_gid = await asana.create_task(
             asana_fields, root_asana_link, asana_link
         )
+        # Asana create note to add reason.
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)

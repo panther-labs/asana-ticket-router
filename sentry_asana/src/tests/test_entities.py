@@ -2,7 +2,7 @@ import io
 import pytest
 
 from common.components.entities import heuristics
-from common.components.entities.service import TeamService
+from common.components.entities.service import TeamService, Matcher
 from common.components.entities.containers import EntitiesContainer
 
 
@@ -62,22 +62,25 @@ def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
     teams_service: TeamService = container_with_data.teams_service()
 
     entity = {"service": "panther-lambda-func"}
-    assert heuristics.get_team(teams_service, entity).Name == "TestTeam"
+    team, routing = heuristics.get_team(teams_service, entity)
+    assert team.Name == "TestTeam"
+    assert routing.Matches[0] == Matcher('service:panther-lambda-func')
 
     # Ensure precedence prefers team tag over service tag.
     entity = {"service": "panther-lambda-func", "team": "foo"}
-    assert heuristics.get_team(teams_service, entity).Name == "OtherTeam"
+    team, unused_result = heuristics.get_team(teams_service, entity)
+    assert team.Name == "OtherTeam"
 
-    # Ensure entities with no matches get default team assignment.
+    # Ensure entities with no matches raise DefaultTeamException
     entity = {"this-is-not-a-real-tag": None}  # type: ignore
-    assert (
-        heuristics.get_team(teams_service, entity).Name
-        == "Observability and Performance"
-    )
+    with pytest.raises(heuristics.DefaultTeamException):
+        heuristics.get_team(teams_service, entity)
 
     # Ensure entities match on regexp matchers
     entity = {"url": "/some/panther/component"}
-    assert heuristics.get_team(teams_service, entity).Name == "OtherTeam"
+    team, routing = heuristics.get_team(teams_service, entity)
+    assert team.Name == "OtherTeam"
+    assert routing.Matches[0] == Matcher("url://some/")
 
 
 def test_prod_config() -> None:
@@ -89,4 +92,5 @@ def test_prod_config() -> None:
         }
     ).teams_service()
     entity = {"server_name": "panther-datacatalog-updater"}
-    assert heuristics.get_team(teams_service, entity).Name == 'Investigations'
+    team, unused_routing_data = heuristics.get_team(teams_service, entity)
+    assert team.Name == 'Investigations'
