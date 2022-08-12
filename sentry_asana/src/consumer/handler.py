@@ -175,7 +175,6 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
 
         # Next, create a new asana task
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
-
         try:
             team, results = heuristics.get_team(entities, datadog_event_details)
             results = f"Routed to {team} because we matched {results.Matches}"
