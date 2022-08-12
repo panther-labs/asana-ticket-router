@@ -8,6 +8,7 @@ import asyncio
 from typing import Dict, Any
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
+from common.constants import AlertType
 from producer.components.queue.service import QueueService
 from producer.components.validator.service import ValidatorService
 from producer.components.application import ApplicationContainer
@@ -52,23 +53,23 @@ async def main(
     sentry_signature: str = headers.get('sentry-hook-signature', '')
     datadog_signature: str = headers.get('datadog-secret-token', '')
 
-    alert_type: str = ''
+    alert_type: AlertType = AlertType.UNKNOWN_ALERT
     valid: bool = False
     if sentry_signature:
-        alert_type = 'SENTRY'
+        alert_type = AlertType.SENTRY
         valid = await validator.validate_sentry(body, sentry_signature)
     elif datadog_signature:
-        alert_type = 'DATADOG'
+        alert_type = AlertType.DATADOG
         valid = await validator.validate_datadog(datadog_signature)
 
-    if not alert_type:
+    if alert_type is AlertType.UNKNOWN_ALERT:
         raise ValueError(
             'Request missing sentry-hook-signature or datadog-secret-token headers.'
         )
 
     if not valid:
-        raise ValueError(f'{alert_type} webhook payload signature mismatch')
+        raise ValueError(f'{alert_type.name} webhook payload signature mismatch')
 
-    response = await queue.put(body, alert_type)
+    response = await queue.put(body, alert_type.name)
     log.info("Success!")
     return response

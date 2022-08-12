@@ -12,6 +12,7 @@ from typing import Dict, Any, List, Union, Callable
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
+from common.constants import AlertType
 from consumer.components.datadog.service import DatadogService
 from consumer.components.sentry.service import SentryService
 from consumer.components.requests.containers import RequestsContainer
@@ -106,15 +107,15 @@ async def process(
     try:
         message_attributes: Dict = record['messageAttributes']
         alert_type: str = message_attributes.get('AlertType', {}).get('stringValue', '')
-        if alert_type not in ['SENTRY', 'DATADOG']:
+        if alert_type not in [AlertType.SENTRY.name, AlertType.DATADOG.name]:
             raise ValueError(
                 f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.'
             )
 
-        if alert_type == 'SENTRY':
+        if alert_type == AlertType.SENTRY.name:
             return await process_sentry_alert(record)
 
-        if alert_type == 'DATADOG':
+        if alert_type == AlertType.DATADOG.name:
             return await process_datadog_alert(record)
 
         log.error(
