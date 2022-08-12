@@ -311,45 +311,58 @@ class FE_SERVICE(Enum):  # pylint: disable=invalid-name
 
     ALERTS_AND_ERRORS = '/alerts-and-errors/'
     ANALYSIS = '/analysis/'
+    API = '/api/'
     API_TOKENS = '/api-tokens/'
+    BULK_UPLOADER = '/bulk-uploader/'
     CLOUD_ACCOUNTS = '/cloud-accounts/'
+    DASHBOARD = '/dashboard/'
     DATA_EXPLORER = '/data-explorer/'
     DATA_MODELS = '/data-models/'
     DATA_SCHEMAS = '/data-schemas/'
     DESTINATIONS = '/destinations/'
     DETECTIONS = '/detections/'
     ENRICHMENT = '/enrichment/'
+    ENRICHMENT_PROVIDERS = '/enrichment-providers/'
     EXPLORER = '/explorer/'
     HELPERS = '/helpers/'
     INDICATOR_SEARCH = '/indicator-search/'
     INVESTIGATE = '/investigate/'
     LOG_SOURCES = '/log-sources/'
+    LOOKUP_TABLES = '/lookup-tables/'
+    MITRE_ATTACK = '/mitre-attack/'
     OVERVIEW = '/overview/'
+    PACKS = '/packs/'
     QUERY_HISTORY = '/query-history/'
     RESOURCES = '/resources/'
     SAVED_QUERIES = '/saved-queries/'
 
 
 _TEAM_TO_FE_SERVICE: Dict[TEAM, List[FE_SERVICE]] = {
-    TEAM.ADOPTION: [FE_SERVICE.API_TOKENS],
+    TEAM.ADOPTION: [FE_SERVICE.API, FE_SERVICE.API_TOKENS],
     TEAM.DETECTIONS: [
         FE_SERVICE.ANALYSIS,
+        FE_SERVICE.BULK_UPLOADER,
+        FE_SERVICE.DASHBOARD,
         FE_SERVICE.DATA_MODELS,
         FE_SERVICE.DESTINATIONS,
         FE_SERVICE.DETECTIONS,
         FE_SERVICE.HELPERS,
+        FE_SERVICE.MITRE_ATTACK,
         FE_SERVICE.OVERVIEW,
+        FE_SERVICE.PACKS,
         FE_SERVICE.RESOURCES,
     ],
     TEAM.INVESTIGATIONS: [
         FE_SERVICE.ALERTS_AND_ERRORS,
         FE_SERVICE.DATA_EXPLORER,
         FE_SERVICE.ENRICHMENT,
+        FE_SERVICE.ENRICHMENT_PROVIDERS,
         FE_SERVICE.EXPLORER,
         FE_SERVICE.INDICATOR_SEARCH,
+        FE_SERVICE.INVESTIGATE,
+        FE_SERVICE.LOOKUP_TABLES,
         FE_SERVICE.QUERY_HISTORY,
         FE_SERVICE.SAVED_QUERIES,
-        FE_SERVICE.INVESTIGATE,
     ],
     TEAM.INGESTION: [
         FE_SERVICE.CLOUD_ACCOUNTS,
