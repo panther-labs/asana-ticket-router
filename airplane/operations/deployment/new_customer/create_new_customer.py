@@ -26,6 +26,7 @@ class NewCustomerCreator(AirplaneGitTask):
             "customer_display_name": params["account_name"],
             "customer_id": params.get("fairytale_name", generate_fairytale_name(repo_path=self.deploys_path)),
             "group": params["deploy_group"].lower(),
+            "deploy_method": 'template',
             "region": params["region"],
             "snowflake_deployment": params["backend"],
             "sales_customer_id": params["sales_customer_id"],

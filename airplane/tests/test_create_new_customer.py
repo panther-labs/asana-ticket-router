@@ -18,6 +18,7 @@ def get_params():
         "region": "us-west-2",
         "backend": "Managed",
         "deploy_group": "L",
+        "deploy_method": "template",
         "first_name": "Tim",
         "last_name": "Scott",
         "email_address": "tim.scott@panther.io",
@@ -64,6 +65,7 @@ def test_translated_args_passed_properly_to_create_customer_metadata(create_cust
     assert cfg["customer_id"] == "alpha-doe"
     assert cfg["customer_display_name"] == "Create Customer Test"
     assert cfg["region"] == "us-west-2"
+    assert cfg["deploy_method"] == "template"
     assert cfg["snowflake_deployment"] == "Managed"
     assert cfg["group"] == "l"
     assert cfg["contact_first_name"] == "Tim"
