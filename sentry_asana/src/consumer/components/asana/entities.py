@@ -177,6 +177,7 @@ class SERVICE(Enum):
     DATACATALOG_UPDATER = 'panther-datacatalog-updater'
     DATA_ARCHIVER = 'panther-data-archiver'
     DETECTIONS_ENGINE = 'panther-detections-engine'
+    EXECUTION_RESULTS_PROCESSOR = 'panther-execution-results-processor'
     GRAPH_API = 'panther-graph-api'
     GREYNOISE_PROCESSOR = 'panther-greynoise-processor'
     HOLDING_TANK = 'panther-holding-tank'
@@ -195,6 +196,7 @@ class SERVICE(Enum):
     PIP_LAYER_BUILDER = 'panther-pip-layer-builder'
     POLICY_ENGINE = 'panther-policy-engine'
     PYTHON_EXECUTOR_TESTS = 'panther-python-executor-tests'
+    PYTHON_EXECUTOR_REPLAY = 'panther-python-executor-replay'
     RBAC_DATALAKE_SYNC = 'panther-rbac-datalake-sync'
     REPLAY_API = 'panther-replay-api'
     REPLAY_RESULTS_PROCESSOR = 'panther-replay-results-processor'
@@ -228,10 +230,12 @@ _TEAM_TO_SERVICE: Dict[TEAM, List[SERVICE]] = {
         SERVICE.CLOUDSECURITY_DATALAKE_FORWARDER,
         SERVICE.COMPLIANCE_API,
         SERVICE.DETECTIONS_ENGINE,
+        SERVICE.EXECUTION_RESULTS_PROCESSOR,
         SERVICE.LAYER_MANAGER,
         SERVICE.PIP_LAYER_BUILDER,
         SERVICE.POLICY_ENGINE,
         SERVICE.PYTHON_EXECUTOR_TESTS,
+        SERVICE.PYTHON_EXECUTOR_REPLAY,
         SERVICE.REPLAY_API,
         SERVICE.REPLAY_DETECTIONS_ENGINE,
         SERVICE.REPLAY_LOG_PUSHER,
