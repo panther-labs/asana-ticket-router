@@ -68,6 +68,16 @@ parameters:
   type: shorttext
   description: Fairytale name of the customer - leave blank unless this is a BYOSF customer
   required: false
+- name: Service Type
+  slug: service_type
+  type: shorttext
+  options:
+  - label: ""
+    value: SaaS
+  - label: ""
+    value: Internal
+  default: SaaS
+  required: true
 - name: Sales Customer ID
   slug: sales_customer_id
   type: shorttext
