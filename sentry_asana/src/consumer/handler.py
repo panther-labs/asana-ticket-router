@@ -12,13 +12,16 @@ from typing import Dict, Any, List, Union, Callable
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
+from common.components.entities.service import TeamService
+from common.components.entities import heuristics
 from common.constants import AlertType
 from consumer.components.datadog.service import DatadogService
 from consumer.components.sentry.service import SentryService
 from consumer.components.requests.containers import RequestsContainer
 from consumer.components.asana.service import AsanaService
+from consumer.components.asana.service import AsanaFields
 from consumer.components.application import ApplicationContainer
-from consumer.components.asana.entities import AsanaFields
+
 
 # Initialize in global state so Lambda can use on hot invocations
 app = ApplicationContainer()
@@ -144,13 +147,16 @@ async def process(
 
 
 @inject
-async def process_datadog_alert(
+async def process_datadog_alert(  # pylint: disable=too-many-arguments
     record: Dict,
     logger: LoggerService = Provide[
         ApplicationContainer.logger_container.logger_service
     ],
     serializer: SerializerService = Provide[
         ApplicationContainer.serializer_container.serializer_service
+    ],
+    entities: TeamService = Provide[
+        ApplicationContainer.entities_container.teams_service
     ],
     datadog: DatadogService = Provide[
         ApplicationContainer.datadog_container.container.datadog_service
@@ -167,12 +173,16 @@ async def process_datadog_alert(
         datadog_event: Dict = serializer.parse(body)
         log.info(f'Parsed the following Datadog Event: {datadog_event}')
 
-        asana_fields: AsanaFields = await asana.extract_datadog_fields(datadog_event)
+        # Next, create a new asana task
+        datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
+        team = heuristics.get_team(entities, datadog_event_details)
+        log.info(f'Got team {team} for datadog event {datadog_event_details}')
+        asana_fields: AsanaFields = await asana.extract_datadog_fields(
+            datadog_event, team
+        )
         log.info(
             f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}'
         )
-
-        datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
         log.info(
             f'Got the following fields back from get_event_details call: {datadog_event_details}'
         )
@@ -187,13 +197,16 @@ async def process_datadog_alert(
 
 
 @inject
-async def process_sentry_alert(
+async def process_sentry_alert(  # pylint: disable=too-many-arguments
     record: Dict,
     logger: LoggerService = Provide[
         ApplicationContainer.logger_container.logger_service
     ],
     serializer: SerializerService = Provide[
         ApplicationContainer.serializer_container.serializer_service
+    ],
+    entities: TeamService = Provide[
+        ApplicationContainer.entities_container.teams_service
     ],
     sentry: SentryService = Provide[
         ApplicationContainer.sentry_container.sentry_service
@@ -234,7 +247,10 @@ async def process_sentry_alert(
             root_asana_link = asana_link
 
         # Next, create a new asana task
-        asana_fields: AsanaFields = await asana.extract_sentry_fields(event)
+        tags = event.get('tags', [])
+        team = heuristics.get_team(entities, dict(tags))
+        log.info(f'Got {team} for sentry issue: {issue_id}')
+        asana_fields: AsanaFields = await asana.extract_sentry_fields(event, team)
         new_task_gid = await asana.create_task(
             asana_fields, root_asana_link, asana_link
         )

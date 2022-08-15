@@ -59,6 +59,9 @@ jobs:
       - run: 
           name: linting
           command: bash scripts/python_lint.sh
+      - run:
+          name: yaml-lint
+          command: yamllint sentry_asana/src/common/components/entities/data/teams.yaml
   unit_tests:
     executor: circleci-python-3-9
     steps:

@@ -1,5 +1,4 @@
 # pylint: disable=redefined-outer-name
-import asyncio
 import pytest
 from unittest import mock
 
@@ -9,6 +8,8 @@ from ..common.components.serializer.service import SerializerService
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.service import LoggerService
 from ..common.components.logger.containers import LoggerContainer
+from ..common.components.entities.containers import EntitiesContainer
+from ..common.components.entities.service import TeamService
 from ..consumer.components.application import ApplicationContainer
 from ..consumer.components.sentry.containers import SentryContainer
 from ..consumer.components.requests.containers import RequestsContainer
@@ -16,6 +17,7 @@ from ..consumer.components.sentry.service import SentryService
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
 from ..consumer.components.datadog.service import DatadogService
+from . import test_entities
 
 
 @pytest.fixture
@@ -43,6 +45,10 @@ def container() -> ApplicationContainer:
     }
     secretsmanager_container.secretsmanager_client.override(secretsmanager_client_mock)
 
+    entity_contianer = EntitiesContainer(
+        config={'entities': {'team_data_file': test_entities.team_data_file()}}
+    )
+
     sentry_container = SentryContainer(
         logger=logger_container.logger,
         serializer=serializer_container.serializer_service,
@@ -67,6 +73,7 @@ def container() -> ApplicationContainer:
     container.logger_container.override(logger_container)
     container.sentry_container.override(sentry_container)
     container.asana_container.override(asana_container)
+    container.entities_container.override(entity_contianer)
     return container
 
 
@@ -76,6 +83,7 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     logger_service = container.logger_container.logger_service()
     secretsmanager_service = container.secretsmanager_container.secretsmanager_service()
     serializer_service = container.serializer_container.serializer_service()
+    teams_service = container.entities_container.teams_service()
     # Must await on the sentry and asana services because they depend
     # on an async initialization from the secretsmanager service
     sentry_service = await container.sentry_container.sentry_service()
@@ -87,6 +95,7 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     assert isinstance(sentry_service, SentryService)
     assert isinstance(asana_service, AsanaService)
     assert isinstance(datadog_service, DatadogService)
+    assert isinstance(teams_service, TeamService)
 
     # Test that our services are singletons
     logger_service2 = container.logger_container.logger_service()
@@ -94,6 +103,7 @@ async def test_application_instance(container: ApplicationContainer) -> None:
         container.secretsmanager_container.secretsmanager_service()
     )
     serializer_service2 = container.serializer_container.serializer_service()
+    teams_service2 = container.entities_container.teams_service()
     # Must await on the sentry and asana services because they depend
     # on an async initialization from the secretsmanager service
     sentry_service2 = await container.sentry_container.sentry_service()
@@ -105,3 +115,4 @@ async def test_application_instance(container: ApplicationContainer) -> None:
     assert sentry_service == sentry_service2
     assert asana_service == asana_service2
     assert datadog_service == datadog_service2
+    assert teams_service == teams_service2

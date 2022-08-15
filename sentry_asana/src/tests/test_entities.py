@@ -1,9 +1,9 @@
 import io
 import pytest
-from sentry_asana.src.common.components.entities import heuristics
 
-from sentry_asana.src.common.components.entities.service import TeamService
-from sentry_asana.src.common.components.entities.containers import EntitiesContainer
+from common.components.entities import heuristics
+from common.components.entities.service import TeamService
+from common.components.entities.containers import EntitiesContainer
 
 
 def team_data_file() -> io.StringIO:
@@ -11,11 +11,11 @@ def team_data_file() -> io.StringIO:
         """
 ---
   - 
-    Name: "Observability"
-    Email: "team-platform-observability@panther.io"
+    Name: "Observability and Performance"
     AsanaTeamId: "1201305154831712"
     AsanaBacklogId: "1201267919523642"
     AsanaSprintPortfolioId: "1201680804234024"
+    AsanaSandboxPortfolioId: "12345"
     Entities: [
       Matchers: ["service:sentry2asana"],
       Matchers: ["foo"],
@@ -55,7 +55,7 @@ def test_TeamServiceAccessors(container_with_mock: EntitiesContainer) -> None:
     teams_service: TeamService = container_with_mock.teams_service()
     teams = teams_service.get_teams()
     assert len(teams) != 0
-    assert teams[0].Name == "Observability"
+    assert teams[0].Name == "Observability and Performance"
 
 
 def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
@@ -70,8 +70,23 @@ def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
 
     # Ensure entities with no matches get default team assignment.
     entity = {"this-is-not-a-real-tag": None}  # type: ignore
-    assert heuristics.get_team(teams_service, entity).Name == "Observability"
+    assert (
+        heuristics.get_team(teams_service, entity).Name
+        == "Observability and Performance"
+    )
 
     # Ensure entities match on regexp matchers
     entity = {"url": "/some/panther/component"}
     assert heuristics.get_team(teams_service, entity).Name == "OtherTeam"
+
+
+def test_prod_config() -> None:
+    teams_service = EntitiesContainer(
+        config={
+            'entities': {
+                'team_data_file': 'sentry_asana/src/common/components/entities/data/teams.yaml',
+            },
+        }
+    ).teams_service()
+    entity = {"server_name": "panther-datacatalog-updater"}
+    assert heuristics.get_team(teams_service, entity).Name == 'Investigations'

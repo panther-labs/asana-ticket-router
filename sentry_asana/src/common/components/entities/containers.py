@@ -9,7 +9,7 @@
 
 import io
 from dependency_injector import containers, providers
-from sentry_asana.src.common.components.entities import service
+from . import service
 
 
 def _wrap_io(param):

@@ -15,14 +15,10 @@ from urllib import parse
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
 from common.components.serializer.service import SerializerService
-from .entities import (
+from common.components.entities.service import EngTeam
+from consumer.components.asana.entities import (
     RUNBOOK_URL,
-    TEAM,
-    ENG_TEAMS,
-    EngTeam,
     PRIORITY,
-    FE_SERVICE_TO_TEAM,
-    SERVICE_TO_TEAM,
     AsanaFields,
     CUSTOMFIELD,
     SELF_HOSTED_ACCOUNTS_IDS,
@@ -43,6 +39,8 @@ class AsanaService:
         logger: Logger,
         client: Client,
         serializer: SerializerService,
+        # By default if nothing matches send it to observability Sprint board.
+        default_asana_portfolio_id: str = '1201675315244004',
     ):
         self._loop = loop
         self._development = development
@@ -58,6 +56,7 @@ class AsanaService:
         self._parser = re.compile(
             r"(Root Asana Task: )(https:\/\/app.asana.com\/\d+\/\d+\/\d+)"
         )
+        self.default_asana_portfolio_id = default_asana_portfolio_id
 
     async def _get_projects_in_portfolio(self, portfolio_gid: str) -> List[Dict]:
         """Dispatch a call to find a Sentry issue details by its issue_id"""
@@ -108,7 +107,9 @@ class AsanaService:
         response = await self._create_asana_task(task_body)
         return response['gid']
 
-    async def extract_datadog_fields(self, datadog_event: Dict) -> AsanaFields:
+    async def extract_datadog_fields(
+        self, datadog_event: Dict, team: EngTeam
+    ) -> AsanaFields:
         """Extract relevent fields from the datadog event"""
         self._logger.debug('Extracting fields')
         url = datadog_event['link']
@@ -135,12 +136,7 @@ class AsanaService:
         level = datadog_event['level'].lower()
         priority = self._get_task_priority(level)
         environment = tags.get('env', 'Unknown').lower()
-        assigned_team = self._get_owning_team(
-            server_name=tags.get('functionname', None),
-            url=tags.get('url', None),
-            service=tags.get('service', None),
-            team=tags.get('team', None),
-        )
+        assigned_team = team
         project_gids = await self._get_project_ids(environment, level, assigned_team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
@@ -159,7 +155,9 @@ class AsanaService:
             url=url,
         )
 
-    async def extract_sentry_fields(self, sentry_event: Dict) -> AsanaFields:
+    async def extract_sentry_fields(
+        self, sentry_event: Dict, team: EngTeam
+    ) -> AsanaFields:
         """Extract relevent fields from the sentry event"""
         self._logger.debug('Extracting fields')
         issue_id = sentry_event['issue_id']
@@ -174,12 +172,7 @@ class AsanaService:
         level = sentry_event['level'].lower()
         priority = self._get_task_priority(level)
         environment = sentry_event['environment'].lower()
-        assigned_team = self._get_owning_team(
-            server_name=tags.get('server_name', None),
-            url=tags.get('url', None),
-            service=tags.get('service', None),
-            team=tags.get('team', None),
-        )
+        assigned_team = team
         project_gids = await self._get_project_ids(environment, level, assigned_team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
@@ -250,43 +243,6 @@ class AsanaService:
         prev_link = match.group(2)
         return prev_link
 
-    def _get_owning_team(
-        self,
-        server_name: Optional[str],
-        url: Optional[str],
-        service: Optional[str],
-        team: Optional[str],
-    ) -> EngTeam:
-        """Given a server name and event type, returns the Asana team that owns it.
-
-        Finds the Asana team that owns a given entity (currently, all these entities are Lambda functions)
-        based on its 'server_name' and if present, 'type';
-        both params are key/values found in the tags section of each Sentry event.
-        The mappings of server_name to Asana team below is based on the assigning logic formerly in Sentry, seen here:
-        https://sentry.io/settings/panther-labs/projects/panther-enterprise/ownership/
-        """
-        # If they annotated a team, assign to that team; if that team is missing, try heuristics.
-        if team is not None:
-            try:
-                return ENG_TEAMS[TEAM[team]]
-            except KeyError:
-                pass
-
-        # service is just a new name for server_name, try it first, then try the old tag.
-        if service is not None:
-            return self._get_owning_team_from_service(service)
-
-        # Prioritize ownership via the `server_name` tag
-        if server_name is not None:
-            return self._get_owning_team_from_service(server_name)
-
-        # In its absence, fallback to ownership via URL if it exists
-        if url is not None:
-            return self._get_owning_team_from_fe_service(url)
-
-        # If both a `url` and a `server_name` are missing, fallback to the Observability team
-        return ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-
     async def _get_project_ids(
         self, environment: str, level: str, owning_team: EngTeam
     ) -> List[str]:
@@ -296,18 +252,23 @@ class AsanaService:
         # if the issue is from local development (panther-enterprise),
         # we use sandbox project boards
         if self._development or environment == 'dev':
-            return await self._get_dev_project_ids(owning_team.sprint_portfolio_id_dev)
+            # TODO: I'm going to just hardcode our sandbox board in here for now, but we should have a dev teams.yaml for this?
+            return await self._get_dev_project_ids(owning_team.AsanaSandboxPortfolioId)
 
         # If release testing, use team's current sprint and add to current release project
         if environment == 'staging':
-            return await self._get_staging_project_ids(owning_team.sprint_portfolio_id)
+            return await self._get_staging_project_ids(
+                owning_team.AsanaSprintPortfolioId
+            )
 
         # If a production 'warning', add to backlog
         if level == 'warning':
-            return [owning_team.backlog_id]
+            return [owning_team.AsanaBacklogId]
 
         # If a production 'high', add to current sprint
-        return await self._get_production_project_ids(owning_team.sprint_portfolio_id)
+        return await self._get_production_project_ids(
+            owning_team.AsanaSprintPortfolioId
+        )
 
     async def _get_dev_project_ids(self, portfolio_id: str) -> List[str]:
         """Get relevant development project ids"""
@@ -330,7 +291,7 @@ class AsanaService:
 
         # Ensure we have at least 1 project to assign
         if len(filtered) == 0:
-            filtered.append(ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id)
+            filtered.append(self.default_asana_portfolio_id)
         return filtered
 
     async def _get_production_project_ids(self, portfolio_id: str) -> List[str]:
@@ -341,7 +302,7 @@ class AsanaService:
         filtered = [i for i in project_ids if i is not None]
         # Ensure we have at least 1 project to assign
         if len(filtered) == 0:
-            filtered.append(ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id)
+            filtered.append(self.default_asana_portfolio_id)
         return filtered
 
     async def _get_latest_project_id(self, portfolio_id: str) -> Optional[str]:
@@ -386,31 +347,11 @@ class AsanaService:
                 CUSTOMFIELD.PRIORITY.value: fields.priority.value,
                 CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
                 CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
-                CUSTOMFIELD.TEAM.value: fields.assigned_team.team_id,
+                CUSTOMFIELD.TEAM.value: fields.assigned_team.AsanaTeamId,
                 CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
             },
             'notes': notes,
         }
-
-    @staticmethod
-    def _get_owning_team_from_service(service: str) -> EngTeam:
-        """Return the team that owns the specified service by partial service name match.
-        Defaults to OBSERVABILITY_PERF if none found"""
-        team = next(
-            (val for key, val in SERVICE_TO_TEAM.items() if key in service),
-            TEAM.OBSERVABILITY_PERF,
-        )
-        return ENG_TEAMS[team]
-
-    @staticmethod
-    def _get_owning_team_from_fe_service(url: str) -> EngTeam:
-        """Return the team that owns the specified service by partial url match.
-        Defaults to OBSERVABILITY_PERF if none found."""
-        team = next(
-            (val for key, val in FE_SERVICE_TO_TEAM.items() if key in url),
-            TEAM.OBSERVABILITY_PERF,
-        )
-        return ENG_TEAMS[team]
 
     @staticmethod
     def _get_task_priority(level: str) -> PRIORITY:

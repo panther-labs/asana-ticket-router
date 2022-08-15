@@ -5,18 +5,15 @@ from typing import Any, Dict, List
 from unittest.mock import Mock
 import pytest
 from asana.error import ForbiddenError, NotFoundError
-from ..consumer.components.asana.entities import (
+from consumer.components.asana.entities import (
     CUSTOMFIELD,
-    ENG_TEAMS,
-    FE_SERVICE,
     PRIORITY,
-    SERVICE,
-    TEAM,
     AsanaFields,
 )
 from ..common.components.secrets.containers import SecretsManagerContainer
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.containers import LoggerContainer
+from ..common.components.entities.service import EngTeam
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
 
@@ -92,7 +89,17 @@ def mock_portfolio_data(id: str, **kargs: Any) -> List[Dict]:
 
 
 @pytest.fixture
-def asana_fields() -> AsanaFields:
+def investigations() -> EngTeam:
+    return EngTeam("investigations", "team", "backlog", "sprint", "sandbox", [])
+
+
+@pytest.fixture
+def observability() -> EngTeam:
+    return EngTeam("Observability", "team", "backlog", "sprint", "sandbox", [])
+
+
+@pytest.fixture
+def asana_fields(investigations: EngTeam) -> AsanaFields:
     return AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
         tags={
@@ -121,7 +128,7 @@ def asana_fields() -> AsanaFields:
         event_datetime='2022-01-29t00:19:22.986521z',
         environment='dev',
         title='snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...',
-        assigned_team=ENG_TEAMS[TEAM.INVESTIGATIONS],
+        assigned_team=investigations,
         priority=PRIORITY.HIGH,
         project_gids=['sprint_gid_3', 'dev_board'],
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
@@ -212,7 +219,7 @@ async def test_get_staging_project_ids(container: AsanaContainer) -> None:
     # OBSERVABILITY_PERF backlog
     service._release_testing_portfolio = 'none'
     project_ids = await service._get_staging_project_ids('none')
-    assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
+    assert project_ids == [service.default_asana_portfolio_id]
 
 
 @pytest.mark.asyncio
@@ -224,32 +231,26 @@ async def test_get_production_project_ids(container: AsanaContainer) -> None:
     assert project_ids == ['sprint_gid_3']
 
     project_ids = await service._get_production_project_ids('none')
-    assert project_ids == [ENG_TEAMS[TEAM.OBSERVABILITY_PERF].backlog_id]
+    assert project_ids == [service.default_asana_portfolio_id]
 
 
 @pytest.mark.asyncio
-async def test_get_project_ids(container: AsanaContainer) -> None:
+async def test_get_project_ids(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
     """Test _get_project_ids"""
 
     service: AsanaService = container.asana_service()
-    project_ids = await service._get_project_ids(
-        'dev', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    )
+    project_ids = await service._get_project_ids('dev', 'warning', observability)
     assert project_ids == ['sprint_gid_3', 'dev_board']
 
-    project_ids = await service._get_project_ids(
-        'staging', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    )
+    project_ids = await service._get_project_ids('staging', 'warning', observability)
     assert project_ids == ['sprint_gid_3', 'release_gid_1']
 
-    project_ids = await service._get_project_ids(
-        'prod', 'warning', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    )
-    assert project_ids == ['1201267919523642']  # Backlog id
+    project_ids = await service._get_project_ids('prod', 'warning', observability)
+    assert project_ids == ['backlog']
 
-    project_ids = await service._get_project_ids(
-        'prod', 'high', ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    )
+    project_ids = await service._get_project_ids('prod', 'high', observability)
     assert project_ids == ['sprint_gid_3']
 
 
@@ -259,90 +260,22 @@ async def test_get_task_priority(container: AsanaContainer) -> None:
 
     service: AsanaService = container.asana_service()
     priority = service._get_task_priority('misc level')
-    assert priority == PRIORITY.HIGH
+    assert priority.name == PRIORITY.HIGH.name
 
     priority = service._get_task_priority('warning')
     assert priority == PRIORITY.MEDIUM
 
 
 @pytest.mark.asyncio
-async def test_get_owning_team_from_service(container: AsanaContainer) -> None:
-    """Test _get_owning_team_from_service"""
-
-    service: AsanaService = container.asana_service()
-    team = service._get_owning_team_from_service('not a valid service')
-    assert (
-        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    ), 'Should route to default observability'
-
-    team = service._get_owning_team_from_service(SERVICE.ALERT_DELIVERY_API.value)
-    assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
-
-    # Test partial match for fargate
-    team = service._get_owning_team_from_service("ip-10-24-34-0.ec2.internal")
-    assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
-    team = service._get_owning_team_from_service(
-        "ip-10-24-34-0.us-west-2.compute.internal"
-    )
-    assert team == ENG_TEAMS[TEAM.INVESTIGATIONS]
-
-
-@pytest.mark.asyncio
-async def test_get_owning_team_from_fe_service(container: AsanaContainer) -> None:
-    """Test _get_owning_team_from_fe_service"""
-
-    service: AsanaService = container.asana_service()
-    team = service._get_owning_team_from_fe_service('not a valid FE service')
-    assert (
-        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    ), 'Should route to default observability'
-
-    team = service._get_owning_team_from_fe_service(
-        f'https://foo.bar{FE_SERVICE.DATA_SCHEMAS.value}param?key=val'
-    )
-    assert team == ENG_TEAMS[TEAM.INGESTION]
-
-
-@pytest.mark.asyncio
-async def test_get_owning_team(container: AsanaContainer) -> None:
-    """Test _get_owning_team"""
-
-    service: AsanaService = container.asana_service()
-    team = service._get_owning_team(None, None, None, None)
-    assert (
-        team is ENG_TEAMS[TEAM.OBSERVABILITY_PERF]
-    ), 'Should route to default observability'
-
-    team = service._get_owning_team(None, FE_SERVICE.DATA_SCHEMAS.value, None, None)
-    assert team is ENG_TEAMS[TEAM.INGESTION], 'Should route to INGESTION'
-
-    team = service._get_owning_team(SERVICE.DETECTIONS_ENGINE.value, None, None, None)
-    assert team is ENG_TEAMS[TEAM.DETECTIONS], 'Should route to DETECTIONS'
-
-    team = service._get_owning_team(
-        SERVICE.ATHENA_ADMIN_API.value, FE_SERVICE.DATA_SCHEMAS.value, None, None
-    )
-    assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
-
-    # Test new service tag.
-    team = service._get_owning_team(None, None, SERVICE.ATHENA_ADMIN_API.value, None)
-    assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
-
-    # Test team routing and preference order.
-    team = service._get_owning_team(
-        None, FE_SERVICE.DATA_SCHEMAS.value, None, TEAM.INVESTIGATIONS.value
-    )
-    assert team is ENG_TEAMS[TEAM.INVESTIGATIONS], 'Should route to INVESTIGATIONS'
-
-
-@pytest.mark.asyncio
-async def test_extract_fields(container: AsanaContainer) -> None:
+async def test_extract_fields(
+    container: AsanaContainer, investigations: EngTeam
+) -> None:
     """Test _extract_fields"""
 
     service: AsanaService = container.asana_service()
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
-    fields = await service.extract_sentry_fields(data['data']['event'])
+    fields = await service.extract_sentry_fields(data['data']['event'], investigations)
 
     assert fields == AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
@@ -372,7 +305,7 @@ async def test_extract_fields(container: AsanaContainer) -> None:
         event_datetime='2022-01-29t00:19:22.986521z',
         environment='dev',
         title='snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...',
-        assigned_team=ENG_TEAMS[TEAM.INVESTIGATIONS],
+        assigned_team=investigations,
         priority=PRIORITY.HIGH,
         project_gids=['sprint_gid_3', 'dev_board'],
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
@@ -443,7 +376,7 @@ async def test_create_task_body(
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
             CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
             CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
-            CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
+            CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.AsanaTeamId,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
         'notes': 'some notes',
@@ -465,7 +398,7 @@ async def test_create_asana_task(
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
             CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
             CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
-            CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.team_id,
+            CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.AsanaTeamId,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
         'notes': 'some notes',
@@ -475,7 +408,7 @@ async def test_create_asana_task(
 
 
 @pytest.mark.asyncio
-async def test_create_task(container: AsanaContainer) -> None:
+async def test_create_task(container: AsanaContainer, observability: EngTeam) -> None:
     """Test create_task"""
 
     service: AsanaService = container.asana_service()
@@ -483,7 +416,7 @@ async def test_create_task(container: AsanaContainer) -> None:
         data = json.load(file)
 
     asana_fields: AsanaFields = await service.extract_sentry_fields(
-        data['data']['event']
+        data['data']['event'], observability
     )
     response = await service.create_task(asana_fields, None, None)
     assert response == 'new_project_gid'

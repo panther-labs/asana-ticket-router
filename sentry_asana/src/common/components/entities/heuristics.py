@@ -1,7 +1,7 @@
 """Heuristics maps a 'resource' to 'team'"""
 
 from typing import Optional
-from sentry_asana.src.common.components.entities import service
+from common.components.entities import service
 
 
 def get_team(teams_service: service.TeamService, resource: dict) -> service.EngTeam:
@@ -16,7 +16,6 @@ def precedence_match_team(
     teams_service: service.TeamService, resource: dict
 ) -> Optional[service.EngTeam]:
     """PrecedenceMatchTeam implements tag-precedence as loosely described in the tech spec.
-
     https://www.notion.so/pantherlabs/Datadog2Asana-7a206f017b1b4befaedba417b2dd5e3e
 
     Consider some examples:
@@ -28,6 +27,7 @@ def precedence_match_team(
     Both teams will match the entity with the same number of matchers (1), but team has a higher precedence, so the team matcher 'wins'.
 
     Imagine a case where we have lots of tags (so specific!) but not the team tag!
+
     Team1: {Entities: [EntityMatcher: {Tags: ['specific1:12345', 'specific2:39742', 'specific3:134974']}]}
     Team2: {Entities: [EntityMatcher: {Tags: ['team:bar','specific1:12345']}]}
     entity={'team': 'bar', 'specific1':'12345', 'specific2':'39742', 'specific3':'134974}

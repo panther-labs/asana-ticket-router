@@ -126,20 +126,20 @@ class EntityMatcher(dataclass_wizard.YAMLWizard):
 class EngTeam(dataclass_wizard.YAMLWizard):
     """EngTeam contains Asana queue information for a team, as well as what Entities they own."""
 
-    # pylint: disable=invalid-name
     # See data/teams.yaml for more complete documentation.
+    # pylint: disable=invalid-name
     Name: str
-    Email: str
     AsanaTeamId: str
     AsanaBacklogId: str
     AsanaSprintPortfolioId: str
+    AsanaSandboxPortfolioId: str
     Entities: list[EntityMatcher]
 
 
 class TeamService:
     """Team Services offers APIs around Team's and entities, including relations."""
 
-    DefaultTeamKey = "Observability"  # should be in the input.
+    DefaultTeamKey = "Observability and Performance"  # should be in the input.
 
     def __init__(
         self,
@@ -147,6 +147,7 @@ class TeamService:
     ):
         self.teams: List[EngTeam] = []
         try:
+
             self._load(team_data)
             self._validate()
         except (ValueError, TypeError) as ex:
@@ -185,7 +186,6 @@ class TeamService:
     def default_team(self) -> EngTeam:
         """Returns the default EngTeam."""
         team = self._get_eng_team(TeamService.DefaultTeamKey)
-
         if team:
             return team
         # _Validate would have raised if DefaultTeam did not exist, so we can just raise here.

@@ -25,3 +25,5 @@ common:
 services:
   secrets:
     secret_name: "${SECRET_NAME}"
+entities:
+  team_data_file: "./common/components/entities/data/teams.yaml"
