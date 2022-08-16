@@ -6,12 +6,13 @@
 # falls under the Panther Commercial License to the extent it is permitted.
 from asyncio import AbstractEventLoop
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 from typing import Callable, Dict, List, Optional
 from functools import partial
 from logging import Logger
 from urllib import parse
+from dateutil import parser
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
 from common.components.serializer.service import SerializerService
@@ -215,6 +216,24 @@ class AsanaService:
                 f'&account={fields.aws_account_id}'
                 f'&displayName={fields.display_name}%20Support\n\n'
             )
+
+        # If we have a Lambda request id from the Sentry event, construct a link to the trace for that request in Datadog.
+        if 'zap_lambdaRequestId' in fields.tags.keys():
+            event_time = parser.parse(fields.event_datetime)
+            # Lets widen the query window a bit to account for any potential Sentry event time vs Datadog event time shenanigans.
+            one_hour_before = event_time + timedelta(hours=-1)
+            one_hour_before_ts = int(one_hour_before.timestamp() * 1000.0)
+
+            request_id = fields.tags['zap_lambdaRequestId']
+
+            datadog_query_url = (
+                f'https://app.datadoghq.com/apm/traces?'
+                f'query=@account_id:{fields.aws_account_id}%20@request_id:{request_id}'
+                f'&start={one_hour_before_ts}'
+            )
+
+            note = note + f'Datadog Trace Link: {datadog_query_url}\n\n'
+
         # If we had a root task link, set it in the payload
         if root_asana_link:
             note = f'Root Asana Task: {root_asana_link}\n\n' + note

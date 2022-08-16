@@ -334,6 +334,8 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+
 """
     )
     # Test with root and previous asana links in the payload
@@ -355,6 +357,8 @@ Environment: dev
 Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
+
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
 
 """
     )
