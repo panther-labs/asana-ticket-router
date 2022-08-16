@@ -49,7 +49,9 @@
   AsanaSprintPortfolioId: '1201680779826585'
   AsanaSandboxPortfolioId: '1201700591175709'
   AsanaTeamId: '1201305154831715'
-  Entities: []
+  Entities: [
+    Matchers: ["server_name:panther-athena-to-snowflake-reprocessor"]
+  ]
 -
   name: "Detections"
   AsanaBacklogId: '1200908948600035'
