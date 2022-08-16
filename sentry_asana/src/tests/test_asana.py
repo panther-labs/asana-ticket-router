@@ -132,6 +132,7 @@ def asana_fields(investigations: EngTeam) -> AsanaFields:
         priority=PRIORITY.HIGH,
         project_gids=['sprint_gid_3', 'dev_board'],
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
+        routing_data='Fake Routing information',
     )
 
 
@@ -275,7 +276,9 @@ async def test_extract_fields(
     service: AsanaService = container.asana_service()
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
-    fields = await service.extract_sentry_fields(data['data']['event'], investigations)
+    fields = await service.extract_sentry_fields(
+        data['data']['event'], investigations, routing_data='fake routing data'
+    )
 
     assert fields == AsanaFields(
         url='https://sentry.io/organizations/panther-labs/issues/2971136216',
@@ -309,6 +312,7 @@ async def test_extract_fields(
         priority=PRIORITY.HIGH,
         project_gids=['sprint_gid_3', 'dev_board'],
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
+        routing_data='fake routing data',
     )
 
 
@@ -336,6 +340,8 @@ AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleNam
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
 
+Routed this ticket because of Fake Routing information
+
 """
     )
     # Test with root and previous asana links in the payload
@@ -359,6 +365,8 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+
+Routed this ticket because of Fake Routing information
 
 """
     )
@@ -420,7 +428,9 @@ async def test_create_task(container: AsanaContainer, observability: EngTeam) ->
         data = json.load(file)
 
     asana_fields: AsanaFields = await service.extract_sentry_fields(
-        data['data']['event'], observability
+        data['data']['event'],
+        observability,
+        routing_data='',
     )
     response = await service.create_task(asana_fields, None, None)
     assert response == 'new_project_gid'

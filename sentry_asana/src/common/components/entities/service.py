@@ -52,6 +52,19 @@ class Matcher(dataclass_wizard.YAMLWizard):
 
 
 @dataclasses.dataclass
+class MatchResult:
+    """The result of a match_rank call, tries to tell callers what matches happened and why."""
+
+    # The matchers that matched.
+    Matches: List[Matcher]  # pylint: disable=invalid-name
+    # When more than one matcher matches an entity, we use Precedence to rank and break ties.
+    Precedence: int  # pylint: disable=invalid-name
+
+    def __str__(self) -> str:
+        return str(self.Matches)
+
+
+@dataclasses.dataclass
 class EntityMatcher(dataclass_wizard.YAMLWizard):
     """EntityMatcher enables Teams to declare ownership over entities through the use of tags.
     - EntityMatchers are just a series of tags AND'd together.
@@ -81,15 +94,6 @@ class EntityMatcher(dataclass_wizard.YAMLWizard):
             Matcher(m) if isinstance(m, str) else m for m in matchers
         ]
 
-    @dataclasses.dataclass
-    class MatchResult:
-        """MatchResult is just a named tuple, basically."""
-
-        # Number of matches
-        Count: int  # pylint: disable=invalid-name
-        # When more than one matcher matches an entity, we use Precedence to rank and break ties.
-        Precedence: int  # pylint: disable=invalid-name
-
     def __hash__(self) -> int:
         """EntityMatchers must be hashable to be a dict key or set item."""
         return hash(self.tags)
@@ -116,7 +120,7 @@ class EntityMatcher(dataclass_wizard.YAMLWizard):
         try:
             matches = [m for m in self._matchers if m.match(resource)]
             if matches:
-                return EntityMatcher.MatchResult(len(matches), self.precedence())
+                return MatchResult(matches, self.precedence())
         except KeyError:
             pass
         return None
