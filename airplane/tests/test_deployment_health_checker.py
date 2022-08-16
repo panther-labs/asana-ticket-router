@@ -1,3 +1,4 @@
+import pprint
 import pytest
 
 from unittest import mock
@@ -176,6 +177,6 @@ def test_manual():
         AirplaneEnv.AIRPLANE_SESSION_ID = "fake_local_run_session_id"
         DeploymentHealthChecker.set_env_var_from_onepass_item(env_var_name="NOTION_AUTH_TOKEN",
                                                               onepass_item_name="Notion - Productivity")
-        print(run_task({}))
+        pprint.pprint(run_task({}))
     finally:
         AirplaneEnv.AIRPLANE_SESSION_ID = old_session_id

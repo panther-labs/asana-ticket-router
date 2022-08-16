@@ -12,6 +12,7 @@ class AirplaneEnv:
     AIRPLANE_RUN_ID = os.getenv("AIRPLANE_RUN_ID")
     AIRPLANE_SESSION_ID = os.getenv("AIRPLANE_SESSION_ID")
     AIRPLANE_TEAM_ID = os.getenv("AIRPLANE_TEAM_ID")
+    AIRPLANE_API_USER = "service-user"
 
     @classmethod
     def is_local_env(cls):
@@ -27,4 +28,4 @@ class AirplaneEnv:
 
     @classmethod
     def is_api_user_execution(cls):
-        return "service-user" in cls.AIRPLANE_RUNNER_EMAIL
+        return cls.AIRPLANE_API_USER in cls.AIRPLANE_RUNNER_EMAIL

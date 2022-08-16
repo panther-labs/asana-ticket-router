@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from pyshared.customer_info_retriever import AllCustomerAccountsInfo
 from pyshared.panther_orgs import get_panther_org
+from v2.consts.airplane_env import AirplaneEnv
 from v2.exceptions import DuplicateAwsAccountIdException, DuplicateNotionFairytaleNameException, \
     InvalidFairytaleNameException, InvalidRegionException
 from v2.task_models.airplane_git_task import AirplaneGitTask
@@ -37,6 +38,14 @@ class DeploymentCustomerDetails(AirplaneGitTask):
         self._check_for_no_duplicate_fairytale_names_in_notion(ap_params.fairytale_name)
         self._check_exactly_one_ddb_entry_has_same_aws_id_and_same_region(
             ap_params.region) if ap_params.region else self._check_only_one_aws_account_found()
+
+        if AirplaneEnv.is_api_user_execution():
+            if self.warnings:
+                message = ("API attempt to get customer details failed.\n"
+                           f"Warnings: {self.warnings}\n"
+                           f"Fairytale Name: {ap_params.fairytale_name}")
+                self.send_slack_message(channel_name="#triage-deployment", message=message)
+                raise RuntimeError(message)
 
         return {
             "account_id": self.aws_account_id,

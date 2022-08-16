@@ -6,6 +6,8 @@ from unittest import mock
 from operations.deprovisions.get_deprovision_customer_details.get_deprovision_customer_details import AirplaneParams, \
     DeploymentCustomerDetails, DuplicateAwsAccountIdException, DuplicateNotionFairytaleNameException, \
     InvalidFairytaleNameException, InvalidRegionException, main
+from v2.consts.airplane_env import AirplaneEnv
+from tests import change_airplane_env_var
 from tests.mocks.all_customer_accounts_info import MockAllCustomerAccountsInfo
 from tests.mocks.deployment_metadata_table import get_metadata_table_ddb_cfg
 
@@ -101,6 +103,15 @@ def test_happy_path(mock_all_accounts_info):
     assert output["region"] == "us-west-2"
     assert output["org"] == "root"
     assert output["warnings"] == {}
+
+
+def test_warnings_with_api_user_fails(mock_all_accounts_info):
+    with change_airplane_env_var(var_name="AIRPLANE_RUNNER_EMAIL", val=f"{AirplaneEnv.AIRPLANE_API_USER}@panther.io"):
+        details = DeploymentCustomerDetails()
+        details.warnings["test_warning"] = "This is a test"
+        mock_all_accounts_info.create_fake_customer(fairytale_name="api-customer")
+        with pytest.raises(RuntimeError):
+            details.run(asdict(AirplaneParams(fairytale_name="api-customer", org_name="hosted")))
 
 
 @pytest.mark.manual_test

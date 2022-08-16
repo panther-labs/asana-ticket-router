@@ -57,6 +57,7 @@ def unit_test_suite_setup(manual_test_run, request, airplane_session_id, airplan
         request.addfinalizer(patch_obj.stop)
     AirplaneEnv.AIRPLANE_SESSION_ID = airplane_session_id
     AirplaneEnv.AIRPLANE_RUN_ID = airplane_run_id
+    AirplaneEnv.AIRPLANE_RUNNER_EMAIL = "unit-test-user@panther.io"
 
 
 def pytest_addoption(parser):
