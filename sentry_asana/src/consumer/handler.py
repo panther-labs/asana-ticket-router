@@ -177,13 +177,15 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
         try:
             team, results = heuristics.get_team(entities, datadog_event_details)
-            results = f'Routed to {team} because we matched {results}'
+            results = f'Routed to {team.Name} because we matched {results}'
         except heuristics.TeamNotFound:
             team = entities.default_team()
             log.info(
-                f'Unable to find a team to match {datadog_event_details}, using {team}'
+                f'Unable to find a team to match {datadog_event_details}, using {team.Name}'
             )
-            results = f'Routed to {team} because we did not find any matching teams.'
+            results = (
+                f'Routed to {team.Name} because we did not find any matching teams.'
+            )
         log.info(
             f'Got {team} for sentry issue: {datadog_event_details}, with matchers: {results}'
         )
@@ -260,11 +262,13 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
         tags = event.get('tags', [])
         try:
             team, results = heuristics.get_team(entities, dict(tags))
-            results = f'Routed to {team} because we matched {results}'
+            results = f'Routed to {team.Name} because we matched {results}'
         except heuristics.TeamNotFound:
             team = entities.default_team()
-            log.info(f'Unable to find a team to match {issue_id}, using {team}')
-            results = f'Routed to {team} because we did not find any matching teams.'
+            log.info(f'Unable to find a team to match {issue_id}, using {team.Name}')
+            results = (
+                f'Routed to {team.Name} because we did not find any matching teams.'
+            )
         log.info(f'Got {team} for sentry issue: {issue_id}, with matchers: {results}')
         asana_fields: AsanaFields = await asana.extract_sentry_fields(
             event, team, routing_data=results
