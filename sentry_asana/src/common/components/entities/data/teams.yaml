@@ -138,6 +138,7 @@
     Matchers: ["server_name:panther-datacatalog-compactor-reaper"],
     Matchers: ["server_name:panther-datacatalog-updater"],
     Matchers: ["server_name:panther-greynoise-processor"],
+    Matchers: ["server_name:panther-ipinfo-processor"],
     Matchers: ["server_name:panther-log-alert-forwarder"],
     Matchers: ["server_name:panther-lookup-tables-api"],
     Matchers: ["server_name:panther-outputs-api"],
