@@ -1,0 +1,17 @@
+name: Call Zapier (Not for Manual Use)
+slug: call_zapier
+description: Webhook for Salesforce to hit Zapier through Airplane
+parameters:
+- name: Username
+  slug: username
+  type: shorttext
+  description: For now this is just a place holder value so we can work this out
+  default: DefaultedInYaml
+python:
+  entrypoint: call_zapier.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbWrite
+timeout: 3600
+# requireRequests: false # False for now
+# allowSelfApprovals: true # T
