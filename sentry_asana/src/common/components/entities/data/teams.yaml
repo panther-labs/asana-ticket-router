@@ -89,7 +89,7 @@
     Matchers: ["url://destinations//"],
     Matchers: ["url://detections//"],
     Matchers: ["url://helpers//"],
-    Matchers: ["url://mitre-attack//"],
+    Matchers: ["url://mitre-attack/"],
     Matchers: ["url://overview//"],
     Matchers: ["url://packs//"],
     Matchers: ["url://resources//"],
