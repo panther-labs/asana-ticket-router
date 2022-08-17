@@ -241,7 +241,7 @@ class AsanaService:
         if prev_asana_link:
             note = f'Previous Asana Task: {prev_asana_link}\n\n' + note
         if fields.routing_data:
-            note = note + f'Routed this ticket because of {fields.routing_data}\n\n'
+            note = note + f'Routing Information: {fields.routing_data}\n\n'
 
         return ''.join(note)
 

@@ -340,7 +340,7 @@ AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleNam
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
 
-Routed this ticket because of Fake Routing information
+Routing Information: Fake Routing information
 
 """
     )
@@ -366,7 +366,7 @@ AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleNam
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
 
-Routed this ticket because of Fake Routing information
+Routing Information: Fake Routing information
 
 """
     )
