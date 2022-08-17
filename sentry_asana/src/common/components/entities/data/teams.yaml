@@ -50,7 +50,8 @@
   AsanaSandboxPortfolioId: '1201700591175709'
   AsanaTeamId: '1201305154831715'
   Entities: [
-    Matchers: ["server_name:panther-athena-to-snowflake-reprocessor"]
+    Matchers: ["server_name:panther-athena-to-snowflake-reprocessor"],
+    Matchers: ["server_name:panther-athena-to-snowflake-allocator"],
   ]
 -
   name: "Detections"
