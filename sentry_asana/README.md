@@ -21,10 +21,63 @@ Consumer
 - Sentry event is retried up to 10x only for failed records in the batch of events
 - Continuously failed events land in a DLQ for manual requeuing
 
-## Modifying service mappings
+## Updating Entity Ownership Mapping
 
-To change what teams are responsible for what services, modify the mappinigs found in `./sentry_asana/src/consumer/components/asana/entities.py`.
-Each team's services are grouped by team there, be sure to move the mapping to the correct section in addition to updating the team being mapped to.
+All entity ownership definitions live in `./sentry_asana/src/common/components/entities/data/teams.yaml`
+
+These definitions define what teams are responsible for which entities.
+
+An example entry in teams.yaml is as follows:
+
+```
+  # Your team name.
+  name: "Investigations"
+  
+  # The ID of your teams Backlog project in Asana. Low priority tickets are routed here. 
+  AsanaBacklogId: '1200908948600028'
+  
+  # The ID of your teams Sprint portfolio in Asana. High priority tickets are routed here.
+  AsanaSprintPortfolioId: '1201675315244000'
+  
+  # The ID of your teams Sandbox portfolio in Asana. Issues from local development deployments are routed here.
+  AsanaSandboxPortfolioId: '1201700591175689'
+  
+  # The ID of your Asana Team.
+  AsanaTeamId: '1199906290951706'
+  
+  # The list of Matchers that identify the entities your team is responsible for.
+  Entities: [
+    
+    # Match on Lambda Function name with server_name:<function name>
+    Matchers: ["server_name:panther-alerts-api"],
+
+    # Match on URL Paths with url:<url_path> for Frontend Issues.
+    Matchers: ["url://investigate//"],
+
+    # Match on a tag using a regular expression. This will apply re.search(pattern, text) to the tag value.
+    Matchers: ["server_name:/\\.compute\\.internal/"],
+    Matchers: ["server_name:/\\.ec2\\.internal/"],
+    Matchers: ["server_name:/Panther-EFS/"],
+    
+    # Custom tags other than just server_name and url are supported.
+    Matchers: ["alert_owner:investigations"],
+    
+    # Each matcher is a list and supports statements AND'd together. 
+    # In this case we match when the server_name is any EC2 resource and alert_owner is defined as Investigations.
+    Matchers: ["server_name:/\\.ec2\\.internal/", "alert_owner:investigations"],
+  ]
+
+```
+
+## Finding and Updating Asana Team IDs
+
+If the team IDs within Asana change, or new teams have been added and the team ID code in `./sentry_asana/src/common/components/entities/data/teams.yaml` needs to be updated, a list of team IDs can be found by executing the following API call:
+
+```
+curl -H "Authorization: Bearer ***)" \
+  https://app.asana.com/api/1.0/projects/1201030803218059/custom_field_settings | \
+  jq '.data | map(select(.custom_field.gid == "1199906290951705"))'
+```
 
 ## Credentials
 
@@ -37,6 +90,15 @@ The service requires the following secrets:
   - `DATADOG_SECRET_TOKEN`: the $DATADOG_SECRET_TOKEN value we have defined as a custom header in our Datadog webhook. See https://app.datadoghq.com/integrations/webhooks?search=webhook to get this value.
   - `DATADOG_API_KEY`: the Datadog API Key used during Datadog API calls. Create an API key here: https://app.datadoghq.com/organization-settings/api-keys
   - `DATADOG_APP_KEY`: the Datadog App Key used during Datadog API calls. Create an App key here: https://app.datadoghq.com/organization-settings/application-keys
+
+## Setup Association Between Asana and Sentry
+
+In order for comments and breadcrumbs to be posted back into Sentry from Asana we need to setup an association. 
+In Production this is done via a service account but in Development you'll need to do this association between your personal Sentry and Asana accounts.
+
+- Login to Asana via Okta
+- Login to Sentry via Okta
+- While logged in, click this link https://sentry.io/account/settings/social/associate/asana/, which performs the handshake and now the Asana identity will always be the service account for comments (including inside sentry).
 
 ## Deploying The Service
 
@@ -121,12 +183,3 @@ To run them, do the following:
 - Run the unit testing script
   - `sh scripts/python_unit_test.sh`
 
-## Updating the Team IDs
-
-If the team IDs within Asana change, or new teams have been added and the team ID code in `./sentry_asana/src/consumer/components/asana/entities.py` needs to be updated, a list of team IDs can be found by executing the following API call:
-
-```
-curl -H "Authorization: Bearer ***)" \
-  https://app.asana.com/api/1.0/projects/1201030803218059/custom_field_settings | \
-  jq '.data | map(select(.custom_field.gid == "1199906290951705"))'
-```
