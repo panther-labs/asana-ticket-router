@@ -2,10 +2,11 @@ import os
 from typing import Dict
 from collections.abc import Callable
 
-from pyshared.airplane_utils import AirplaneTask, is_test_run
+from pyshared.airplane_utils import is_test_run
 from pyshared.git_ops import git_clone, git_add_commit_push
 from pyshared.load_py_file import load_py_file_as_module
 from pyshared.os_utils import tmp_change_dir
+from v2.pyshared.deployments_file import generate_configs, lint_configs, pip_install_auto_scripts_requirements
 
 
 class DeploymentsRepo:
@@ -47,12 +48,15 @@ def alter_deployment_file(deployments_repo: str,
                           apply_to_generated_file: bool = False):
     """Alter a deployment file in some way. The alter_callable is a function that, given the deployment file, will
     alter it."""
-    deploy_dir = git_clone(repo=deployments_repo, github_setup=True, existing_dir=ap_params.get(deployments_repo))
+    deploy_dir = git_clone(repo=deployments_repo, github_setup=True, existing_dir=os.environ.get(deployments_repo))
     with tmp_change_dir(change_dir=deploy_dir):
-        alter_callable(get_deployment_filepath(fairytale_name=ap_params["fairytale_name"]))
+        return_val = alter_callable(get_deployment_filepath(fairytale_name=ap_params["fairytale_name"]))
         if apply_to_generated_file:
             alter_callable(
                 get_deployment_filepath(fairytale_name=ap_params["fairytale_name"], get_generated_filepath=True))
-        gen_cfgs()
+        pip_install_auto_scripts_requirements(repo_path=".")
+        generate_configs(repo_path=".")
+        lint_configs(repo_path=".")
 
         git_add_commit_push(files=("deployment-metadata", ), title=commit_title, test_run=is_test_run(ap_params))
+        return return_val

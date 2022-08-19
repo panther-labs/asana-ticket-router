@@ -5,13 +5,35 @@ parameters:
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
-- name: Airplane Test Run
-  slug: airplane_test_run
+- name: Hours Before DNS Removal
+  slug: hours_before_dns_removal
+  type: integer
+- name: Hours Before Teardown
+  slug: hours_before_teardown
+  type: integer
+- name: Org Name
+  slug: org_name
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+- name: Company Display Name
+  slug: company_display_name
+  type: shorttext
+- name: Domain
+  slug: domain
+  type: shorttext
+- name: API Use Only
+  slug: api_use_only
   type: boolean
-  description: Only use for Airplane development testing purposes
-  default: false
+
 python:
   entrypoint: mark_deployment_for_deletion.py
-requireRequests: true
+requireRequests: false
 allowSelfApprovals: false
 
