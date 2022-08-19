@@ -29,6 +29,7 @@ class TestMarkDeploymentForDeletion:
                 patch = mock.patch(f"{mod_name}.{patch_func}")
                 setattr(self, attr_name, patch.start())
                 request.addfinalizer(patch.stop)
+            self.alter_deployment_file_mock.return_value = mock.MagicMock(), None
 
     def test_slack_message_contains_customer_info_and_sent_to_right_channels(self):
         main(params)
@@ -50,11 +51,11 @@ class TestMarkDeploymentForDeletion:
                 main(params)
 
     def test_proper_teardown_times_set(self):
-        now = datetime.datetime(year=2022, month=8, day=19, hour=10, minute=0, second=0)
+        mock_start_time = datetime.datetime(year=2022, month=8, day=19, hour=10, minute=0, second=0)
         deprov_info = DeploymentDeletionMarker.add_deprovisioning_tags(filepath="mockedout",
                                                                        dns_removal_hours=4,
                                                                        teardown_removal_hours=8,
-                                                                       now=now)
+                                                                       now=mock_start_time)
         expected_dns_removal_time = datetime.datetime(year=2022, month=8, day=19, hour=14, minute=0, second=0)
         expected_teardown_time = datetime.datetime(year=2022, month=8, day=19, hour=18, minute=0, second=0)
         assert deprov_info.dns_removal_time == expected_dns_removal_time

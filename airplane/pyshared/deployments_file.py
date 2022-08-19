@@ -50,13 +50,14 @@ def alter_deployment_file(deployments_repo: str,
     alter it."""
     deploy_dir = git_clone(repo=deployments_repo, github_setup=True, existing_dir=os.environ.get(deployments_repo))
     with tmp_change_dir(change_dir=deploy_dir):
-        return_val = alter_callable(get_deployment_filepath(fairytale_name=ap_params["fairytale_name"]))
+        first_call_rval = alter_callable(get_deployment_filepath(fairytale_name=ap_params["fairytale_name"]))
+        second_call_rval = None
         if apply_to_generated_file:
-            alter_callable(
+            second_call_rval = alter_callable(
                 get_deployment_filepath(fairytale_name=ap_params["fairytale_name"], get_generated_filepath=True))
-        pip_install_auto_scripts_requirements(repo_path=".")
-        generate_configs(repo_path=".")
-        lint_configs(repo_path=".")
+        pip_install_auto_scripts_requirements()
+        generate_configs()
+        lint_configs()
 
         git_add_commit_push(files=("deployment-metadata", ), title=commit_title, test_run=is_test_run(ap_params))
-        return return_val
+        return first_call_rval, second_call_rval
