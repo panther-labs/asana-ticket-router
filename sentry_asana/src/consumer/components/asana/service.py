@@ -15,6 +15,7 @@ from urllib import parse
 from dateutil import parser
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
+from common.constants import AlertType
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import EngTeam
 from consumer.components.asana.entities import (
@@ -134,10 +135,10 @@ class AsanaService:
             int(datadog_event['date']) / 1000
         ).strftime('%Y-%m-%dT%H:%M:%S')
         title = datadog_event['title']
-        level = datadog_event['level'].lower()
-        priority = self._get_task_priority(level)
+        datadog_priority = datadog_event.get('priority', 'Unknown').lower()
+        priority = self._get_task_priority(datadog_priority, AlertType.DATADOG)
         environment = tags.get('env', 'Unknown').lower()
-        project_gids = await self._get_project_ids(environment, level, team)
+        project_gids = await self._get_project_ids(environment, datadog_priority, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=team,
@@ -171,7 +172,7 @@ class AsanaService:
         event_datetime = sentry_event['datetime'].lower()
         title = sentry_event['title']
         level = sentry_event['level'].lower()
-        priority = self._get_task_priority(level)
+        priority = self._get_task_priority(level, AlertType.SENTRY)
         environment = sentry_event['environment'].lower()
         project_gids = await self._get_project_ids(environment, level, team)
         runbook_url = RUNBOOK_URL
@@ -375,6 +376,15 @@ class AsanaService:
         }
 
     @staticmethod
-    def _get_task_priority(level: str) -> PRIORITY:
-        """Returns a PRIORITY Enum based on the Sentry event level provided."""
-        return PRIORITY.MEDIUM if level == 'warning' else PRIORITY.HIGH
+    def _get_task_priority(level: str, alert_type: AlertType) -> PRIORITY:
+        """Returns a PRIORITY Enum based on the Sentry or Datadog event level provided."""
+
+        if alert_type.name == AlertType.SENTRY.name:
+            if level == 'warning':
+                return PRIORITY.MEDIUM
+
+        if alert_type.name == AlertType.DATADOG.name:
+            if level in ['p5', 'p4', 'p3']:
+                return PRIORITY.MEDIUM
+
+        return PRIORITY.HIGH

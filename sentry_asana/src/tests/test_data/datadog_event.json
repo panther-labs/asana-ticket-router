@@ -1,0 +1,15 @@
+{
+    "body": "Test notification",
+    "last_updated": "1660844811000",
+    "event_type": "query_alert_monitor",
+    "title": "[P5] [Triggered on {aws_account:681114611791,customer_name:axonius,env:dev,functionname:panther-reports-api,region:eu-central-1}] [TEST] Webhook testing alert for panther-reports-api",
+    "date": "1660844811000",
+    "priority": "P5",
+    "link": "https://app.datadoghq.com/event/event?id=6653540964387829030",
+    "tags": "aws_account:681114611791,customer_name:axonius,env:dev,functionname:panther-reports-api,monitor,region:eu-central-1,team:obvs",
+    "org": {
+      "id": "676472",
+      "name": "Panther Labs"
+    },
+    "id": "6653540964387829030"
+}

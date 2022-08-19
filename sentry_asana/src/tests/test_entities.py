@@ -4,6 +4,21 @@ import pytest
 from common.components.entities import heuristics
 from common.components.entities.service import TeamService, Matcher
 from common.components.entities.containers import EntitiesContainer
+import os
+
+
+TEAMS_TEST_YAML = os.path.join(
+    os.path.dirname(__file__), 'test_data', 'teams_test.yaml'
+)
+TEAMS_PROD_YAML = os.path.join(
+    os.path.dirname(__file__),
+    '..',
+    'common',
+    'components',
+    'entities',
+    'data',
+    'teams.yaml',
+)
 
 
 def team_data_file() -> io.StringIO:
@@ -39,9 +54,7 @@ def container_with_mock() -> EntitiesContainer:
 def container_with_data() -> EntitiesContainer:
     return EntitiesContainer(
         config={
-            "entities": {
-                "team_data_file": "sentry_asana/src/tests/test_data/teams_test.yaml"
-            },
+            "entities": {"team_data_file": TEAMS_TEST_YAML},
         }
     )
 
@@ -87,7 +100,7 @@ def test_prod_config() -> None:
     teams_service = EntitiesContainer(
         config={
             'entities': {
-                'team_data_file': 'sentry_asana/src/common/components/entities/data/teams.yaml',
+                'team_data_file': TEAMS_PROD_YAML,
             },
         }
     ).teams_service()

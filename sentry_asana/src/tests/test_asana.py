@@ -16,11 +16,15 @@ from ..common.components.logger.containers import LoggerContainer
 from ..common.components.entities.service import EngTeam
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
+from ..common.constants import AlertType
 
 
 ASANA_TASK = os.path.join(os.path.dirname(__file__), 'test_data', 'asana_task.json')
 SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
 SENTRY_EVENT = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_event.json')
+DATADOG_EVENT = os.path.join(
+    os.path.dirname(__file__), 'test_data', 'datadog_event.json'
+)
 
 
 def raise_forbidden_except(*args: Any) -> Exception:
@@ -260,10 +264,16 @@ async def test_get_task_priority(container: AsanaContainer) -> None:
     """Test _get_task_priority"""
 
     service: AsanaService = container.asana_service()
-    priority = service._get_task_priority('misc level')
+    priority = service._get_task_priority('misc level', AlertType.SENTRY)
     assert priority.name == PRIORITY.HIGH.name
 
-    priority = service._get_task_priority('warning')
+    priority = service._get_task_priority('warning', AlertType.SENTRY)
+    assert priority == PRIORITY.MEDIUM
+
+    priority = service._get_task_priority('p1', AlertType.DATADOG)
+    assert priority.name == PRIORITY.HIGH.name
+
+    priority = service._get_task_priority('p4', AlertType.DATADOG)
     assert priority == PRIORITY.MEDIUM
 
 
@@ -420,7 +430,9 @@ async def test_create_asana_task(
 
 
 @pytest.mark.asyncio
-async def test_create_task(container: AsanaContainer, observability: EngTeam) -> None:
+async def test_create_task_from_sentry(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
     """Test create_task"""
 
     service: AsanaService = container.asana_service()
@@ -432,6 +444,27 @@ async def test_create_task(container: AsanaContainer, observability: EngTeam) ->
         observability,
         routing_data='',
     )
+    response = await service.create_task(asana_fields, None, None)
+    assert response == 'new_project_gid'
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_datadog(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
+    """Test create_task"""
+
+    service: AsanaService = container.asana_service()
+    with open(DATADOG_EVENT, encoding='utf-8') as file:
+        data = json.load(file)
+
+    asana_fields: AsanaFields = await service.extract_datadog_fields(
+        data,
+        observability,
+        routing_data='',
+    )
+
+    # We aren't actually doing this in the code yet, but we will.
     response = await service.create_task(asana_fields, None, None)
     assert response == 'new_project_gid'
 
