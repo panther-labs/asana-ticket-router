@@ -154,5 +154,5 @@ Resources:
               ThrottlingBurstLimit: 600
       Environment:
         Variables:
-          DATADOG_SECRET_ARN: "todo"
-          GITHUB_SECRET_ARN: "todo"
+          DATADOG_SECRET_ARN: arn:aws:secretsmanager:us-west-2:246537256134:secret:panther-deployment-metrics-datadog-lF5fVv
+          GITHUB_SECRET_ARN: arn:aws:secretsmanager:us-west-2:246537256134:secret:panther-deployment-metrics-github-cKoY35
