@@ -10,6 +10,7 @@ from logging import Logger
 from common.components.serializer.service import SerializerService
 from datadog_api_client import ApiClient, Configuration
 from datadog_api_client.v1.api.events_api import EventsApi
+from datadog_api_client.v1.model.event_create_request import EventCreateRequest
 
 
 class DatadogService:
@@ -37,4 +38,11 @@ class DatadogService:
         """Get Event Details about a Datadog Alarm Event"""
         api_instance = EventsApi(self._client)
         response = api_instance.get_event(event_id=int(datadog_event['id']))
+        return response.to_dict()
+
+    async def post_event_details(self, datadog_event: Dict) -> Dict:
+        """Post an event to the datadog event stream."""
+        api_instance = EventsApi(self._client)
+        req = EventCreateRequest(**datadog_event)
+        response = api_instance.create_event(body=req)
         return response.to_dict()

@@ -14,3 +14,8 @@ class AlertType(Enum):
     DATADOG = auto()
     SENTRY = auto()
     UNKNOWN_ALERT = auto()
+
+
+# Datadog doesn't really support custom source types other than this one?
+# https://docs.datadoghq.com/events/guides/new_events_sources/
+DATADOG_SOURCE_TYPE = 'my_apps'
