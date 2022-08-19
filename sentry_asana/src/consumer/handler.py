@@ -14,7 +14,7 @@ from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import TeamService
 from common.components.entities import heuristics
-from common.constants import AlertType
+from common.constants import AlertType, DATADOG_SOURCE_TYPE
 from consumer.components.datadog.service import DatadogService
 from consumer.components.sentry.service import SentryService
 from consumer.components.requests.containers import RequestsContainer
@@ -146,6 +146,19 @@ async def process(
         }
 
 
+def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
+    """Convert a datadog event into an asana event so we can look it up later."""
+    return {
+        'title': record.get('title', ''),
+        'text': asana_link,
+        'source_type_name': DATADOG_SOURCE_TYPE,
+        'tags': [
+            f'monitor_id:{record.get("monitor_id", "missing")}',
+            'event_source:asana',
+        ],
+    }
+
+
 @inject
 async def process_datadog_alert(  # pylint: disable=too-many-arguments
     record: Dict,
@@ -198,7 +211,11 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         log.info(
             f'Got the following fields back from get_event_details call: {datadog_event_details}'
         )
+        asana_url = 'https://asana.example.com/12345'  # just some URL for now.
 
+        await datadog.post_event_details(
+            make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
+        )
         return {
             'success': True,
             'message': 'Processed an alert from Datadog and did absolutely nothing.',

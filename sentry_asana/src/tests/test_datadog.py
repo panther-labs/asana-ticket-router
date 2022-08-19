@@ -55,3 +55,17 @@ async def test_get_event_details(container: DatadogContainer) -> None:
 
         response = await service.get_event_details({'id': "123456789"})
         assert response == {'foo': 'bar'}
+
+
+@pytest.mark.asyncio
+async def test_post_event_details(container: DatadogContainer) -> None:
+    datadog_client_response = Mock()
+    expected = {'status': 'ok', 'event': {}}
+    fake_event = {'title': 'title', 'tags': ['foo', 'bar'], 'text': 'some_text'}
+    datadog_client_response.to_dict.return_value = expected
+    datadog_client_mock = Mock()
+    datadog_client_mock.call_api.return_value = datadog_client_response
+    with container.client.override(datadog_client_mock):
+        service: DatadogService = await container.datadog_service()
+        response = await service.post_event_details(fake_event)
+        assert response == expected
