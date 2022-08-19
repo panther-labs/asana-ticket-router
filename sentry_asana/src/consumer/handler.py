@@ -153,7 +153,7 @@ def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
         'text': asana_link,
         'source_type_name': DATADOG_SOURCE_TYPE,
         'tags': [
-            'monitor_id:%s' % record.get('monitor_id'),
+            f'monitor_id:{record.get("monitor_id", "missing")}',
             'event_source:asana',
         ],
     }
