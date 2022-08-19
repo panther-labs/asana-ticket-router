@@ -1,4 +1,6 @@
 *   @panther-labs/observability-performance @panther-labs/productivity @panther-labs/quality @panther-labs/deployment
+/lambda/ @panther-labs/deployment @panther-labs/productivity
 /airplane/solution-engineering/ @panther-labs/solution_engineering @panther-labs/productivity @panther-labs/deployment
 /airplane/productivity/ @panther-labs/productivity @panther-labs/deployment
 /airplane/security/ @panther-labs/security @panther-labs/productivity @panther-labs/deployment
+/airplane/deployment/ @panther-labs/deployment

@@ -105,3 +105,54 @@ Resources:
       Protocol: "https"
       RawMessageDelivery: false
       TopicArn: !Ref AlarmTopic
+
+  DeploymentMetricsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SecretAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub
+                    - arn:aws:secretsmanager:us-west-2:${AccountId}:secret:panther-deployment-metrics*
+                    - AccountId: !FindInMap [ Accounts, HostedOps, AccountId ]
+
+  DeploymentMetricsLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Runtime: go1.x
+      Description: Handle github webhooks
+      MemorySize: 128
+      Handler: deployment_metrics
+      CodeUri: deployment_metrics/
+      Timeout: 5
+      Role: !GetAtt DeploymentMetricsLambdaRole.Arn
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Method: POST
+            Path: /webhook
+            TimeoutInMillis: 15000
+            PayloadFormatVersion: "2.0"
+            RouteSettings:
+              ThrottlingBurstLimit: 600
+      Environment:
+        Variables:
+          DATADOG_SECRET_ARN: "todo"
+          GITHUB_SECRET_ARN: "todo"
