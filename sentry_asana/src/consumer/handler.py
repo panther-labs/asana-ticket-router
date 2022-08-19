@@ -214,7 +214,7 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         asana_url = 'https://asana.example.com/12345'  # just some URL for now.
 
         await datadog.post_event_details(
-            make_datadog_asana_event(datadog_event_details['event'], asana_url)
+            make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
         )
         return {
             'success': True,
