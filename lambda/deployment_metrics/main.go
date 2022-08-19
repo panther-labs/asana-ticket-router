@@ -5,17 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
+	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type API struct {
-	datadogCtx   context.Context
-	datadogEvent *datadogV1.EventsApi
-	secretToken  []byte
+	datadogCtx    context.Context
+	datadogClient *datadog.APIClient
+	secretToken   []byte
 }
 
 type Tag struct {
@@ -52,12 +53,11 @@ func SetupAPI() (*API, error) {
 
 	configuration := datadog.NewConfiguration()
 	apiClient := datadog.NewAPIClient(configuration)
-	events := datadogV1.NewEventsApi(apiClient)
 
 	return &API{
-		datadogCtx:   ctx,
-		datadogEvent: events,
-		secretToken:  []byte(*githubSecret),
+		datadogCtx:    ctx,
+		datadogClient: apiClient,
+		secretToken:   []byte(*githubSecret),
 	}, nil
 }
 
@@ -83,7 +83,48 @@ func (x *API) Handler(ctx context.Context, in json.RawMessage) (events.APIGatewa
 	}
 
 	// Datadog metrics
-	fmt.Println(tag)
+	if tag != nil {
+		t := *tag
+		fmt.Println(tag)
+
+		tags := []string{
+			t.Tag,
+			fmt.Sprintf("%v.%v", t.Major, t.Minor),
+			fmt.Sprintf("%v.%v.%v", t.Major, t.Minor, t.Patch),
+		}
+
+		if tag.Prerelease != "" {
+			tags = append(tags, "RC")
+		}
+
+		api := datadogV2.NewMetricsApi(x.datadogClient)
+		_, _, err := api.SubmitMetrics(ctx, datadogV2.MetricPayload{
+			Series: []datadogV2.MetricSeries{
+				{
+					Metric: "deployment.metrics.versions",
+					Type:   datadogV2.METRICINTAKETYPE_COUNT.Ptr(),
+					Points: []datadogV2.MetricPoint{
+						{
+							Timestamp: datadog.PtrInt64(time.Now().Unix()),
+							Value:     datadog.PtrFloat64(1),
+						},
+					},
+					Resources: []datadogV2.MetricResource{
+						{
+							Name: datadog.PtrString("enterprise"),
+							Type: datadog.PtrString("version"),
+						},
+					},
+					Tags: tags,
+				},
+			},
+		}, *datadogV2.NewSubmitMetricsOptionalParameters())
+
+		if err != nil {
+			fmt.Println(err)
+			return internalError(), err
+		}
+	}
 
 	return noContent(), nil
 }
