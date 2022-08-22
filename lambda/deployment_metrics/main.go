@@ -5,18 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
-	"github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type API struct {
-	datadogCtx    context.Context
-	datadogClient *datadog.APIClient
-	secretToken   []byte
+	datadog     *Datadog
+	secretToken []byte
 }
 
 type Tag struct {
@@ -38,26 +34,9 @@ func SetupAPI() (*API, error) {
 		return nil, err
 	}
 
-	ctx := context.WithValue(
-		context.Background(),
-		datadog.ContextAPIKeys,
-		map[string]datadog.APIKey{
-			"apiKeyAuth": {
-				Key: *datadogSecret,
-			},
-			//            "appKeyAuth": {
-			//                Key: os.Getenv("DD_CLIENT_APP_KEY"),
-			//            },
-		},
-	)
-
-	configuration := datadog.NewConfiguration()
-	apiClient := datadog.NewAPIClient(configuration)
-
 	return &API{
-		datadogCtx:    ctx,
-		datadogClient: apiClient,
-		secretToken:   []byte(*githubSecret),
+		datadog:     SetupDatadog(*datadogSecret),
+		secretToken: []byte(*githubSecret),
 	}, nil
 }
 
@@ -87,39 +66,7 @@ func (x *API) Handler(ctx context.Context, in json.RawMessage) (events.APIGatewa
 		t := *tag
 		fmt.Println(tag)
 
-		tags := []string{
-			t.Tag,
-			fmt.Sprintf("%v.%v", t.Major, t.Minor),
-			fmt.Sprintf("%v.%v.%v", t.Major, t.Minor, t.Patch),
-		}
-
-		if tag.Prerelease != "" {
-			tags = append(tags, "RC")
-		}
-
-		api := datadogV2.NewMetricsApi(x.datadogClient)
-		_, _, err := api.SubmitMetrics(ctx, datadogV2.MetricPayload{
-			Series: []datadogV2.MetricSeries{
-				{
-					Metric: "deployment.metrics.versions",
-					Type:   datadogV2.METRICINTAKETYPE_COUNT.Ptr(),
-					Points: []datadogV2.MetricPoint{
-						{
-							Timestamp: datadog.PtrInt64(time.Now().Unix()),
-							Value:     datadog.PtrFloat64(1),
-						},
-					},
-					Resources: []datadogV2.MetricResource{
-						{
-							Name: datadog.PtrString("enterprise"),
-							Type: datadog.PtrString("version"),
-						},
-					},
-					Tags: tags,
-				},
-			},
-		}, *datadogV2.NewSubmitMetricsOptionalParameters())
-
+		err = x.datadog.PostMetrics(t)
 		if err != nil {
 			fmt.Println(err)
 			return internalError(), err
