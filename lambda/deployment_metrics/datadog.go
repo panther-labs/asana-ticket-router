@@ -42,6 +42,7 @@ func (x *Datadog) PostMetrics(t Tag) error {
 	tags := []string{
 		t.Tag,
 		fmt.Sprintf("v%v.%v", t.Major, t.Minor),
+		fmt.Sprintf("version:v%v.%v", t.Major, t.Minor),
 	}
 
 	if t.Prerelease != "" {
