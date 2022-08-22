@@ -89,23 +89,18 @@ class AsanaService:
             self._logger.warning('Task not found: %s', err)
             return None
 
-    async def _create_asana_task(self, task: Dict) -> Dict:
+    async def _create_asana_task(self, task_body: Dict) -> Dict:
         """Dispatch a call to create a new Asana task"""
         self._logger.info("Creating asana task")
         return await self._loop().run_in_executor(
-            None, partial(self._client.tasks.create_task, task)
+            None, partial(self._client.tasks.create_task, task_body)
         )
 
     async def create_task(
         self,
-        asana_fields: AsanaFields,
-        root_asana_link: Optional[str],
-        prev_asana_link: Optional[str],
+        task_body: Dict,
     ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task"""
-        self._logger.info('Constructing an asana task')
-        notes = self._create_task_note(asana_fields, root_asana_link, prev_asana_link)
-        task_body = self._create_task_body(asana_fields, notes)
         response = await self._create_asana_task(task_body)
         return response['gid']
 
@@ -193,7 +188,7 @@ class AsanaService:
             routing_data=routing_data,
         )
 
-    def _create_task_note(
+    def create_task_note(
         self,
         fields: AsanaFields,
         root_asana_link: Optional[str],
@@ -358,7 +353,7 @@ class AsanaService:
             return None
         return latest_project['gid']
 
-    def _create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
+    def create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
         """Create an asana tasks details"""
         self._logger.debug("Building asana task body")
         return {

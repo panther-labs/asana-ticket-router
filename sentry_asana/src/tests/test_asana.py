@@ -335,7 +335,7 @@ async def test_create_task_note(
     """Test _create_task_note"""
 
     service: AsanaService = container.asana_service()
-    note = service._create_task_note(asana_fields, None, None)
+    note = service.create_task_note(asana_fields, None, None)
     assert (
         note
         == """Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
@@ -357,7 +357,7 @@ Routing Information: Fake Routing information
 """
     )
     # Test with root and previous asana links in the payload
-    note = service._create_task_note(asana_fields, 'root_asana_link', 'prev_asana_link')
+    note = service.create_task_note(asana_fields, 'root_asana_link', 'prev_asana_link')
     assert (
         note
         == """Previous Asana Task: prev_asana_link
@@ -391,7 +391,7 @@ async def test_create_task_body(
     """Test _create_task_body"""
 
     service: AsanaService = container.asana_service()
-    body = service._create_task_body(asana_fields, 'some notes')
+    body = service.create_task_body(asana_fields, 'some notes')
     assert body == {
         'name': asana_fields.title,
         'projects': asana_fields.project_gids,
@@ -446,7 +446,10 @@ async def test_create_task_from_sentry(
         observability,
         routing_data='',
     )
-    response = await service.create_task(asana_fields, None, None)
+    task_note = service.create_task_note(asana_fields, None, None)
+    task_body = service.create_task_body(asana_fields, task_note)
+
+    response = await service.create_task(task_body)
     assert response == 'new_project_gid'
 
 
@@ -466,8 +469,11 @@ async def test_create_task_from_datadog(
         routing_data='',
     )
 
+    task_note = service.create_task_note(asana_fields, None, None)
+    task_body = service.create_task_body(asana_fields, task_note)
+
     # We aren't actually doing this in the code yet, but we will.
-    response = await service.create_task(asana_fields, None, None)
+    response = await service.create_task(task_body)
     assert response == 'new_project_gid'
 
 

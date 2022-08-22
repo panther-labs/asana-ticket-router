@@ -216,6 +216,12 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         await datadog.post_event_details(
             make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
         )
+
+        task_note = asana.create_task_note(asana_fields, None, None)
+        task_body = asana.create_task_body(asana_fields, task_note)
+
+        log.info(f'Generated the following Asana task body: {task_body}')
+
         return {
             'success': True,
             'message': 'Processed an alert from Datadog and did absolutely nothing.',
@@ -290,9 +296,11 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
         asana_fields: AsanaFields = await asana.extract_sentry_fields(
             event, team, routing_data=results
         )
-        new_task_gid = await asana.create_task(
-            asana_fields, root_asana_link, asana_link
-        )
+
+        task_note = asana.create_task_note(asana_fields, root_asana_link, asana_link)
+        task_body = asana.create_task_body(asana_fields, task_note)
+
+        new_task_gid = await asana.create_task(task_body)
         # Asana create note to add reason.
 
         # Finally, link the newly created asana task back to the sentry issue
