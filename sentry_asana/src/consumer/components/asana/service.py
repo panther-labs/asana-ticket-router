@@ -138,7 +138,7 @@ class AsanaService:
         datadog_priority = datadog_event.get('priority', 'Unknown').lower()
         priority = self._get_task_priority(datadog_priority, AlertType.DATADOG)
         environment = tags.get('env', 'Unknown').lower()
-        project_gids = await self._get_project_ids(environment, datadog_priority, team)
+        project_gids = await self._get_project_ids(environment, priority, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=team,
@@ -174,7 +174,7 @@ class AsanaService:
         level = sentry_event['level'].lower()
         priority = self._get_task_priority(level, AlertType.SENTRY)
         environment = sentry_event['environment'].lower()
-        project_gids = await self._get_project_ids(environment, level, team)
+        project_gids = await self._get_project_ids(environment, priority, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=team,
@@ -230,7 +230,7 @@ class AsanaService:
             datadog_query_url = (
                 f'https://app.datadoghq.com/apm/traces?'
                 f'query=@account_id:{fields.aws_account_id}%20@request_id:{request_id}'
-                f'&start={one_hour_before_ts}'
+                f'&start={one_hour_before_ts}&historicalData=true'
             )
 
             note = note + f'Datadog Trace Link: {datadog_query_url}\n\n'
@@ -266,7 +266,7 @@ class AsanaService:
         return prev_link
 
     async def _get_project_ids(
-        self, environment: str, level: str, owning_team: EngTeam
+        self, environment: str, priority: PRIORITY, owning_team: EngTeam
     ) -> List[str]:
         """Returns a list of project ids to attach to an Asana task"""
         self._logger.debug("Getting relevant project ids")
@@ -284,7 +284,7 @@ class AsanaService:
             )
 
         # If a production 'warning', add to backlog
-        if level == 'warning':
+        if priority.name != PRIORITY.HIGH.name:
             return [owning_team.AsanaBacklogId]
 
         # If a production 'high', add to current sprint

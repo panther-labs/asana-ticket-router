@@ -246,16 +246,18 @@ async def test_get_project_ids(
     """Test _get_project_ids"""
 
     service: AsanaService = container.asana_service()
-    project_ids = await service._get_project_ids('dev', 'warning', observability)
+    project_ids = await service._get_project_ids('dev', PRIORITY.MEDIUM, observability)
     assert project_ids == ['sprint_gid_3', 'dev_board']
 
-    project_ids = await service._get_project_ids('staging', 'warning', observability)
+    project_ids = await service._get_project_ids(
+        'staging', PRIORITY.MEDIUM, observability
+    )
     assert project_ids == ['sprint_gid_3', 'release_gid_1']
 
-    project_ids = await service._get_project_ids('prod', 'warning', observability)
+    project_ids = await service._get_project_ids('prod', PRIORITY.MEDIUM, observability)
     assert project_ids == ['backlog']
 
-    project_ids = await service._get_project_ids('prod', 'high', observability)
+    project_ids = await service._get_project_ids('prod', PRIORITY.HIGH, observability)
     assert project_ids == ['sprint_gid_3']
 
 
@@ -348,7 +350,7 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
 Routing Information: Fake Routing information
 
@@ -374,7 +376,7 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
 Routing Information: Fake Routing information
 
