@@ -1,4 +1,6 @@
 import os
+import pytz
+from datetime import datetime
 
 from v2.task_models.airplane_git_task import AirplaneGitTask
 from v2.consts.airplane_env import AirplaneEnv
@@ -23,6 +25,7 @@ class NewCustomerCreator(AirplaneGitTask):
             "contact_first_name": params["first_name"],
             "contact_last_name": params["last_name"],
             "contact_email": params["email_address"],
+            "created": datetime.now(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z"),
             "customer_display_name": params["account_name"],
             "customer_id": params.get("fairytale_name", generate_fairytale_name(repo_path=self.deploys_path)),
             "group": params["deploy_group"].lower(),

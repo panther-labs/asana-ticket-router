@@ -1,6 +1,8 @@
 # Note: unit testing this task is quite difficult, as most of the logic takes place in hosted-deployments. Instead,
 # this ensures the interface is used properly.
 import pytest
+import re
+import pytz
 from unittest import mock
 
 from operations.deployment.new_customer import create_new_customer
@@ -66,6 +68,7 @@ def test_translated_args_passed_properly_to_create_customer_metadata(create_cust
     assert cfg["customer_id"] == "alpha-doe"
     assert cfg["customer_display_name"] == "Create Customer Test"
     assert cfg["region"] == "us-west-2"
+    assert re.match(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{4}$', cfg["created"])
     assert cfg["deploy_method"] == "template"
     assert cfg["service_type"] == "SaaS"
     assert cfg["snowflake_deployment"] == "Managed"
