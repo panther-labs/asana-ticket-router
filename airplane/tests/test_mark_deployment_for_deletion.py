@@ -34,12 +34,9 @@ class TestMarkDeploymentForDeletion:
     def test_slack_message_contains_customer_info_and_sent_to_right_channels(self):
         main(params)
         args_index = 2
-        first_slack_msg = self.send_slack_msg_mock.mock_calls[0][args_index]
-        second_slack_msg = self.send_slack_msg_mock.mock_calls[1][args_index]
-        assert first_slack_msg["channel_name"] == "#cs-alerts"
-        assert second_slack_msg["channel_name"] == "#triage-deployment"
-        assert first_slack_msg["message"] == second_slack_msg["message"]
-        msg = first_slack_msg["message"]
+        slack_msg = self.send_slack_msg_mock.mock_calls[0][args_index]
+        assert slack_msg["channel_name"] == "#eng-deployment-notifications"
+        msg = slack_msg["message"]
         assert ap_params.fairytale_name in msg
         assert ap_params.aws_account_id in msg
         assert ap_params.company_display_name in msg

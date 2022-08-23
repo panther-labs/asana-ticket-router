@@ -42,8 +42,7 @@ class DeploymentDeletionMarker(AirplaneTask):
             commit_title=f"Mark {params['fairytale_name']} for deprovisioning")
 
         dns_time, teardown_time = self._get_human_readable_times(deprov_info)
-        for channel in ("#cs-alerts", "#triage-deployment"):
-            slack_msg = f"""Customer {ap_params.fairytale_name} has been marked to be deleted.
+        slack_msg = f"""Customer {ap_params.fairytale_name} has been marked to be deleted.
 
 Please make sure this is intentional.
 
@@ -57,8 +56,8 @@ Time when the instance will be torn down (an unrecoverable operation): {teardown
 
 Was this a mistake? Do the following:
 Notify the deployment team to remove deletion info from the deployment file for {ap_params.fairytale_name}
-            """
-            self.send_slack_message(channel_name=channel, message=slack_msg)
+        """
+        self.send_slack_message(channel_name="#eng-deployment-notifications", message=slack_msg)
 
     def _get_human_readable_times(self, deprov_info):
         time_format = "%m/%d/%Y, %H:%M:%S %Z"
