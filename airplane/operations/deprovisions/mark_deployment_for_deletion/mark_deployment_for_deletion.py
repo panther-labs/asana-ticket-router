@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-import pytz
 
+from operations.deprovisions import DEPROV_TZ
 from pyshared.airplane_utils import AirplaneTask
 from pyshared.deprov_info import DeprovInfo, DeprovInfoDeployFile
 from pyshared.deployments_file import DeploymentsRepo, alter_deployment_file
@@ -22,10 +22,8 @@ class AirplaneParams:
 class DeploymentDeletionMarker(AirplaneTask):
 
     @staticmethod
-    def add_deprovisioning_tags(filepath,
-                                dns_removal_hours,
-                                teardown_removal_hours,
-                                now=datetime.now(pytz.timezone("US/Pacific"))) -> DeprovInfo:
+    def add_deprovisioning_tags(filepath, dns_removal_hours, teardown_removal_hours,
+                                now=datetime.now(DEPROV_TZ)) -> DeprovInfo:
         deprov_info = DeprovInfo(dns_removal_time=now + timedelta(hours=dns_removal_hours),
                                  teardown_time=now + timedelta(hours=teardown_removal_hours))
         DeprovInfoDeployFile(filepath=filepath).write_deprov_info(deprov_info=deprov_info)
@@ -59,7 +57,8 @@ Notify the deployment team to remove deletion info from the deployment file for 
         """
         self.send_slack_message(channel_name="#eng-deployment-notifications", message=slack_msg)
 
-    def _get_human_readable_times(self, deprov_info):
+    @staticmethod
+    def _get_human_readable_times(deprov_info):
         time_format = "%m/%d/%Y, %H:%M:%S %Z"
         return deprov_info.dns_removal_time.strftime(time_format), deprov_info.teardown_time.strftime(time_format)
 

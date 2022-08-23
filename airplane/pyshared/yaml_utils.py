@@ -1,9 +1,15 @@
+import dateutil.parser
 from contextlib import contextmanager
 from ruamel.yaml import YAML, comments
 
 
+def timestamp_constructor(loader, node):
+    return dateutil.parser.parse(node.value)
+
+
 def _yaml_instance() -> YAML:
     yaml = YAML(pure=True)
+    yaml.constructor.add_constructor(u'tag:yaml.org,2002:timestamp', timestamp_constructor)
     yaml.indent(mapping=2, sequence=4, offset=2)
     return yaml
 

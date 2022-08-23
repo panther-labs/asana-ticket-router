@@ -86,7 +86,7 @@ class AirplaneMultiCloneGitTask(AirplaneTask):
             for repo in git_repos
         }
 
-    def main(self):
+    def main(self, params=None):
         raise NotImplementedError
 
 
@@ -99,7 +99,7 @@ class AirplaneCloneGitTask(AirplaneTask):
     def main_within_cloned_dir(self):
         raise NotImplementedError
 
-    def main(self):
+    def main(self, params=None):
         with tmp_change_dir(change_dir=self.git_dir):
             return self.main_within_cloned_dir()
 

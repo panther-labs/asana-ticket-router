@@ -23,6 +23,13 @@ def get_deployment_groups_dir(repo_dir: str = ""):
     return os.path.join(repo_dir, "deployment-metadata", "deployment-groups")
 
 
+def get_deployment_targets(repo_dir: str = ""):
+    return [
+        os.path.join(get_deployment_targets_dir(repo_dir), target)
+        for target in os.listdir(get_deployment_targets_dir(repo_dir))
+    ]
+
+
 def get_deployment_targets_dir(repo_dir: str = ""):
     return os.path.join(repo_dir, "deployment-metadata", "deployment-targets")
 
@@ -33,6 +40,10 @@ def get_deployment_group_filepath(group_name: str, repo_dir: str = ""):
 
 def get_deployment_group_choices(repo_dir: str = ""):
     return [group.removesuffix(".yml") for group in os.listdir(get_deployment_groups_dir(repo_dir=repo_dir))]
+
+
+def get_fairytale_name_from_target_file(filepath: str):
+    return os.path.basename(filepath).rstrip(".yml")
 
 
 def gen_cfgs():
