@@ -1,0 +1,55 @@
+name: Zapier Dummy Task (Not for Manual Use)
+slug: zapier_task
+description: Webhook for Salesforce to hit Airplane through Zapier
+parameters:
+- name: Account Name
+  slug: account_name
+  type: shorttext
+  description: |-
+    A unique account name (such as Google) to identify the account.
+    The domain will be "account_name.runpanther.net".
+- name: Customer Domain
+  slug: customer_domain
+  type: shorttext
+  description: The domain defaults to "account_name.runpanther.net". If another domain is desired, put it here, and the domain will be "[customer_domain].runpanther.net".
+  required: false
+  regex: ^[A-Za-z0-9-]+$
+- name: First Name
+  slug: first_name
+  type: shorttext
+- name: Last Name
+  slug: last_name
+  type: shorttext
+- name: Email Address
+  slug: email_address
+  type: shorttext
+  regex: "^\\S+@\\S+\\.\\S+$"
+- name: Sales Customer ID
+  slug: sales_customer_id
+  type: shorttext
+  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Customer ID [a-zA-Z0-9]
+  regex: ^[A-Za-z\d]{18}$
+- name: Sales Opportunity ID
+  slug: sales_opportunity_id
+  type: shorttext
+  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Opportunity ID [a-zA-Z0-9]
+  regex: ^[A-Za-z\d]{18}$
+- name: Sales phase
+  slug: sales_phase
+  type: shorttext
+  description: The customer's position in the sales pipeline
+  regex: ^(trial|proof_of_value|contract)$
+  default: trial
+  options:
+  - label: Trial
+    value: trial
+  - label: Proof of Value
+    value: proof_of_value
+  - label: Contract
+    value: contract
+python:
+  entrypoint: zapier_task.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbWrite
+timeout: 3600
