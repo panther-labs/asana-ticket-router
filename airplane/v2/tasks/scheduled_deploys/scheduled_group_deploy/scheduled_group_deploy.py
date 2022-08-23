@@ -75,7 +75,7 @@ class ScheduledGroupDeploy(AirplaneGitTask):
                                          description=self._long_deployment_summary)
 
     def get_failure_slack_channel(self):
-        return "#triage-productivity"
+        return "#triage-deployment"
 
 
 def main(params: dict) -> None:

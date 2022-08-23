@@ -217,7 +217,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         return expected_attrs
 
     def get_failure_slack_channel(self):
-        return "#triage-productivity"
+        return "#triage-deployment"
 
     @staticmethod
     def _get_notion_page(notion_info):
