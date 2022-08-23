@@ -15,7 +15,7 @@ from v2.pyshared.yaml_utils import load_yaml_cfg
 
 class NewCustomerCreator(AirplaneGitTask):
 
-    def __init__(self, is_dry_run=False):
+    def __init__(self, is_dry_run=False, requires_runbook=True):
         super().__init__(is_dry_run=is_dry_run)
         self.deploys_path = self.clone_repo_or_get_local(repo_name=GithubRepo.HOSTED_DEPLOYMENTS,
                                                          local_repo_abs_path=os.getenv(GithubRepo.HOSTED_DEPLOYMENTS))
@@ -40,6 +40,11 @@ class NewCustomerCreator(AirplaneGitTask):
 
         if "customer_domain" in params:
             cfg["customer_domain"] = params["customer_domain"]
+
+        # Use fairytale name as customer domain for trial SaaS accounts
+        if params["deploy_group"] == "T":
+            if "customer_domain" in params: raise ValueError("Customer Domain should not be set for trial SaaS accounts")
+            cfg["customer_domain"] = f'{cfg["customer_id"]}.runpanther.net'
 
         return cfg
 

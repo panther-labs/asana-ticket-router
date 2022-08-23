@@ -81,7 +81,6 @@ def test_translated_args_passed_properly_to_create_customer_metadata(create_cust
     assert cfg["sales_phase"] == "contract"
     assert "customer_domain" not in cfg
 
-
 def test_domain_given(create_customer_metadata):
     params = get_params()
     params["customer_domain"] = "my-cool-domain"
@@ -95,6 +94,23 @@ def test_invalid_deploy_group():
     params["deploy_group"] = "bad-deploy-group"
     with pytest.raises(ValueError):
         main(params)
+
+
+def test_customer_domain_given_for_trial_saas():
+    params = get_params()
+    params["deploy_group"] = "T"
+    params["customer_domain"] = "xyz-domain"
+
+    with pytest.raises(ValueError):
+        main(params)
+
+
+def test_customer_domain_generated_from_fairytale_for_trial_saas(create_customer_metadata):
+    params = get_params()
+    params["deploy_group"] = "T"
+    main(params)
+    cfg = _get_cfg_args(create_customer_metadata)
+    assert cfg["customer_domain"] == "alpha-doe.runpanther.net"
 
 
 def test_outputs():

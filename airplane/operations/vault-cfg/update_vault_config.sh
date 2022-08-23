@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+if [ -z "${AIRPLANE_SESSION_ID}" ]; then
+  >&2 echo "This task must be run from within a runbook!"
+  exit 1
+fi
+
 PATH=$PATH:util # For running airplane locally
 . util/task-dir
 cd_to_task_dir

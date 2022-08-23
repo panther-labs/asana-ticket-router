@@ -28,6 +28,7 @@ class TestUpdateDeploymentGroups:
             "group_l": False,
             "group_n": False,
             "group_p": False,
+            "group_t": False,
             "group_z": False,
             "group_cpaas": False,
             "group_legacy_sf": False
