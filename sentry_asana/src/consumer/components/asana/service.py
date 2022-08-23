@@ -15,6 +15,7 @@ from urllib import parse
 from dateutil import parser
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
+from common.constants import AlertType
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import EngTeam
 from consumer.components.asana.entities import (
@@ -88,23 +89,18 @@ class AsanaService:
             self._logger.warning('Task not found: %s', err)
             return None
 
-    async def _create_asana_task(self, task: Dict) -> Dict:
+    async def _create_asana_task(self, task_body: Dict) -> Dict:
         """Dispatch a call to create a new Asana task"""
         self._logger.info("Creating asana task")
         return await self._loop().run_in_executor(
-            None, partial(self._client.tasks.create_task, task)
+            None, partial(self._client.tasks.create_task, task_body)
         )
 
     async def create_task(
         self,
-        asana_fields: AsanaFields,
-        root_asana_link: Optional[str],
-        prev_asana_link: Optional[str],
+        task_body: Dict,
     ) -> str:
         """Extracts relevant info from the Sentry event & creates an Asana task"""
-        self._logger.info('Constructing an asana task')
-        notes = self._create_task_note(asana_fields, root_asana_link, prev_asana_link)
-        task_body = self._create_task_body(asana_fields, notes)
         response = await self._create_asana_task(task_body)
         return response['gid']
 
@@ -134,10 +130,10 @@ class AsanaService:
             int(datadog_event['date']) / 1000
         ).strftime('%Y-%m-%dT%H:%M:%S')
         title = datadog_event['title']
-        level = datadog_event['level'].lower()
-        priority = self._get_task_priority(level)
+        datadog_priority = datadog_event.get('priority', 'Unknown').lower()
+        priority = self._get_task_priority(datadog_priority, AlertType.DATADOG)
         environment = tags.get('env', 'Unknown').lower()
-        project_gids = await self._get_project_ids(environment, level, team)
+        project_gids = await self._get_project_ids(environment, priority, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=team,
@@ -171,9 +167,9 @@ class AsanaService:
         event_datetime = sentry_event['datetime'].lower()
         title = sentry_event['title']
         level = sentry_event['level'].lower()
-        priority = self._get_task_priority(level)
+        priority = self._get_task_priority(level, AlertType.SENTRY)
         environment = sentry_event['environment'].lower()
-        project_gids = await self._get_project_ids(environment, level, team)
+        project_gids = await self._get_project_ids(environment, priority, team)
         runbook_url = RUNBOOK_URL
         return AsanaFields(
             assigned_team=team,
@@ -192,7 +188,7 @@ class AsanaService:
             routing_data=routing_data,
         )
 
-    def _create_task_note(
+    def create_task_note(
         self,
         fields: AsanaFields,
         root_asana_link: Optional[str],
@@ -229,7 +225,7 @@ class AsanaService:
             datadog_query_url = (
                 f'https://app.datadoghq.com/apm/traces?'
                 f'query=@account_id:{fields.aws_account_id}%20@request_id:{request_id}'
-                f'&start={one_hour_before_ts}'
+                f'&start={one_hour_before_ts}&historicalData=true'
             )
 
             note = note + f'Datadog Trace Link: {datadog_query_url}\n\n'
@@ -265,7 +261,7 @@ class AsanaService:
         return prev_link
 
     async def _get_project_ids(
-        self, environment: str, level: str, owning_team: EngTeam
+        self, environment: str, priority: PRIORITY, owning_team: EngTeam
     ) -> List[str]:
         """Returns a list of project ids to attach to an Asana task"""
         self._logger.debug("Getting relevant project ids")
@@ -283,7 +279,7 @@ class AsanaService:
             )
 
         # If a production 'warning', add to backlog
-        if level == 'warning':
+        if priority.name != PRIORITY.HIGH.name:
             return [owning_team.AsanaBacklogId]
 
         # If a production 'high', add to current sprint
@@ -357,7 +353,7 @@ class AsanaService:
             return None
         return latest_project['gid']
 
-    def _create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
+    def create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
         """Create an asana tasks details"""
         self._logger.debug("Building asana task body")
         return {
@@ -375,6 +371,15 @@ class AsanaService:
         }
 
     @staticmethod
-    def _get_task_priority(level: str) -> PRIORITY:
-        """Returns a PRIORITY Enum based on the Sentry event level provided."""
-        return PRIORITY.MEDIUM if level == 'warning' else PRIORITY.HIGH
+    def _get_task_priority(level: str, alert_type: AlertType) -> PRIORITY:
+        """Returns a PRIORITY Enum based on the Sentry or Datadog event level provided."""
+
+        if alert_type.name == AlertType.SENTRY.name:
+            if level == 'warning':
+                return PRIORITY.MEDIUM
+
+        if alert_type.name == AlertType.DATADOG.name:
+            if level in ['p5', 'p4', 'p3']:
+                return PRIORITY.MEDIUM
+
+        return PRIORITY.HIGH

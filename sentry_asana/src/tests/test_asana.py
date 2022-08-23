@@ -16,11 +16,15 @@ from ..common.components.logger.containers import LoggerContainer
 from ..common.components.entities.service import EngTeam
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
+from ..common.constants import AlertType
 
 
 ASANA_TASK = os.path.join(os.path.dirname(__file__), 'test_data', 'asana_task.json')
 SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
 SENTRY_EVENT = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_event.json')
+DATADOG_EVENT = os.path.join(
+    os.path.dirname(__file__), 'test_data', 'datadog_event.json'
+)
 
 
 def raise_forbidden_except(*args: Any) -> Exception:
@@ -242,16 +246,18 @@ async def test_get_project_ids(
     """Test _get_project_ids"""
 
     service: AsanaService = container.asana_service()
-    project_ids = await service._get_project_ids('dev', 'warning', observability)
+    project_ids = await service._get_project_ids('dev', PRIORITY.MEDIUM, observability)
     assert project_ids == ['sprint_gid_3', 'dev_board']
 
-    project_ids = await service._get_project_ids('staging', 'warning', observability)
+    project_ids = await service._get_project_ids(
+        'staging', PRIORITY.MEDIUM, observability
+    )
     assert project_ids == ['sprint_gid_3', 'release_gid_1']
 
-    project_ids = await service._get_project_ids('prod', 'warning', observability)
+    project_ids = await service._get_project_ids('prod', PRIORITY.MEDIUM, observability)
     assert project_ids == ['backlog']
 
-    project_ids = await service._get_project_ids('prod', 'high', observability)
+    project_ids = await service._get_project_ids('prod', PRIORITY.HIGH, observability)
     assert project_ids == ['sprint_gid_3']
 
 
@@ -260,10 +266,16 @@ async def test_get_task_priority(container: AsanaContainer) -> None:
     """Test _get_task_priority"""
 
     service: AsanaService = container.asana_service()
-    priority = service._get_task_priority('misc level')
+    priority = service._get_task_priority('misc level', AlertType.SENTRY)
     assert priority.name == PRIORITY.HIGH.name
 
-    priority = service._get_task_priority('warning')
+    priority = service._get_task_priority('warning', AlertType.SENTRY)
+    assert priority == PRIORITY.MEDIUM
+
+    priority = service._get_task_priority('p1', AlertType.DATADOG)
+    assert priority.name == PRIORITY.HIGH.name
+
+    priority = service._get_task_priority('p4', AlertType.DATADOG)
     assert priority == PRIORITY.MEDIUM
 
 
@@ -323,7 +335,7 @@ async def test_create_task_note(
     """Test _create_task_note"""
 
     service: AsanaService = container.asana_service()
-    note = service._create_task_note(asana_fields, None, None)
+    note = service.create_task_note(asana_fields, None, None)
     assert (
         note
         == """Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
@@ -338,14 +350,14 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
 Routing Information: Fake Routing information
 
 """
     )
     # Test with root and previous asana links in the payload
-    note = service._create_task_note(asana_fields, 'root_asana_link', 'prev_asana_link')
+    note = service.create_task_note(asana_fields, 'root_asana_link', 'prev_asana_link')
     assert (
         note
         == """Previous Asana Task: prev_asana_link
@@ -364,7 +376,7 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
 Routing Information: Fake Routing information
 
@@ -379,7 +391,7 @@ async def test_create_task_body(
     """Test _create_task_body"""
 
     service: AsanaService = container.asana_service()
-    body = service._create_task_body(asana_fields, 'some notes')
+    body = service.create_task_body(asana_fields, 'some notes')
     assert body == {
         'name': asana_fields.title,
         'projects': asana_fields.project_gids,
@@ -420,7 +432,9 @@ async def test_create_asana_task(
 
 
 @pytest.mark.asyncio
-async def test_create_task(container: AsanaContainer, observability: EngTeam) -> None:
+async def test_create_task_from_sentry(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
     """Test create_task"""
 
     service: AsanaService = container.asana_service()
@@ -432,7 +446,34 @@ async def test_create_task(container: AsanaContainer, observability: EngTeam) ->
         observability,
         routing_data='',
     )
-    response = await service.create_task(asana_fields, None, None)
+    task_note = service.create_task_note(asana_fields, None, None)
+    task_body = service.create_task_body(asana_fields, task_note)
+
+    response = await service.create_task(task_body)
+    assert response == 'new_project_gid'
+
+
+@pytest.mark.asyncio
+async def test_create_task_from_datadog(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
+    """Test create_task"""
+
+    service: AsanaService = container.asana_service()
+    with open(DATADOG_EVENT, encoding='utf-8') as file:
+        data = json.load(file)
+
+    asana_fields: AsanaFields = await service.extract_datadog_fields(
+        data,
+        observability,
+        routing_data='',
+    )
+
+    task_note = service.create_task_note(asana_fields, None, None)
+    task_body = service.create_task_body(asana_fields, task_note)
+
+    # We aren't actually doing this in the code yet, but we will.
+    response = await service.create_task(task_body)
     assert response == 'new_project_gid'
 
 

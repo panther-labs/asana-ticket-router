@@ -91,7 +91,7 @@ def edit_customer_deployment_file(fairytale_name: str, cfg: dict, repo_path: str
         yaml_cfg.update(cfg)
 
 
-def generate_configs(repo_path: str) -> None:
+def generate_configs(repo_path: str = ".") -> None:
     """
     Run 'generate.py' script in the specified repo
     :param repo_path: Absolute path of the repo
@@ -104,7 +104,7 @@ def generate_configs(repo_path: str) -> None:
         module.generate_configs()
 
 
-def lint_configs(repo_path: str) -> None:
+def lint_configs(repo_path: str = ".") -> None:
     """
     Run 'lint.py' script in the specified repo
     :param repo_path: Absolute path of the repo
@@ -139,7 +139,7 @@ def create_customer_file(repo_path: str, customer_cfg: dict, gen_cfg: bool = Tru
         return fairytale_name
 
 
-def pip_install_auto_scripts_requirements(repo_path: str) -> None:
+def pip_install_auto_scripts_requirements(repo_path: str = ".") -> None:
     """
     Install requirements needed to run hosted deployment automation scripts
     :param repo_path: Absolute path of the repo

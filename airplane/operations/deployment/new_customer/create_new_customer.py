@@ -1,4 +1,6 @@
 import os
+import pytz
+from datetime import datetime
 
 from v2.task_models.airplane_git_task import AirplaneGitTask
 from v2.consts.airplane_env import AirplaneEnv
@@ -13,7 +15,7 @@ from v2.pyshared.yaml_utils import load_yaml_cfg
 
 class NewCustomerCreator(AirplaneGitTask):
 
-    def __init__(self, is_dry_run=False):
+    def __init__(self, is_dry_run=False, requires_runbook=True):
         super().__init__(is_dry_run=is_dry_run)
         self.deploys_path = self.clone_repo_or_get_local(repo_name=GithubRepo.HOSTED_DEPLOYMENTS,
                                                          local_repo_abs_path=os.getenv(GithubRepo.HOSTED_DEPLOYMENTS))
@@ -23,6 +25,7 @@ class NewCustomerCreator(AirplaneGitTask):
             "contact_first_name": params["first_name"],
             "contact_last_name": params["last_name"],
             "contact_email": params["email_address"],
+            "created": datetime.now(pytz.utc).strftime("%Y-%m-%dT%H:%M:%S%z"),
             "customer_display_name": params["account_name"],
             "customer_id": params.get("fairytale_name", generate_fairytale_name(repo_path=self.deploys_path)),
             "group": params["deploy_group"].lower(),
@@ -37,6 +40,11 @@ class NewCustomerCreator(AirplaneGitTask):
 
         if "customer_domain" in params:
             cfg["customer_domain"] = params["customer_domain"]
+
+        # Use fairytale name as customer domain for trial SaaS accounts
+        if params["deploy_group"] == "T":
+            if "customer_domain" in params: raise ValueError("Customer Domain should not be set for trial SaaS accounts")
+            cfg["customer_domain"] = f'{cfg["customer_id"]}.runpanther.net'
 
         return cfg
 

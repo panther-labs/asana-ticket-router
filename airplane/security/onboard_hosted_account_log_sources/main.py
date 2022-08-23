@@ -246,6 +246,9 @@ def run(args):
 
 
 def main(params):
+    if not os.getenv("AIRPLANE_SESSION_ID"):
+        raise RuntimeError("This task must be run from within a runbook!")
+
     aws_account_id = params["aws_account_id"]
 
     args = Namespace(

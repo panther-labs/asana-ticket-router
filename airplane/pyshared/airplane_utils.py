@@ -13,9 +13,9 @@ class AirplaneTask:
     AIRPLANE_BASE_URL = "https://app.airplane.dev"
     test_roles = {}
 
-    def __init__(self, api_use_only=False):
-        if api_use_only and not AirplaneEnv.is_api_user_execution():
-            raise RuntimeError("This Airplane task is only executable by the airplane API!")
+    def __init__(self, api_use_only=False, requires_runbook=False):
+        self.validate_api_user(api_use_only)
+        self.validate_task_run_from_a_runbook(requires_runbook)
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.task_dir = self.tmp_dir.name
         os.chdir(self.task_dir)
@@ -76,6 +76,16 @@ class AirplaneTask:
         """Only for testing - don't use as part of an Airplane run, it will fail!"""
         if env_var_name not in os.environ:
             os.environ[env_var_name] = onepass.get_item(onepass_item_name)
+
+    @staticmethod
+    def validate_api_user(api_use_only: bool):
+        if api_use_only and not AirplaneEnv.is_api_user_execution():
+            raise RuntimeError("This task is only executable by the airplane API!")
+
+    @staticmethod
+    def validate_task_run_from_a_runbook(requires_runbook: bool):
+        if requires_runbook and not AirplaneEnv.AIRPLANE_SESSION_ID:
+            raise RuntimeError("This task must be run from within a runbook!")
 
 
 def set_local_run():

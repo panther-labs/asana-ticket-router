@@ -38,9 +38,10 @@ def airplane_run_id():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def manual_test_suite_setup(manual_test_run):
+def manual_test_suite_setup(manual_test_run, request, airplane_session_id):
     if not manual_test_run:
         return
+    _common_test_setup(request, airplane_session_id)
     local_env = _import_local_env()
     for repo_name in ("hosted-deployments", "staging-deployments"):
         os.environ[repo_name] = getattr(local_env, repo_name, os.path.join(local_env.repos_parent_dir, repo_name))
@@ -50,12 +51,8 @@ def manual_test_suite_setup(manual_test_run):
 def unit_test_suite_setup(manual_test_run, request, airplane_session_id, airplane_run_id):
     if manual_test_run:
         return
-    for patch_obj_str in ("pyshared.airplane_utils.AirplaneTask.send_slack_message",
-                          "v2.task_models.airplane_task.AirplaneTask.send_slack_message"):
-        patch_obj = mock.patch(patch_obj_str)
-        patch_obj.start()
-        request.addfinalizer(patch_obj.stop)
-    AirplaneEnv.AIRPLANE_SESSION_ID = airplane_session_id
+
+    _common_test_setup(request, airplane_session_id)
     AirplaneEnv.AIRPLANE_RUN_ID = airplane_run_id
     AirplaneEnv.AIRPLANE_RUNNER_EMAIL = "unit-test-user@panther.io"
 
@@ -75,3 +72,12 @@ def pytest_runtest_setup(item):
             pytest.skip("Only running manual tests as the --manual-test option was specified")
     elif 'manual_test' in item.keywords:
         pytest.skip("need --manual-test option to run this test")
+
+
+def _common_test_setup(request, airplane_session_id):
+    for patch_obj_str in ("pyshared.airplane_utils.AirplaneTask.send_slack_message",
+                          "v2.task_models.airplane_task.AirplaneTask.send_slack_message"):
+        patch_obj = mock.patch(patch_obj_str)
+        patch_obj.start()
+        request.addfinalizer(patch_obj.stop)
+    AirplaneEnv.AIRPLANE_SESSION_ID = airplane_session_id
