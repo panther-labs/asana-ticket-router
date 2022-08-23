@@ -124,6 +124,7 @@ def asana_fields(investigations: EngTeam) -> AsanaFields:
             'server_name': 'panther-snowflake-api',
             'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
             'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
+            'monitor_id': '77955227',
         },
         aws_region='us-west-2',
         aws_account_id='758312592604',
@@ -350,7 +351,9 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=%40account_id%3A758312592604+%40request_id%3A3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
+
+Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227&sort=DESC&from_ts=1627863562986&to_ts=1643415562986
 
 Routing Information: Fake Routing information
 
@@ -376,7 +379,9 @@ Runbook: https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475
 
 AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleName=PantherSupportRole-us-west-2&account=758312592604&displayName=Unknown%20Support
 
-Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=@account_id:758312592604%20@request_id:3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
+Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=%40account_id%3A758312592604+%40request_id%3A3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
+
+Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227&sort=DESC&from_ts=1627863562986&to_ts=1643415562986
 
 Routing Information: Fake Routing information
 

@@ -217,6 +217,10 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
             make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
         )
 
+        asana_fields.tags['monitor_id'] = datadog_event_details.get('event', {}).get(
+            'monitor_id'
+        )
+
         task_note = asana.create_task_note(asana_fields, None, None)
         task_body = asana.create_task_body(asana_fields, task_note)
 

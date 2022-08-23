@@ -214,7 +214,7 @@ class AsanaService:
             )
 
         # If we have a Lambda request id from the Sentry event, construct a link to the trace for that request in Datadog.
-        if 'zap_lambdaRequestId' in fields.tags.keys():
+        if 'zap_lambdaRequestId' in fields.tags:
             event_time = parser.parse(fields.event_datetime)
             # Lets widen the query window a bit to account for any potential Sentry event time vs Datadog event time shenanigans.
             one_hour_before = event_time + timedelta(hours=-1)
@@ -222,13 +222,38 @@ class AsanaService:
 
             request_id = fields.tags['zap_lambdaRequestId']
 
-            datadog_query_url = (
-                f'https://app.datadoghq.com/apm/traces?'
-                f'query=@account_id:{fields.aws_account_id}%20@request_id:{request_id}'
-                f'&start={one_hour_before_ts}&historicalData=true'
-            )
+            base_datadog_trace_url = 'https://app.datadoghq.com/apm/traces?'
+            query_params = {
+                'query': f'@account_id:{fields.aws_account_id} @request_id:{request_id}',
+                'start': one_hour_before_ts,
+                'historicalData': 'true',
+            }
 
-            note = note + f'Datadog Trace Link: {datadog_query_url}\n\n'
+            datadog_trace_url = base_datadog_trace_url + parse.urlencode(query_params)
+
+            note = note + f'Datadog Trace Link: {datadog_trace_url}\n\n'
+
+        if 'monitor_id' in fields.tags:
+            event_time = parser.parse(fields.event_datetime)
+
+            # Lets do a 180 day lookback
+            event_time_ts = int(event_time.timestamp() * 1000.0)
+            six_months_before = event_time + timedelta(days=-180)
+            six_months_before_ts = int(six_months_before.timestamp() * 1000.0)
+
+            monitor_id = fields.tags['monitor_id']
+
+            base_datadog_event_url = 'https://app.datadoghq.com/event/explorer?'
+            query_params = {
+                'query': f'source:my_apps event_source:asana monitor_id:{monitor_id}',
+                'sort': 'DESC',
+                'from_ts': six_months_before_ts,
+                'to_ts': event_time_ts,
+            }
+
+            datadog_event_url = base_datadog_event_url + parse.urlencode(query_params)
+
+            note = note + f'Related Asana Tickets: {datadog_event_url}\n\n'
 
         # If we had a root task link, set it in the payload
         if root_asana_link:
