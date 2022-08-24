@@ -78,16 +78,16 @@ parameters:
     value: Internal
   default: SaaS
   required: true
-- name: Sales Customer ID
+- name: Salesforce Account ID
   slug: sales_customer_id
   type: shorttext
-  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Customer ID [a-zA-Z0-9]
-  regex: ^[A-Za-z\d]{15,18}$
-- name: Sales Opportunity ID
+  description: Case-sensitive 18 character ID
+  regex: ^[A-Za-z\d]{18}$
+- name: Salesforce Opportunity ID
   slug: sales_opportunity_id
   type: shorttext
-  description: Case-sensitive 15-18 character ID that maps to the customer's Sales Opportunity ID [a-zA-Z0-9]
-  regex: ^[A-Za-z\d]{15,18}$
+  description: Case-sensitive 18 character ID
+  regex: ^[A-Za-z\d]{18}$
 - name: Sales phase
   slug: sales_phase
   type: shorttext
