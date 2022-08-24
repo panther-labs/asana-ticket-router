@@ -9,6 +9,8 @@ from pyshared.yaml_utils import change_yaml_file, load_yaml_cfg
 class DeprovInfo:
     dns_removal_time: Optional[datetime] = None
     teardown_time: Optional[datetime] = None
+    aws_account_id: Optional[str] = None
+    organization: Optional[str] = None
 
 
 class DeprovInfoDeployFile:

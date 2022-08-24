@@ -49,14 +49,21 @@ class TestMarkDeploymentForDeletion:
 
     def test_proper_teardown_times_set(self):
         mock_start_time = datetime.datetime(year=2022, month=8, day=19, hour=10, minute=0, second=0)
+        expected_dns_removal_time = datetime.datetime(year=2022, month=8, day=19, hour=14, minute=0, second=0)
+        expected_teardown_time = datetime.datetime(year=2022, month=8, day=19, hour=18, minute=0, second=0)
+        expected_aws_account_id = "111111111111"
+        expected_organization = "root"
         deprov_info = DeploymentDeletionMarker.add_deprovisioning_tags(filepath="mockedout",
                                                                        dns_removal_hours=4,
                                                                        teardown_removal_hours=8,
+                                                                       aws_account_id=expected_aws_account_id,
+                                                                       organization=expected_organization,
                                                                        now=mock_start_time)
-        expected_dns_removal_time = datetime.datetime(year=2022, month=8, day=19, hour=14, minute=0, second=0)
-        expected_teardown_time = datetime.datetime(year=2022, month=8, day=19, hour=18, minute=0, second=0)
+
         assert deprov_info.dns_removal_time == expected_dns_removal_time
         assert deprov_info.teardown_time == expected_teardown_time
+        assert deprov_info.aws_account_id == expected_aws_account_id
+        assert deprov_info.organization == expected_organization
 
 
 @pytest.mark.manual_test

@@ -21,28 +21,43 @@ class TestDeprovInfo:
         self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
         dns_time = datetime.now()
         teardown_time = datetime.now() + timedelta(hours=8)
+        aws_account_id = "12345678012"
+        organization = "root"
         self.deprov_info_deploy_file.write_deprov_info(
-            DeprovInfo(dns_removal_time=dns_time, teardown_time=teardown_time))
+            DeprovInfo(dns_removal_time=dns_time,
+                       teardown_time=teardown_time,
+                       aws_account_id=aws_account_id,
+                       organization=organization))
         deprov_status = cfg["DeprovisionStatus"]
         assert deprov_status["dns_removal_time"] == dns_time
         assert deprov_status["teardown_time"] == teardown_time
+        assert deprov_status["aws_account_id"] == aws_account_id
+        assert deprov_status["organization"] == organization
 
-    def test_retrieve_deprov_info_with_no_deprov_info_has_none_for_delete_times(self):
+    def test_retrieve_deprov_info_with_no_deprov_info_has_none_attributes(self):
         self.load_yaml_cfg_mock.return_value = {"CustomerId": "my-customer"}
         deprov_info = self.deprov_info_deploy_file.retrieve_deprov_info()
         assert deprov_info.dns_removal_time is None
         assert deprov_info.teardown_time is None
+        assert deprov_info.aws_account_id is None
+        assert deprov_info.organization is None
 
     def test_retrieve_deprov_info(self):
         dns_time = datetime(year=2022, month=8, day=19, hour=16, minute=35, second=48, microsecond=297229)
         teardown_time = dns_time + timedelta(days=7)
+        aws_account_id = "123456789012"
+        organization = "hosted"
 
         self.load_yaml_cfg_mock.return_value = {
             "DeprovisionStatus": {
                 "dns_removal_time": dns_time,
-                "teardown_time": teardown_time
+                "teardown_time": teardown_time,
+                "aws_account_id": aws_account_id,
+                "organization": organization
             }
         }
         deprov_info = self.deprov_info_deploy_file.retrieve_deprov_info()
         assert deprov_info.dns_removal_time == dns_time
         assert deprov_info.teardown_time == teardown_time
+        assert deprov_info.aws_account_id == aws_account_id
+        assert deprov_info.organization == organization
