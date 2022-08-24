@@ -41,6 +41,10 @@ parameters:
     slug: group_p
     type: boolean
     default: false
+  - name: Group T
+    slug: group_t
+    type: boolean
+    default: false
   - name: Group Z
     slug: group_z
     type: boolean
