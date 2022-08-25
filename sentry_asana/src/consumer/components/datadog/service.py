@@ -7,6 +7,7 @@
 # pylint: disable=too-many-arguments
 from typing import Dict
 from logging import Logger
+from common.constants import DATADOG_SOURCE_TYPE
 from common.components.serializer.service import SerializerService
 from datadog_api_client import ApiClient, Configuration
 from datadog_api_client.v1.api.events_api import EventsApi
@@ -46,3 +47,17 @@ class DatadogService:
         req = EventCreateRequest(**datadog_event)
         response = api_instance.create_event(body=req)
         return response.to_dict()
+
+
+def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
+    """Convert a datadog event into an asana event so we can look it up later."""
+    # Careful, we don't want to modify record['tags'], just copy it.
+    tags = record.get('tags', []).copy()
+    monitor_id = record.get('monitor_id', 'missing')
+    tags.extend([f'monitor_id:{monitor_id}', 'event_source:asana'])
+    return {
+        'title': record.get('title', ''),
+        'text': asana_link,
+        'source_type_name': DATADOG_SOURCE_TYPE,
+        'tags': tags,
+    }

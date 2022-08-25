@@ -2,13 +2,23 @@
 # mypy: ignore-errors
 
 from unittest.mock import Mock
+import json
+import os
 import pytest
 
 from ..common.components.secrets.containers import SecretsManagerContainer
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.containers import LoggerContainer
 from ..consumer.components.datadog.containers import DatadogContainer
-from ..consumer.components.datadog.service import DatadogService
+from ..consumer.components.datadog.service import (
+    DatadogService,
+    make_datadog_asana_event,
+)
+
+
+DATADOG_EVENT_DETAIL = os.path.join(
+    os.path.dirname(__file__), 'test_data', 'datadog_event_details.json'
+)
 
 
 @pytest.fixture
@@ -69,3 +79,15 @@ async def test_post_event_details(container: DatadogContainer) -> None:
         service: DatadogService = await container.datadog_service()
         response = await service.post_event_details(fake_event)
         assert response == expected
+
+
+def test_make_datadog_asana_event() -> None:
+    with open(DATADOG_EVENT_DETAIL, 'rb') as details:
+        data = details.read()
+        json_data = json.loads(data)
+        event_data = json_data['event']
+        event = make_datadog_asana_event(event_data, 'somelink')
+        assert 'monitor_id:77955227' in event.get('tags')
+        assert 'event_source:asana' in event.get('tags')
+        # event tags is a superset of event_data tags.
+        assert set(event_data.get('tags')).intersection(event.get('tags'))

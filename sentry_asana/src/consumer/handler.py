@@ -14,12 +14,11 @@ from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import TeamService
 from common.components.entities import heuristics
-from common.constants import AlertType, DATADOG_SOURCE_TYPE
-from consumer.components.datadog.service import DatadogService
+from common.constants import AlertType
+from consumer.components.datadog.service import DatadogService, make_datadog_asana_event
 from consumer.components.sentry.service import SentryService
 from consumer.components.requests.containers import RequestsContainer
-from consumer.components.asana.service import AsanaService
-from consumer.components.asana.service import AsanaFields
+from consumer.components.asana.service import AsanaService, AsanaFields
 from consumer.components.application import ApplicationContainer
 
 
@@ -144,19 +143,6 @@ async def process(
             'message': f'{str(err)}\n{traceback.format_exc()}',
             'message_id': message_id,
         }
-
-
-def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
-    """Convert a datadog event into an asana event so we can look it up later."""
-    return {
-        'title': record.get('title', ''),
-        'text': asana_link,
-        'source_type_name': DATADOG_SOURCE_TYPE,
-        'tags': [
-            f'monitor_id:{record.get("monitor_id", "missing")}',
-            'event_source:asana',
-        ],
-    }
 
 
 @inject
