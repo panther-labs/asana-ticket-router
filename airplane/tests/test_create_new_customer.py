@@ -26,8 +26,9 @@ def get_params():
         "last_name": "Scott",
         "email_address": "tim.scott@panther.io",
         "sales_customer_id": "ABCDEFGHIJKLMNOPQR",
-        "sales_opportunity_id": "123456789012345",
+        "sales_opportunity_id": "ZYXWVUTSRQPONMLKJI",
         "sales_phase": "contract",
+        "snowflake_edition": "Standard"
     }
 
 
@@ -77,9 +78,11 @@ def test_translated_args_passed_properly_to_create_customer_metadata(create_cust
     assert cfg["contact_last_name"] == "Scott"
     assert cfg["contact_email"] == "tim.scott@panther.io"
     assert cfg["sales_customer_id"] == "ABCDEFGHIJKLMNOPQR"
-    assert cfg["sales_opportunity_id"] == "123456789012345"
+    assert cfg["sales_opportunity_id"] == "ZYXWVUTSRQPONMLKJI"
     assert cfg["sales_phase"] == "contract"
+    assert cfg["snowflake_edition"] == "Standard"
     assert "customer_domain" not in cfg
+
 
 def test_domain_given(create_customer_metadata):
     params = get_params()

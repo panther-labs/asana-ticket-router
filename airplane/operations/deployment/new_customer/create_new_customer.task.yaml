@@ -46,8 +46,15 @@ parameters:
     value: Managed
   - label: ""
     value: BYOSF
+- name: Snowflake Edition
+  slug: snowflake_edition
+  type: shorttext
+  default: Enterprise
+  options:
   - label: ""
-    value: Customer
+    value: Enterprise
+  - label: ""
+    value: Standard
 - name: Deploy Group
   slug: deploy_group
   type: shorttext
