@@ -33,7 +33,7 @@ def _get_assumed_role_creds(arns, desc="task", creds=None):
     the previous function call.
     :param arns: Tuple of arns to assume
     :param desc: The description to give the AWS client
-    :param creds: Credentials from roles assuemd during previous calls
+    :param creds: Credentials from roles assumed during previous calls
     :return: The dictionary credentials for a desired role
     """
     if arns:
@@ -69,7 +69,7 @@ def get_credentialed_client(service_name, arns, desc, region=None, test_role=Non
     :param service_name: Name of service to assume, such as "lambda"
     :param arns: A string or tuple of ARNs, such as ("arn1", "arn2"), "arn", or None.
                  Roles will be assumed sequentially, so order matters
-    :param desc: The sescription to give the AWS client
+    :param desc: The description to give the AWS client
     :param region: Region of the service
     :param test_role: The role to use from aws-vault (instead of the ARNs) for testing purposes
     :return: Client for an AWS service

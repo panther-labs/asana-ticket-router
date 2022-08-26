@@ -149,7 +149,7 @@ class AirplaneGitTask(AirplaneTask):
         else:
             return self._git_clone(repo_name)
 
-    def git_add_commit_and_push(self, title: str, description: str = "", filepaths: list[str] = None) -> None:
+    def git_add_commit_and_push(self, title: str, description: str = "", filepaths: list[str] | str = None) -> None:
         """
         If file changes were made, the method adds, commits, and pushes the files to a repo in a single run.
         The method must be called from within the repo directory.

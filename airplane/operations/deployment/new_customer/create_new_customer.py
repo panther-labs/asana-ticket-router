@@ -36,17 +36,11 @@ class NewCustomerCreator(AirplaneGitTask):
             "snowflake_edition": params["snowflake_edition"],
             "sales_customer_id": params["sales_customer_id"],
             "sales_phase": params["sales_phase"],
-            "sales_opportunity_id": params["sales_opportunity_id"],
+            "sales_opportunity_id": params["sales_opportunity_id"]
         }
 
         if "customer_domain" in params:
             cfg["customer_domain"] = params["customer_domain"]
-
-        # Use fairytale name as customer domain for trial SaaS accounts
-        if params["deploy_group"] == "T":
-            if "customer_domain" in params:
-                raise ValueError("Customer Domain should not be set for trial SaaS accounts")
-            cfg["customer_domain"] = f'{cfg["customer_id"]}.runpanther.net'
 
         return cfg
 

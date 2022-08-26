@@ -5,6 +5,13 @@ from pyshared.aws_creds import get_credentialed_client
 REGION = os.environ.get("AWS_REGION", "us-west-2")
 
 
+def _create_cloudformation_client(role_arn):
+    return get_credentialed_client(service_name="cloudformation",
+                                   region=REGION,
+                                   arns=role_arn,
+                                   desc="cfn_read_interactions")
+
+
 def get_group_membership_list(data, group):
     group_membership_key = group_membership_resource_name(data, group)
     return data['Resources'][group_membership_key]['Properties']['Users']
@@ -29,10 +36,6 @@ def group_name_from_resource(data, resource):
             return value['Properties']['GroupName']
 
 
-def _create_cloudformation_client(role_arn):
-    return get_credentialed_client(service_name="cloudformation", region=REGION, arns=role_arn, desc="cfn_list_exports")
-
-
 def list_exports(role_arn):
     client = _create_cloudformation_client(role_arn)
 
@@ -42,6 +45,31 @@ def list_exports(role_arn):
         response = client.list_exports(NextToken=response["NextToken"])
         exports.extend(response["Exports"])
     return exports
+
+
+def list_stacks(role_arn):
+    client = _create_cloudformation_client(role_arn)
+
+    response = client.list_stacks()
+    stacks = response["StackSummaries"]
+    while "NextToken" in response:
+        response = client.list_stacks(NextToken=response["NextToken"])
+        stacks.extend(response["StackSummaries"])
+    return stacks
+
+
+def get_active_customer_instance_domain_stacks(role_arn):
+    stacks = list_stacks(role_arn)
+    active_customer_stacks = filter(
+        lambda stack: stack['StackName'].startswith('route53-') and stack['StackStatus'] != 'DELETE_COMPLETE', stacks)
+    return active_customer_stacks
+
+
+def get_cloudformation_physical_resource_id_from_stack(role_arn, stack_name, logical_resource_id):
+    client = _create_cloudformation_client(role_arn)
+
+    stack_resource = client.describe_stack_resource(StackName=stack_name, LogicalResourceId=logical_resource_id)
+    return stack_resource['StackResourceDetail']['PhysicalResourceId']
 
 
 def get_cloudformation_export_name(username, role_arn):
@@ -58,9 +86,9 @@ def get_cloudformation_export_value(export_name, role_arn):
     raise Exception(f'No Cloudformation export found for "{export_name}"')
 
 
-def get_group_policies(data, resourse):
+def get_group_policies(data, resource):
     for key, value in data['Resources'].items():
-        if value['Type'] == 'AWS::IAM::Group' and key == resourse:
+        if value['Type'] == 'AWS::IAM::Group' and key == resource:
             return value['Properties']['Policies']
 
 

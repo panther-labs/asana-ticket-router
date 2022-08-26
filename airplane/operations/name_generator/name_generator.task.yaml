@@ -1,0 +1,31 @@
+name: Generate Fairytale and Domain Names
+slug: generate_names
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  description: |-
+    Fairytale name of the customer. Useful if this task is being used as a pass-through to standardize an already
+    existing fairytale name in an Airplane runbook.
+  required: false
+- name: Account Name
+  slug: account_name
+  type: shorttext
+  description: |-
+    A unique account name (such as Google) to identify the account.
+    The domain will be "account_name.runpanther.net".
+- name: Deploy Group
+  slug: deploy_group
+  type: shorttext
+  description: Deploy group of customer instance, used to determine domain name if customer is a trial
+- name: Customer Domain
+  slug: customer_domain
+  type: shorttext
+  description: The domain defaults to "account_name.runpanther.net". If another domain is desired, put it here, and the domain will be "[customer_domain].runpanther.net".
+  required: false
+  regex: ^[A-Za-z0-9-]+$
+python:
+  entrypoint: name_generator.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport

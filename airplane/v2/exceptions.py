@@ -1,4 +1,12 @@
+class DomainNameAlreadyInUseException(Exception):
+    pass
+
+
 class DuplicateAwsAccountIdException(Exception):
+    pass
+
+
+class FairytaleNameAlreadyInUseException(Exception):
     pass
 
 
@@ -16,15 +24,15 @@ class InvalidFairytaleNameException(Exception):
         super().__init__(msg, *args, **kwargs)
 
 
-class UnpublishedPantherVersion(Exception):
-
-    def __init__(self, version, *args, **kwargs):
-        msg = f"Panther version '{version}' could not be found. Has it been published?"
-        super().__init__(msg, *args, **kwargs)
-
-
 class InvalidRegionException(Exception):
 
     def __init__(self, region, aws_account_id, *args, **kwargs):
         msg = f"No accounts use region '{region}' with AWS account ID of '{aws_account_id}'"
+        super().__init__(msg, *args, **kwargs)
+
+
+class UnpublishedPantherVersion(Exception):
+
+    def __init__(self, version, *args, **kwargs):
+        msg = f"Panther version '{version}' could not be found. Has it been published?"
         super().__init__(msg, *args, **kwargs)

@@ -99,23 +99,6 @@ def test_invalid_deploy_group():
         main(params)
 
 
-def test_customer_domain_given_for_trial_saas():
-    params = get_params()
-    params["deploy_group"] = "T"
-    params["customer_domain"] = "xyz-domain"
-
-    with pytest.raises(ValueError):
-        main(params)
-
-
-def test_customer_domain_generated_from_fairytale_for_trial_saas(create_customer_metadata):
-    params = get_params()
-    params["deploy_group"] = "T"
-    main(params)
-    cfg = _get_cfg_args(create_customer_metadata)
-    assert cfg["customer_domain"] == "alpha-doe.runpanther.net"
-
-
 def test_outputs():
     output = main(get_params())
     assert output["fairytale_name"] == "alpha-doe"

@@ -49,8 +49,8 @@ class DynamoDbSearch:
                     stop=tenacity.stop_after_delay(POLL_TIMEOUT_SECS),
                     wait=tenacity.wait_fixed(POLL_FREQUENCY_SECS))
     def poll_until_available(self, partition_key, partition_value, query_result_keys):
-        return recursive_get_from_dynamodb_result(self._get_query_item(partition_key, partition_value),
-                                                  query_result_keys)
+        query_item = self.get_query_item(partition_key, partition_value)
+        return recursive_get_from_dynamodb_result(query_item, query_result_keys)
 
     def scan_and_organize_result(self, scan_result_keys=None):
         """Scan the table and create a new dict result, with the keys being the value of query_result_keys."""
@@ -66,7 +66,7 @@ class DynamoDbSearch:
                 organized_scan_result[key] = item
         return organized_scan_result
 
-    def _get_query_item(self, key, val):
+    def get_query_item(self, key, val):
         dynamo_filter = Key(key).eq(val)
         query_result = self.table.query(KeyConditionExpression=dynamo_filter)
 
