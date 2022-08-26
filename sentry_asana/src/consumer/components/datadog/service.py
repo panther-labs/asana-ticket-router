@@ -53,10 +53,11 @@ def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
     """Convert a datadog event into an asana event so we can look it up later."""
     # Careful, we don't want to modify record['tags'], just copy it.
     tags = record.get('tags', []).copy()
+    alert_title = record.get('title', '')
     monitor_id = record.get('monitor_id', 'missing')
     tags.extend([f'monitor_id:{monitor_id}', 'event_source:asana'])
     return {
-        'title': record.get('title', ''),
+        'title': f'Created Asana task for {alert_title}',
         'text': asana_link,
         'source_type_name': DATADOG_SOURCE_TYPE,
         'tags': tags,

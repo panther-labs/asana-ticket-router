@@ -48,8 +48,11 @@ An example entry in teams.yaml is as follows:
   # The list of Matchers that identify the entities your team is responsible for.
   Entities: [
     
-    # Match on Lambda Function name with server_name:<function name>
+    # Match on Lambda Function name for Sentry alerts with server_name:<function name>
     Matchers: ["server_name:panther-alerts-api"],
+    # Match on Lambda Function name for Datadog alerts with functionname:<function name>
+    Matchers: ["functionname:panther-alerts-api"],
+    
 
     # Match on URL Paths with url:<url_path> for Frontend Issues.
     Matchers: ["url://investigate//"],
@@ -99,6 +102,38 @@ In Production this is done via a service account but in Development you'll need 
 - Login to Asana via Okta
 - Login to Sentry via Okta
 - While logged in, click this link https://sentry.io/account/settings/social/associate/asana/, which performs the handshake and now the Asana identity will always be the service account for comments (including inside sentry).
+
+## Setup Datadog Webhook
+
+In order for Datadog events to reach your API gateway you'll need to setup a new webhook integration. 
+
+We require extra values in the webhook payload beyond the defaults, the format is here: 
+
+Payload:
+```{
+    "body": "$EVENT_MSG",
+    "last_updated": "$LAST_UPDATED",
+    "event_type": "$EVENT_TYPE",
+    "title": "$EVENT_TITLE",
+    "date": "$DATE",
+    "priority": "$ALERT_PRIORITY",
+    "alert_title": "$ALERT_TITLE",
+    "alert_transition": "$ALERT_TRANSITION",
+    "link": "$LINK",
+    "tags": "$TAGS",
+    "org": {
+        "id": "$ORG_ID",
+        "name": "$ORG_NAME"
+    },
+    "id": "$ID"
+}
+```
+
+Custom Headers:
+```
+{ "datadog-secret-token": "$DATADOG_SECRET_TOKEN" }
+```
+
 
 ## Deploying The Service
 

@@ -122,6 +122,7 @@ def asana_fields(investigations: EngTeam) -> AsanaFields:
             'runtime': 'go go1.17.1',
             'runtime.name': 'go',
             'server_name': 'panther-snowflake-api',
+            'functionname': 'panther-snowflake-api',
             'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
             'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
             'monitor_id': '77955227',
@@ -353,7 +354,7 @@ AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleNam
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=%40account_id%3A758312592604+%40request_id%3A3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
-Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227&sort=DESC&from_ts=1627863562986&to_ts=1643415562986
+Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227+functionname%3Apanther-snowflake-api+env%3Adev&sort=DESC&from_ts=1627863562986&to_ts=1643419162986
 
 Routing Information: Fake Routing information
 
@@ -381,7 +382,7 @@ AWS Switch Role Link: https://us-west-2.signin.aws.amazon.com/switchrole?roleNam
 
 Datadog Trace Link: https://app.datadoghq.com/apm/traces?query=%40account_id%3A758312592604+%40request_id%3A3ad98716-cd00-41e2-af43-cb139bb969bb&start=1643411962986&historicalData=true
 
-Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227&sort=DESC&from_ts=1627863562986&to_ts=1643415562986
+Related Asana Tickets: https://app.datadoghq.com/event/explorer?query=source%3Amy_apps+event_source%3Aasana+monitor_id%3A77955227+functionname%3Apanther-snowflake-api+env%3Adev&sort=DESC&from_ts=1627863562986&to_ts=1643419162986
 
 Routing Information: Fake Routing information
 

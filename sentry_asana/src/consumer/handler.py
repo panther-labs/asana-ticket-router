@@ -170,12 +170,23 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
     message_id: str = record['messageId']
     try:
         datadog_event: Dict = serializer.parse(body)
-        log.info(f'Parsed the following Datadog Event: {datadog_event}')
 
-        # Next, create a new asana task
+        alert_transition = datadog_event.get('alert_transition', '').lower()
+        if alert_transition not in ['triggered']:
+            msg = f'Datadog notification not a triggering event, got {alert_transition} instead. Ignoring.'
+            log.info(msg)
+            return {
+                'success': True,
+                'message': msg,
+                'message_id': message_id,
+            }
+
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
+
         try:
-            team, results = heuristics.get_team(entities, datadog_event_details)
+            event_details_tags = datadog_event_details.get('event', {}).get('tags', {})
+            event_details_tags_dict = asana.tag_list_to_dict(event_details_tags)
+            team, results = heuristics.get_team(entities, event_details_tags_dict)
             results = f'Routed to {team.Name} because we matched {results}'
         except heuristics.TeamNotFound:
             team = entities.default_team()
@@ -197,11 +208,6 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         log.info(
             f'Got the following fields back from get_event_details call: {datadog_event_details}'
         )
-        asana_url = 'https://asana.example.com/12345'  # just some URL for now.
-
-        await datadog.post_event_details(
-            make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
-        )
 
         asana_fields.tags['monitor_id'] = datadog_event_details.get('event', {}).get(
             'monitor_id'
@@ -210,11 +216,29 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         task_note = asana.create_task_note(asana_fields, None, None)
         task_body = asana.create_task_body(asana_fields, task_note)
 
-        log.info(f'Generated the following Asana task body: {task_body}')
+        # Right now we only want to enable this for staging while we finish up validation.
+        # We could do some fancy environment filtering business with an enum and proper method and all
+        # but ideally this simple if statement  is only going to be around for a week or two.
+        if asana_fields.environment in ['staging']:
+
+            # Create a new asana task
+            new_task_gid = await asana.create_task(task_body)
+
+            # And link it in the event stream for this monitor.
+            asana_url = f'https://app.asana.com/0/0/{new_task_gid}'
+            await datadog.post_event_details(
+                make_datadog_asana_event(
+                    datadog_event_details.get('event', {}), asana_url
+                )
+            )
+
+            log.info(
+                f'Created the following Asana task for alert: {asana_url}\n\n {task_body}'
+            )
 
         return {
             'success': True,
-            'message': 'Processed an alert from Datadog and did absolutely nothing.',
+            'message': 'Processed alert from datadog.',
             'message_id': message_id,
         }
     except Exception as err:

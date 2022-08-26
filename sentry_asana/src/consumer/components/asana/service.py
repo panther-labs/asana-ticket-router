@@ -110,18 +110,8 @@ class AsanaService:
         """Extract relevent fields from the datadog event"""
         self._logger.debug('Extracting fields')
         url = datadog_event['link']
-
-        tags = {}
-        for tag in datadog_event['tags'].split(','):
-            key: str = tag
-            value: str = ''
-
-            if ':' in tag:
-                key = tag.split(':')[0]
-                value = tag.split(':')[1]
-
-            tags[key] = value
-
+        tag_list = datadog_event['tags'].split(',')
+        tags = self.tag_list_to_dict(tag_list)
         aws_region = tags.get('region', 'Unknown')
         aws_account_id = tags.get('aws_account', 'Unknown')
         customer = tags.get('customer_name', 'Unknown')
@@ -237,18 +227,33 @@ class AsanaService:
             event_time = parser.parse(fields.event_datetime)
 
             # Lets do a 180 day lookback
-            event_time_ts = int(event_time.timestamp() * 1000.0)
             six_months_before = event_time + timedelta(days=-180)
             six_months_before_ts = int(six_months_before.timestamp() * 1000.0)
+
+            # To one hour after, so the ticket created by this event will also show up in the stream.
+            one_hour_after = event_time + timedelta(hours=1)
+            one_hour_after_ts = int(one_hour_after.timestamp() * 1000.0)
 
             monitor_id = fields.tags['monitor_id']
 
             base_datadog_event_url = 'https://app.datadoghq.com/event/explorer?'
+            event_stream_query = (
+                f'source:my_apps event_source:asana monitor_id:{monitor_id}'
+            )
+            if 'functionname' in fields.tags:
+                functionname = fields.tags['functionname']
+                event_stream_query = (
+                    event_stream_query + f' functionname:{functionname}'
+                )
+
+            if fields.environment:
+                event_stream_query = event_stream_query + f' env:{fields.environment}'
+
             query_params = {
-                'query': f'source:my_apps event_source:asana monitor_id:{monitor_id}',
+                'query': event_stream_query,
                 'sort': 'DESC',
                 'from_ts': six_months_before_ts,
-                'to_ts': event_time_ts,
+                'to_ts': one_hour_after_ts,
             }
 
             datadog_event_url = base_datadog_event_url + parse.urlencode(query_params)
@@ -408,3 +413,22 @@ class AsanaService:
                 return PRIORITY.MEDIUM
 
         return PRIORITY.HIGH
+
+    @staticmethod
+    def tag_list_to_dict(tag_list: list) -> dict:
+        """Converts a list of colon delimited Key/Value pairs to a dictionary."""
+        # When we refactor all of this stuff so that Datadog things live in the Datadog service and Sentry things live
+        # in the Sentry service we should move this over to Datadog, but we are currently making use of it here in the
+        # extract_datadog_fields method.
+        tags = {}
+        for tag in tag_list:
+            key: str = tag
+            value: str = ''
+
+            if ':' in tag:
+                key = tag.split(':')[0]
+                value = tag.split(':')[1]
+
+            tags[key] = value
+
+        return tags

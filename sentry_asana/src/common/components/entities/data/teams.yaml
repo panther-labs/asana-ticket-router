@@ -16,7 +16,9 @@
 
 # Common "How Do I's?":
 # Q: I just want to match my lambda function? How?
-# A: Matchers: ["server_name:<YOUR_LAMBDA_NAME"] should match your lambda function with no fuss for now.
+# A: For Sentry based alerts, Matchers: ["server_name:<YOUR_LAMBDA_NAME"]
+#    For Datadog based alerts, Matchers: ["functionname:<YOUR_LAMBDA_NAME"]
+#    (As of August 2022, we are in the middle of a migration to Datadog so add both to be safe.)
 # Q: I want to get tickets for frontend errors, how?
 # A: Matchers: ["url://your_url_path//"] should match urls in similar fashion to the previous system.
 # Q: I want to regexp match on a value, how?
@@ -40,6 +42,13 @@
     Matchers: ["server_name:panther-organization-api"],
     Matchers: ["server_name:panther-token-authorizer"],
     Matchers: ["server_name:panther-users-api"],
+    Matchers: ["functionname:panther-apitoken-authorizer"],
+    Matchers: ["functionname:panther-cn-router"],
+    Matchers: ["functionname:panther-graph-api"],
+    Matchers: ["functionname:panther-metrics-api"],
+    Matchers: ["functionname:panther-organization-api"],
+    Matchers: ["functionname:panther-token-authorizer"],
+    Matchers: ["functionname:panther-users-api"],
     Matchers: ["url://api//"],
     Matchers: ["url://api-tokens//"],
   ]
@@ -52,6 +61,8 @@
   Entities: [
     Matchers: ["server_name:panther-athena-to-snowflake-reprocessor"],
     Matchers: ["server_name:panther-athena-to-snowflake-allocator"],
+    Matchers: ["functionname:panther-athena-to-snowflake-reprocessor"],
+    Matchers: ["functionname:panther-athena-to-snowflake-allocator"],
   ]
 -
   name: "Detections"
@@ -82,6 +93,28 @@
     Matchers: ["server_name:panther-resource-processor"],
     Matchers: ["server_name:panther-rules-engine"],
     Matchers: ["server_name:panther-slow-rule-detector"],
+    Matchers: ["functionname:panther-analysis-api"],
+    Matchers: ["functionname:panther-aws-event-processor"],
+    Matchers: ["functionname:panther-cloudsecurity-datalake-forwarder"],
+    Matchers: ["functionname:panther-compliance-api"],
+    Matchers: ["functionname:panther-detections-engine"],
+    Matchers: ["functionname:panther-execution-results-processor"],
+    Matchers: ["functionname:panther-layer-manager"],
+    Matchers: ["functionname:panther-pip-layer-builder"],
+    Matchers: ["functionname:panther-policy-engine"],
+    Matchers: ["functionname:panther-python-executor-replay"],
+    Matchers: ["functionname:panther-python-executor-tests"],
+    Matchers: ["functionname:panther-replay-api"],
+    Matchers: ["functionname:panther-replay-detections-engine"],
+    Matchers: ["functionname:panther-replay-log-pusher"],
+    Matchers: ["functionname:panther-replay-results-api"],
+    Matchers: ["functionname:panther-replay-results-processor"],
+    Matchers: ["functionname:panther-reports-api"],
+    Matchers: ["functionname:panther-reports-processor"],
+    Matchers: ["functionname:panther-resources-api"],
+    Matchers: ["functionname:panther-resource-processor"],
+    Matchers: ["functionname:panther-rules-engine"],
+    Matchers: ["functionname:panther-slow-rule-detector"],
     Matchers: ["url://analysis//"],
     Matchers: ["url://bulk-uploader//"],
     Matchers: ["url://dashboard//"],
@@ -114,6 +147,19 @@
     Matchers: ["server_name:panther-source-api"],
     Matchers: ["server_name:panther-system-status"],
     Matchers: ["server_name:panther-rbac-datalake-sync"],
+    Matchers: ["functionname:panther-cloud-puller"],
+    Matchers: ["functionname:panther-data-archiver"],
+    Matchers: ["functionname:panther-holding-tank"],
+    Matchers: ["functionname:panther-logtypes-api"],
+    Matchers: ["functionname:panther-log-processor"],
+    Matchers: ["functionname:panther-log-puller"],
+    Matchers: ["functionname:panther-log-router"],
+    Matchers: ["functionname:panther-message-forwarder"],
+    Matchers: ["functionname:panther-snapshot-pollers"],
+    Matchers: ["functionname:panther-snapshot-scheduler"],
+    Matchers: ["functionname:panther-source-api"],
+    Matchers: ["functionname:panther-system-status"],
+    Matchers: ["functionname:panther-rbac-datalake-sync"],
     Matchers: ["url://cloud-accounts//"],
     Matchers: ["url://data-schemas//"],
     Matchers: ["url://log-sources//"],
@@ -145,6 +191,23 @@
     Matchers: ["server_name:panther-outputs-api"],
     Matchers: ["server_name:panther-snowflake-admin-api"],
     Matchers: ["server_name:panther-snowflake-api"],
+    Matchers: ["functionname:panther-alerts-api"],
+    Matchers: ["functionname:panther-alerts-migration"],
+    Matchers: ["functionname:panther-alert-delivery-api"],
+    Matchers: ["functionname:panther-athena-admin-api"],
+    Matchers: ["functionname:panther-athena-api"],
+    Matchers: ["functionname:panther-database-workflow"],
+    Matchers: ["functionname:panther-datacatalog-compactor"],
+    Matchers: ["functionname:panther-datacatalog-compactor-callbacks"],
+    Matchers: ["functionname:panther-datacatalog-compactor-reaper"],
+    Matchers: ["functionname:panther-datacatalog-updater"],
+    Matchers: ["functionname:panther-greynoise-processor"],
+    Matchers: ["functionname:panther-ipinfo-processor"],
+    Matchers: ["functionname:panther-log-alert-forwarder"],
+    Matchers: ["functionname:panther-lookup-tables-api"],
+    Matchers: ["functionname:panther-outputs-api"],
+    Matchers: ["functionname:panther-snowflake-admin-api"],
+    Matchers: ["functionname:panther-snowflake-api"],
     Matchers: ["url://alerts-and-errors//"],
     Matchers: ["url://data-explorer//"],
     Matchers: ["url://enrichment//"],
@@ -164,6 +227,8 @@
   AsanaTeamId: '1201305154831712'
   Entities: [
     Matchers: ["server_name:panther-alarm-logger"],
+    Matchers: ["functionname:panther-alarm-logger"],
+
   ]
 -
   name: "Productivity"
@@ -175,6 +240,9 @@
     Matchers: ["server_name:panther-cfn-custom-resources"],
     Matchers: ["server_name:panther-cfn-stack-policy"],
     Matchers: ["server_name:panther-ops-tools"],
+    Matchers: ["functionname:panther-cfn-custom-resources"],
+    Matchers: ["functionname:panther-cfn-stack-policy"],
+    Matchers: ["functionname:panther-ops-tools"],
     Matchers: ["service:splitio"],
   ]
 -
