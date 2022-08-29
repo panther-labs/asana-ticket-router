@@ -1,6 +1,8 @@
 import subprocess
 import sys
 
+from v2.consts.github_repos import GithubRepo
+from v2.pyshared.date_utils import Timezone, get_now_str
 from v2.pyshared.airplane_logger import logger
 from v2.pyshared.os_util import join_paths, load_py_file_as_module, tmp_change_dir
 from v2.pyshared.yaml_utils import change_yaml_file
@@ -23,6 +25,27 @@ def generate_fairytale_name(repo_path) -> str:
     _add_auto_scripts_to_path(repo_path)
     fairytale_module = load_py_file_as_module(join_paths(get_automation_scripts_dir(repo_path), "fairytale_name.py"))
     return fairytale_module.generate_name()
+
+
+def get_github_repo_from_organization(organization: str) -> str:
+    """
+    Get the repo that contains deployment files for a given organization
+    :param organization: Either hosted or staging
+    :return: The string name of a GitHub repo
+    """
+    org = organization.lower()
+    repo = {"hosted": GithubRepo.HOSTED_DEPLOYMENTS, "root": GithubRepo.STAGING_DEPLOYMENTS}.get(org, None)
+
+    if repo is None:
+        raise ValueError(f"No git repo found for organization name {organization}")
+    return repo
+
+
+def manually_deploy_customer(fairytale_name: str, repo_path: str = "."):
+    edit_customer_deployment_file(fairytale_name=fairytale_name,
+                                  cfg={"ManualDeploy": get_now_str(Timezone.UTC)},
+                                  repo_path=repo_path)
+    generate_configs(repo_path=repo_path)
 
 
 def get_lint_path(repo_path: str = "") -> str:

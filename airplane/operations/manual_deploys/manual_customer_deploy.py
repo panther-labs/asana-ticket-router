@@ -1,31 +1,27 @@
 from dataclasses import dataclass
 
-from pyshared.date_utils import generate_utc_timestamp
-from pyshared.deployments_file import DeploymentsRepo, get_deployment_filepath, gen_cfgs
 from pyshared.git_ops import AirplaneModifyGitTask
-from pyshared.yaml_utils import change_yaml_file
+from v2.pyshared.deployments_file import get_github_repo_from_organization, manually_deploy_customer
 
 
 @dataclass
 class AirplaneParams:
     fairytale_name: str
+    organization: str
 
 
 class ManualCustomerDeploy(AirplaneModifyGitTask):
 
     def __init__(self, params):
-        super().__init__(params=params, git_repo=DeploymentsRepo.HOSTED)
-        self.airplane_params = AirplaneParams(**params)
+        self.ap_params = AirplaneParams(**params)
+        super().__init__(params=params, git_repo=get_github_repo_from_organization(self.ap_params.organization))
 
     def change_files(self):
-        with change_yaml_file(cfg_filepath=get_deployment_filepath(
-                fairytale_name=self.airplane_params.fairytale_name)) as cfg:
-            cfg["ManualDeploy"] = generate_utc_timestamp()
-        gen_cfgs()
+        manually_deploy_customer(fairytale_name=self.ap_params.fairytale_name)
         return ["."]
 
     def get_git_title(self):
-        return f"Manually redeploy {self.airplane_params.fairytale_name}"
+        return f"Manually redeploy {self.ap_params.fairytale_name}"
 
 
 def main(params):

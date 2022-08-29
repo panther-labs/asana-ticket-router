@@ -38,6 +38,10 @@ def get_now(tz: str = Timezone.LOCAL) -> pendulum.DateTime:
     return pendulum.now(tz)
 
 
+def get_now_str(tz: str = Timezone.LOCAL):
+    return to_time_str(get_now(tz))
+
+
 def get_today(tz: str = Timezone.LOCAL) -> pendulum.Date:
     return pendulum.today(tz)
 
