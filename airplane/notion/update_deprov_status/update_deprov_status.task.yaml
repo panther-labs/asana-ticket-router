@@ -1,0 +1,14 @@
+name: Update Deprovisioning Status in Notion
+slug: update_deprovisioning_status_in_notion
+description: Update the Notion Panther deploys tables with the deprovisioning status of an account
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+- name: Deprov Key Val
+  slug: deprov_key_val
+  type: shorttext
+  description: "A key and value to update in Notion for deprovisioning. Example: DNS_Records_Removed=Yes"
+python:
+  entrypoint: mark_airplane_creation_complete.py
+timeout: 3600
