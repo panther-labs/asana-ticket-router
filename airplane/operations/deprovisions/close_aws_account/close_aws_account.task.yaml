@@ -1,0 +1,23 @@
+name: Close AWS Account
+slug: close_aws_account
+description: Close an AWS account (account must first be marked by the appropriate AWS label before this will work)
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: Hosted
+    value: hosted
+  - label: Panther Root
+    value: root
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+python:
+  entrypoint: close_aws_account.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-OrganizationsCloseAccount
+requireRequests: false
+allowSelfApprovals: false
+timeout: 3600

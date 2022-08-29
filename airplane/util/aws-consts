@@ -1,6 +1,7 @@
 CLOUDFORMATION_READ_ONLY_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly
 CUSTOMER_SUPPORT_ROLE_ARN=arn:aws:iam::255674391660:role/CustomerSupport
 HOSTED_CFN_DELETE_STACK_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationDeleteStack
+HOSTED_CLOSE_ACCOUNT_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneOrganizationsCloseAccount
 HOSTED_CUSTOMER_OU_ID=ou-1z3b-d220sruf
 HOSTED_DEPLOYMENTS_METADATA=hosted-deployments-DeploymentMetadataTable-22PITRD2LM2B
 HOSTED_DYNAMO_RO_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneDynamoDBReadOnly
@@ -11,6 +12,7 @@ HOSTED_TEARDOWN_ROLE_ARN=arn:aws:iam::255674391660:role/AirplanePantherTeardown
 HOSTED_TERMINATED_OU_ID=ou-1z3b-ew8ndwb0
 ORGANIZATIONS_RO_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneOrganizationsReadOnly
 ROOT_CFN_DELETE_STACK_ROLE_ARN=arn:aws:iam::292442345278:role/AirplaneCloudFormationDeleteStack
+ROOT_CLOSE_ACCOUNT_ROLE_ARN=arn:aws:iam::292442345278:role/AirplaneOrganizationsCloseAccount
 ROOT_DEV_ACCOUNTS_OU_ID=ou-gi7w-w728soir
 ROOT_DYNAMO_RO_ROLE_ARN=arn:aws:iam::292442345278:role/AirplaneDynamoDBReadOnly
 ROOT_MOVE_ACCOUNT_ROLE_ARN=arn:aws:iam::292442345278:role/AirplaneOrganizationsMoveAccount
