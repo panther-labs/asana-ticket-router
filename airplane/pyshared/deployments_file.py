@@ -43,7 +43,7 @@ def get_deployment_group_choices(repo_dir: str = ""):
 
 
 def get_fairytale_name_from_target_file(filepath: str):
-    return os.path.basename(filepath).rstrip(".yml")
+    return os.path.basename(filepath).removesuffix(".yml")
 
 
 def gen_cfgs():
