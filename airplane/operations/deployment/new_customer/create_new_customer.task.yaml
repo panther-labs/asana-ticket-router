@@ -68,7 +68,6 @@ parameters:
 - name: Email Address
   slug: email_address
   type: shorttext
-  regex: "^\\S+@\\S+\\.\\S+$"
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
@@ -88,12 +87,10 @@ parameters:
   slug: sales_customer_id
   type: shorttext
   description: Case-sensitive 18 character ID
-  regex: ^[A-Za-z\d]{18}$
 - name: Salesforce Opportunity ID
   slug: sales_opportunity_id
   type: shorttext
   description: Case-sensitive 18 character ID
-  regex: ^[A-Za-z\d]{18}$
 - name: Sales phase
   slug: sales_phase
   type: shorttext

@@ -12,7 +12,6 @@ parameters:
   type: shorttext
   description: The domain defaults to "account_name.runpanther.net". If another domain is desired, put it here, and the domain will be "[customer_domain].runpanther.net".
   required: false
-  regex: ^[A-Za-z0-9-]+$
 - name: Service Type
   slug: service_type
   type: shorttext
@@ -36,7 +35,6 @@ parameters:
 - name: Email Address
   slug: email_address
   type: shorttext
-  regex: "^\\S+@\\S+\\.\\S+$"
 
 python:
   entrypoint: verify_new_customer_runbook_params.py
