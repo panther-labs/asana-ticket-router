@@ -73,8 +73,8 @@ parameters:
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
-  description: Fairytale name of the customer - leave blank unless this is a BYOSF customer
-  required: false
+  description: Fairytale name of the customer
+  required: true
 - name: Service Type
   slug: service_type
   type: shorttext

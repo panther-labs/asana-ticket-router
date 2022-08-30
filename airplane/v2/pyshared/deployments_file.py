@@ -16,17 +16,6 @@ def get_generate_configs_path(repo_path: str = "") -> str:
     return join_paths(get_automation_scripts_dir(repo_path), "generate.py")
 
 
-def generate_fairytale_name(repo_path) -> str:
-    """
-    Generate a fairytale name using logic from the hosted-deployments repo
-    :param repo_path: Absolute path of the repo
-    :return: String fairytale name
-    """
-    _add_auto_scripts_to_path(repo_path)
-    fairytale_module = load_py_file_as_module(join_paths(get_automation_scripts_dir(repo_path), "fairytale_name.py"))
-    return fairytale_module.generate_name()
-
-
 def get_github_repo_from_organization(organization: str) -> str:
     """
     Get the repo that contains deployment files for a given organization

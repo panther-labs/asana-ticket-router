@@ -19,6 +19,7 @@ def get_params():
         "account_name": "Create Customer Test",
         "region": "us-west-2",
         "backend": "Managed",
+        "fairytale_name": "alpha-doe",
         "deploy_group": "L",
         "deploy_method": "template",
         "service_type": "SaaS",
@@ -38,7 +39,6 @@ def setup_mocks(manual_test_run, request):
         for func_name, rval in {
                 "AirplaneGitTask.clone_repo_or_get_local": None,
                 "AirplaneGitTask.git_add_commit_and_push": None,
-                "generate_fairytale_name": "alpha-doe",
                 "load_yaml_cfg": generated_customer_file,
                 "tmp_change_dir": None,
         }.items():
