@@ -177,6 +177,7 @@
     Matchers: ["server_name:panther-alerts-api"],
     Matchers: ["server_name:panther-alerts-migration"],
     Matchers: ["server_name:panther-alert-delivery-api"],
+    Matchers: ["server_name:panther-alert-delivery-updater"],
     Matchers: ["server_name:panther-athena-admin-api"],
     Matchers: ["server_name:panther-athena-api"],
     Matchers: ["server_name:panther-database-workflow"],
