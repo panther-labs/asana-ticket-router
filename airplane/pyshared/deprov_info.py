@@ -31,6 +31,10 @@ class DeprovInfoDeployFile:
         with change_yaml_file(self.filepath) as cfg:
             cfg[self.CFG_KEY] = asdict(deprov_info)
 
+    def remove_dns_time(self):
+        with change_yaml_file(self.filepath) as cfg:
+            cfg.get(self.CFG_KEY, {}).pop("dns_removal_time", None)
+
     def dns_removed(self):
         info = self.retrieve_deprov_info()
         return (info.teardown_time is not None) and (info.dns_removal_time is None)

@@ -61,3 +61,22 @@ class TestDeprovInfo:
         assert deprov_info.teardown_time == teardown_time
         assert deprov_info.aws_account_id == aws_account_id
         assert deprov_info.organization == organization
+
+    def test_dns_time_existence(self):
+        cfg = {"DeprovisionStatus": {"teardown_time": datetime.now()}}
+        self.load_yaml_cfg_mock.return_value = cfg
+        assert self.deprov_info_deploy_file.dns_removed()
+        cfg["DeprovisionStatus"]["dns_removal_time"] = datetime.now()
+        assert not self.deprov_info_deploy_file.dns_removed()
+
+    def test_remove_dns_time_deprov_info_does_not_exist(self):
+        cfg = {}
+        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+        # Make sure this does not raise an exception
+        self.deprov_info_deploy_file.remove_dns_time()
+
+    def test_remove_dns_time(self):
+        cfg = {"DeprovisionStatus": {"dns_removal_time": datetime.now()}}
+        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+        self.deprov_info_deploy_file.remove_dns_time()
+        assert "dns_removal_time" not in cfg["DeprovisionStatus"]
