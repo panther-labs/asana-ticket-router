@@ -8,7 +8,9 @@ from pyshared.deprov_info import DeprovInfo
 from pyshared.git_ops import __name__ as git_ops_mod_name
 
 params = {}
+AWS_ACCOUNT_ID = "555555555555"
 FAIRYTALE_NAME = "hello-world"
+ORG = "root"
 
 
 class TestCheckDeploymentForDeletion:
@@ -37,29 +39,41 @@ class TestCheckDeploymentForDeletion:
     def run_main() -> TaskOutput:
         return TaskOutput(**main(params))
 
-    def test_no_deprov_info_returns_empty_lists(self):
+    @staticmethod
+    def get_deprov_info(dns_removal_time=None, teardown_time=None) -> DeprovInfo:
+        return DeprovInfo(dns_removal_time=dns_removal_time,
+                          teardown_time=teardown_time,
+                          aws_account_id=AWS_ACCOUNT_ID,
+                          organization=ORG)
+
+    def test_no_deprov_info_returns_no_teardown_info(self):
         self.deprov_info_mock.return_value = DeprovInfo()
         output = self.run_main()
-        assert output.dns_removal_ready == []
-        assert output.teardown_ready == []
+        assert output.deprov_type == ""
+        assert output.fairytale_name == ""
+        assert output.org == ""
+
+    def test_all_return_attributes_match_deprov_info(self):
+        self.deprov_info_mock.return_value = self.get_deprov_info(dns_removal_time=self.before_now)
+        output = self.run_main()
+        assert output.aws_account_id == AWS_ACCOUNT_ID
+        assert output.deprov_type == "dns"
+        assert output.fairytale_name == FAIRYTALE_NAME
+        assert output.org == ORG
 
     def test_dns_ready(self):
-        self.deprov_info_mock.return_value = DeprovInfo(dns_removal_time=self.before_now, teardown_time=self.after_now)
-        output = self.run_main()
-        assert FAIRYTALE_NAME in output.dns_removal_ready
-        assert FAIRYTALE_NAME not in output.teardown_ready
+        self.deprov_info_mock.return_value = self.get_deprov_info(dns_removal_time=self.before_now,
+                                                                  teardown_time=self.after_now)
+        assert self.run_main().deprov_type == "dns"
 
     def test_teardown_ready(self):
-        self.deprov_info_mock.return_value = DeprovInfo(teardown_time=self.before_now)
-        output = self.run_main()
-        assert FAIRYTALE_NAME not in output.dns_removal_ready
-        assert FAIRYTALE_NAME in output.teardown_ready
+        self.deprov_info_mock.return_value = self.get_deprov_info(teardown_time=self.before_now)
+        assert self.run_main().deprov_type == "teardown"
 
     def test_both_ready(self):
-        self.deprov_info_mock.return_value = DeprovInfo(dns_removal_time=self.before_now, teardown_time=self.before_now)
-        output = self.run_main()
-        assert FAIRYTALE_NAME in output.dns_removal_ready
-        assert FAIRYTALE_NAME in output.teardown_ready
+        self.deprov_info_mock.return_value = self.get_deprov_info(dns_removal_time=self.before_now,
+                                                                  teardown_time=self.before_now)
+        assert self.run_main().deprov_type == "dns"
 
 
 @pytest.mark.manual_test

@@ -44,7 +44,7 @@ class DnsRecordRemover(AirplaneTask):
 
     def run(self, params):
         fairytale_name = params["fairytale_name"]
-        aws_account_id = AllCustomerAccountsInfo.get_notion_results()[fairytale_name].AWS_Account_ID
+        aws_account_id = params["aws_account_id"]
         deprov_slack_msg = (
             f"Account {aws_account_id}/{fairytale_name} is being deprovisioned "
             f"(see {AirplaneEnv.get_task_run_url()}).\n\n"

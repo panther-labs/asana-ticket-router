@@ -13,6 +13,9 @@ parameters:
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
 python:
   entrypoint: delete_dns_records.py
   envVars:
