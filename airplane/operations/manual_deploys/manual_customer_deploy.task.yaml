@@ -10,9 +10,9 @@ parameters:
   type: shorttext
   default: hosted
   options:
-  - label: Hosted
+  - label: ""
     value: hosted
-  - label: Panther Root
+  - label: ""
     value: root
 python:
   entrypoint: manual_customer_deploy.py

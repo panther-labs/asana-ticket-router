@@ -5,9 +5,9 @@ parameters:
   slug: organization
   type: shorttext
   options:
-  - label: Hosted
+  - label: ""
     value: hosted
-  - label: Panther Root
+  - label: ""
     value: root
 - name: AWS Account ID
   slug: aws_account_id
