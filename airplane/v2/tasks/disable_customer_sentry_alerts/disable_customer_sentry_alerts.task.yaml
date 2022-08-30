@@ -4,8 +4,16 @@ parameters:
   - name: Fairytale Name
     slug: fairytale_name
     type: shorttext
+  - name: Organization
+    slug: organization
+    type: shorttext
+    options:
+    - label: Hosted
+      value: hosted
+    - label: Panther Root
+      value: root
 python:
   entrypoint: disable_customer_sentry_alerts.py
-requireRequests: true
+requireRequests: false
 allowSelfApprovals: false
 timeout: 3600

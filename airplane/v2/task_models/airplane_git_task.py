@@ -15,11 +15,11 @@ from v2.pyshared.os_util import get_cwd, join_paths, get_user_directory, write_t
 
 class AirplaneGitTask(AirplaneTask):
 
-    def __init__(self, is_dry_run: bool = False):
+    def __init__(self, is_dry_run: bool = False, api_use_only=False, requires_runbook=False):
         """
         :param is_dry_run: Flag indicating a dry run
         """
-        super().__init__(is_dry_run)
+        super().__init__(is_dry_run, api_use_only, requires_runbook)
         self._setup_github_user()
 
     @staticmethod
