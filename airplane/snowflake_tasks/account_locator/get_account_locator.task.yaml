@@ -1,0 +1,14 @@
+name: Get Snowflake Account Locator
+slug: get_snowflake_account_locator
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: get_account_locator.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-ReadSnowflakeMasterCredentials
+requireRequests: false
+allowSelfApprovals: false
+timeout: 3600
