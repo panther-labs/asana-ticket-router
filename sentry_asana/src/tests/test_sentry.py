@@ -3,14 +3,25 @@
 
 from unittest.mock import Mock, AsyncMock
 import pytest
+import os
+import json
 from aiohttp import ClientResponse, ClientResponseError
 
+from ..common.components.entities.service import EngTeam
+from consumer.components.asana.entities import PRIORITY, AsanaFields
 from ..consumer.components.requests.containers import RequestsContainer
 from ..common.components.secrets.containers import SecretsManagerContainer
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.containers import LoggerContainer
 from ..consumer.components.sentry.containers import SentryContainer
-from ..consumer.components.sentry.service import SentryService
+from ..consumer.components.sentry.service import (
+    SentryService,
+    get_sentry_task_priority,
+    extract_sentry_fields,
+)
+
+SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
+SENTRY_EVENT = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_event.json')
 
 
 def raise_except() -> Exception:
@@ -185,3 +196,62 @@ async def test_get_sentry_asana_link(container: SentryContainer) -> None:
     }
     response = await service.get_sentry_asana_link('issue_id')
     assert response == 'asana_url'
+
+
+def test_get_sentry_task_priority() -> None:
+    """Test _get_task_priority"""
+
+    priority = get_sentry_task_priority('misc level')
+    assert priority.name == PRIORITY.HIGH.name
+
+    priority = get_sentry_task_priority('warning')
+    assert priority == PRIORITY.MEDIUM
+
+
+def test_extract_sentry_fields(investigations: EngTeam) -> None:
+    """Test extract_sentry_fields"""
+
+    with open(SENTRY_EVENT, encoding='utf-8') as file:
+        data = json.load(file)
+    fields = extract_sentry_fields(
+        data['data']['event'], investigations, routing_data='fake routing data'
+    )
+
+    assert fields == AsanaFields(
+        url='https://sentry.io/organizations/panther-labs/issues/2971136216',
+        tags={
+            'aws_account_id': '758312592604',
+            'aws_org_id': 'o-wyibehgf3h',
+            'aws_partition': 'aws',
+            'aws_region': 'us-west-2',
+            'commit_sha': '556d327fa',
+            'data_lake': 'snowflake-self-hosted',
+            'debug_enabled': 'false',
+            'environment': 'dev',
+            'fips_enabled': 'false',
+            'lambda_memory_mb': '2048',
+            'level': 'error',
+            'os.name': 'linux',
+            'runtime': 'go go1.17.1',
+            'runtime.name': 'go',
+            'server_name': 'panther-snowflake-api',
+            'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
+            'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
+        },
+        aws_region='us-west-2',
+        aws_account_id='758312592604',
+        customer='Unknown',
+        display_name='Unknown',
+        event_datetime='2022-01-29t00:19:22.986521z',
+        environment='dev',
+        title='snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...',
+        assigned_team=investigations,
+        priority=PRIORITY.HIGH,
+        runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
+        routing_data='fake routing data',
+    )
+
+
+@pytest.fixture
+def investigations() -> EngTeam:
+    return EngTeam("investigations", "team", "backlog", "sprint", "sandbox", [])

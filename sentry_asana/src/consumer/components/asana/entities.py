@@ -5,7 +5,7 @@
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
 from enum import Enum
-from typing import Dict, List
+from typing import Dict
 from dataclasses import dataclass
 
 from common.components.entities import service
@@ -35,7 +35,6 @@ class AsanaFields:  # pylint: disable=too-many-instance-attributes
     environment: str
     event_datetime: str
     priority: PRIORITY
-    project_gids: List[str]
     runbook_url: str
     tags: Dict
     title: str

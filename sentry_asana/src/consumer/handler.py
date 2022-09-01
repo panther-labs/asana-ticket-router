@@ -8,15 +8,20 @@
 import asyncio
 from functools import partial
 import traceback
-from typing import Dict, Any, List, Union, Callable
+from typing import Dict, Any, List, Union, Callable, Optional, Tuple
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
 from common.components.serializer.service import SerializerService
-from common.components.entities.service import TeamService
+from common.components.entities.service import TeamService, EngTeam
 from common.components.entities import heuristics
 from common.constants import AlertType
-from consumer.components.datadog.service import DatadogService, make_datadog_asana_event
-from consumer.components.sentry.service import SentryService
+from consumer.components.datadog.service import (
+    DatadogService,
+    make_datadog_asana_event,
+    tag_list_to_dict,
+    extract_datadog_fields,
+)
+from consumer.components.sentry.service import SentryService, extract_sentry_fields
 from consumer.components.requests.containers import RequestsContainer
 from consumer.components.asana.service import AsanaService, AsanaFields
 from consumer.components.application import ApplicationContainer
@@ -160,7 +165,6 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
     datadog: DatadogService = Provide[
         ApplicationContainer.datadog_container.container.datadog_service
     ],
-    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Datadog event and create an Asana Task"""
 
@@ -182,26 +186,13 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
             }
 
         datadog_event_details: Dict = await datadog.get_event_details(datadog_event)
+        event_details_tags = datadog_event_details.get('event', {}).get('tags', {})
+        event_details_tags_dict = tag_list_to_dict(event_details_tags)
 
-        try:
-            event_details_tags = datadog_event_details.get('event', {}).get('tags', {})
-            event_details_tags_dict = asana.tag_list_to_dict(event_details_tags)
-            team, results = heuristics.get_team(entities, event_details_tags_dict)
-            results = f'Routed to {team.Name} because we matched {results}'
-        except heuristics.TeamNotFound:
-            team = entities.default_team()
-            log.info(
-                f'Unable to find a team to match {datadog_event_details}, using {team.Name}'
-            )
-            results = (
-                f'Routed to {team.Name} because we did not find any matching teams.'
-            )
-        log.info(
-            f'Got {team} for sentry issue: {datadog_event_details}, with matchers: {results}'
-        )
-        asana_fields: AsanaFields = await asana.extract_datadog_fields(
-            datadog_event, team, results
-        )
+        team, results = query_entities_by_tags(entities, event_details_tags_dict)
+
+        asana_fields: AsanaFields = extract_datadog_fields(datadog_event, team, results)
+
         log.info(
             f'Generated the following AsanaFields Object from the Datadog Payload: {asana_fields}'
         )
@@ -213,32 +204,21 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
             'monitor_id'
         )
 
-        task_note = asana.create_task_note(asana_fields, None, None)
-        task_body = asana.create_task_body(asana_fields, task_note)
+        new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
 
-        # Right now we only want to enable this for staging while we finish up validation.
-        # We could do some fancy environment filtering business with an enum and proper method and all
-        # but ideally this simple if statement  is only going to be around for a week or two.
-        if asana_fields.environment in ['staging']:
+        # And link it in the event stream for this monitor.
+        asana_url = f'https://app.asana.com/0/0/{new_task_gid}'
+        await datadog.post_event_details(
+            make_datadog_asana_event(datadog_event_details.get('event', {}), asana_url)
+        )
 
-            # Create a new asana task
-            new_task_gid = await asana.create_task(task_body)
-
-            # And link it in the event stream for this monitor.
-            asana_url = f'https://app.asana.com/0/0/{new_task_gid}'
-            await datadog.post_event_details(
-                make_datadog_asana_event(
-                    datadog_event_details.get('event', {}), asana_url
-                )
-            )
-
-            log.info(
-                f'Created the following Asana task for alert: {asana_url}\n\n {task_body}'
-            )
+        log.info(
+            f'Created the following Asana task for alert: {asana_url}\n\n {task_body}'
+        )
 
         return {
             'success': True,
-            'message': 'Processed alert from datadog.',
+            'message': f'Processed alert from datadog and created asana task: {asana_url}',
             'message_id': message_id,
         }
     except Exception as err:
@@ -297,30 +277,22 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
 
         # Next, create a new asana task
         tags = event.get('tags', [])
-        try:
-            team, results = heuristics.get_team(entities, dict(tags))
-            results = f'Routed to {team.Name} because we matched {results}'
-        except heuristics.TeamNotFound:
-            team = entities.default_team()
-            log.info(f'Unable to find a team to match {issue_id}, using {team.Name}')
-            results = (
-                f'Routed to {team.Name} because we did not find any matching teams.'
-            )
-        log.info(f'Got {team} for sentry issue: {issue_id}, with matchers: {results}')
-        asana_fields: AsanaFields = await asana.extract_sentry_fields(
+        team, results = query_entities_by_tags(entities, dict(tags))
+
+        asana_fields: AsanaFields = extract_sentry_fields(
             event, team, routing_data=results
         )
 
-        task_note = asana.create_task_note(asana_fields, root_asana_link, asana_link)
-        task_body = asana.create_task_body(asana_fields, task_note)
+        new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
 
-        new_task_gid = await asana.create_task(task_body)
         # Asana create note to add reason.
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)
         if response is not None:
-            log.info('Linking success!')
+            log.info(
+                f'Successfully linked Sentry issue {issue_id} with Asana task {new_task_gid}\n\n\n {task_body}'
+            )
             return {
                 'success': True,
                 'message': f'asana task created ({new_task_gid})',
@@ -328,7 +300,7 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
             }
 
         log.error(
-            f'Failed to link sentry issue ({issue_id}) with asana task ({new_task_gid})'
+            f'Failed to link Sentry issue ({issue_id}) with Asana task ({new_task_gid})'
         )
         return {
             'success': False,
@@ -337,3 +309,42 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
         }
     except Exception as err:
         raise err
+
+
+@inject
+def query_entities_by_tags(
+    entities: TeamService,
+    tags: Dict,
+    logger: LoggerService = Provide[
+        ApplicationContainer.logger_container.logger_service
+    ],
+) -> Tuple[EngTeam, str]:
+    """Looks up team ownership based on the tags associated with the triggering event."""
+    log = logger.get()
+    try:
+        team, results = heuristics.get_team(entities, tags)
+        results = f'Routed to {team.Name} because we matched {results}'
+    except heuristics.TeamNotFound:
+        team = entities.default_team()
+        log.info(f'Unable to find a team to match tags {tags}, using {team.Name}')
+        results = f'Routed to {team.Name} because we did not find any matching teams.'
+    log.info(f'Got {team} for tags: {tags}, with matchers: {results}')
+
+    return team, results
+
+
+@inject
+async def create_asana_task(
+    asana_fields: AsanaFields,
+    root_asana_link: Optional[str],
+    asana_link: Optional[str],
+    asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
+) -> Tuple[str, dict]:
+    """Constructs task body and notes and files Asana task"""
+    task_note = asana.create_task_note(asana_fields, root_asana_link, asana_link)
+    task_body = await asana.create_task_body(asana_fields, task_note)
+
+    # Create a new asana task
+    new_task_gid = await asana.create_task(task_body)
+
+    return new_task_gid, task_body

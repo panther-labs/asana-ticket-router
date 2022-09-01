@@ -6,6 +6,8 @@ import json
 import os
 import pytest
 
+from common.components.entities.service import EngTeam
+from consumer.components.asana.entities import PRIORITY, AsanaFields
 from ..common.components.secrets.containers import SecretsManagerContainer
 from ..common.components.serializer.containers import SerializerContainer
 from ..common.components.logger.containers import LoggerContainer
@@ -13,9 +15,13 @@ from ..consumer.components.datadog.containers import DatadogContainer
 from ..consumer.components.datadog.service import (
     DatadogService,
     make_datadog_asana_event,
+    get_datadog_task_priority,
+    extract_datadog_fields,
 )
 
-
+DATADOG_EVENT = os.path.join(
+    os.path.dirname(__file__), 'test_data', 'datadog_event.json'
+)
 DATADOG_EVENT_DETAIL = os.path.join(
     os.path.dirname(__file__), 'test_data', 'datadog_event_details.json'
 )
@@ -91,3 +97,50 @@ def test_make_datadog_asana_event() -> None:
         assert 'event_source:asana' in event.get('tags')
         # event tags is a superset of event_data tags.
         assert set(event_data.get('tags')).intersection(event.get('tags'))
+
+
+def test_extract_datadog_fields(investigations: EngTeam) -> None:
+    """Test extract_datadog_fields"""
+
+    with open(DATADOG_EVENT, encoding='utf-8') as file:
+        data = json.load(file)
+    fields = extract_datadog_fields(
+        data, investigations, routing_data='fake routing data'
+    )
+
+    assert fields == AsanaFields(
+        url='https://app.datadoghq.com/event/event?id=6653540964387829030',
+        tags={
+            'aws_account': '681114611791',
+            'customer_name': 'axonius',
+            'env': 'dev',
+            'functionname': 'panther-reports-api',
+            'region': 'eu-central-1',
+        },
+        aws_region='eu-central-1',
+        aws_account_id='681114611791',
+        customer='axonius',
+        display_name='axonius',
+        event_datetime='2022-08-18T17:46:51Z',
+        environment='dev',
+        title='[P1] [Triggered on {aws_account:681114611791,customer_name:axonius,env:dev,functionname:panther-reports-api,region:eu-central-1}] [TEST] Webhook testing alert for panther-reports-api',
+        assigned_team=investigations,
+        priority=PRIORITY.HIGH,
+        runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
+        routing_data='fake routing data',
+    )
+
+
+def test_get_datadog_task_priority() -> None:
+    """Test get_datadog_task_priority"""
+
+    priority = get_datadog_task_priority('p1')
+    assert priority.name == PRIORITY.HIGH.name
+
+    priority = get_datadog_task_priority('p4')
+    assert priority == PRIORITY.MEDIUM
+
+
+@pytest.fixture
+def investigations() -> EngTeam:
+    return EngTeam("investigations", "team", "backlog", "sprint", "sandbox", [])

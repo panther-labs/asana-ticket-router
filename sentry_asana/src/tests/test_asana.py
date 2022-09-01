@@ -16,8 +16,8 @@ from ..common.components.logger.containers import LoggerContainer
 from ..common.components.entities.service import EngTeam
 from ..consumer.components.asana.containers import AsanaContainer
 from ..consumer.components.asana.service import AsanaService
-from ..common.constants import AlertType
-
+from ..consumer.components.datadog.service import extract_datadog_fields
+from ..consumer.components.sentry.service import extract_sentry_fields
 
 ASANA_TASK = os.path.join(os.path.dirname(__file__), 'test_data', 'asana_task.json')
 SENTRY_ISSUE = os.path.join(os.path.dirname(__file__), 'test_data', 'sentry_issue.json')
@@ -136,7 +136,6 @@ def asana_fields(investigations: EngTeam) -> AsanaFields:
         title='snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...',
         assigned_team=investigations,
         priority=PRIORITY.HIGH,
-        project_gids=['sprint_gid_3', 'dev_board'],
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
         routing_data='Fake Routing information',
     )
@@ -264,73 +263,6 @@ async def test_get_project_ids(
 
 
 @pytest.mark.asyncio
-async def test_get_task_priority(container: AsanaContainer) -> None:
-    """Test _get_task_priority"""
-
-    service: AsanaService = container.asana_service()
-    priority = service._get_task_priority('misc level', AlertType.SENTRY)
-    assert priority.name == PRIORITY.HIGH.name
-
-    priority = service._get_task_priority('warning', AlertType.SENTRY)
-    assert priority == PRIORITY.MEDIUM
-
-    priority = service._get_task_priority('p1', AlertType.DATADOG)
-    assert priority.name == PRIORITY.HIGH.name
-
-    priority = service._get_task_priority('p4', AlertType.DATADOG)
-    assert priority == PRIORITY.MEDIUM
-
-
-@pytest.mark.asyncio
-async def test_extract_fields(
-    container: AsanaContainer, investigations: EngTeam
-) -> None:
-    """Test _extract_fields"""
-
-    service: AsanaService = container.asana_service()
-    with open(SENTRY_EVENT, encoding='utf-8') as file:
-        data = json.load(file)
-    fields = await service.extract_sentry_fields(
-        data['data']['event'], investigations, routing_data='fake routing data'
-    )
-
-    assert fields == AsanaFields(
-        url='https://sentry.io/organizations/panther-labs/issues/2971136216',
-        tags={
-            'aws_account_id': '758312592604',
-            'aws_org_id': 'o-wyibehgf3h',
-            'aws_partition': 'aws',
-            'aws_region': 'us-west-2',
-            'commit_sha': '556d327fa',
-            'data_lake': 'snowflake-self-hosted',
-            'debug_enabled': 'false',
-            'environment': 'dev',
-            'fips_enabled': 'false',
-            'lambda_memory_mb': '2048',
-            'level': 'error',
-            'os.name': 'linux',
-            'runtime': 'go go1.17.1',
-            'runtime.name': 'go',
-            'server_name': 'panther-snowflake-api',
-            'url': 'https://web-930307996.us-west-2.elb.amazonaws.com',
-            'zap_lambdaRequestId': '3ad98716-cd00-41e2-af43-cb139bb969bb',
-        },
-        aws_region='us-west-2',
-        aws_account_id='758312592604',
-        customer='Unknown',
-        display_name='Unknown',
-        event_datetime='2022-01-29t00:19:22.986521z',
-        environment='dev',
-        title='snowflake-api: returned an error: AWS.ValidationException: cannot get snowflake secret: arn:aws:secretsmanager:us-west-2:758312592604:secret:panther-managed...',
-        assigned_team=investigations,
-        priority=PRIORITY.HIGH,
-        project_gids=['sprint_gid_3', 'dev_board'],
-        runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
-        routing_data='fake routing data',
-    )
-
-
-@pytest.mark.asyncio
 async def test_create_task_note(
     container: AsanaContainer, asana_fields: AsanaFields
 ) -> None:
@@ -340,7 +272,7 @@ async def test_create_task_note(
     note = service.create_task_note(asana_fields, None, None)
     assert (
         note
-        == """Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
+        == """Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
 
 Event Datetime: 2022-01-29t00:19:22.986521z
 
@@ -368,7 +300,7 @@ Routing Information: Fake Routing information
 
 Root Asana Task: root_asana_link
 
-Sentry Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
+Issue URL: https://sentry.io/organizations/panther-labs/issues/2971136216
 
 Event Datetime: 2022-01-29t00:19:22.986521z
 
@@ -397,10 +329,10 @@ async def test_create_task_body(
     """Test _create_task_body"""
 
     service: AsanaService = container.asana_service()
-    body = service.create_task_body(asana_fields, 'some notes')
+    body = await service.create_task_body(asana_fields, 'some notes')
     assert body == {
         'name': asana_fields.title,
-        'projects': asana_fields.project_gids,
+        'projects': ['sprint_gid_3', 'dev_board'],
         'custom_fields': {
             CUSTOMFIELD.PRIORITY.value: asana_fields.priority.value,
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
@@ -422,7 +354,7 @@ async def test_create_asana_task(
     service: AsanaService = container.asana_service()
     body = {
         'name': asana_fields.title,
-        'projects': asana_fields.project_gids,
+        'projects': ['sprint_gid_3', 'dev_board'],
         'custom_fields': {
             CUSTOMFIELD.PRIORITY.value: asana_fields.priority.value,
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
@@ -447,13 +379,13 @@ async def test_create_task_from_sentry(
     with open(SENTRY_EVENT, encoding='utf-8') as file:
         data = json.load(file)
 
-    asana_fields: AsanaFields = await service.extract_sentry_fields(
+    asana_fields: AsanaFields = extract_sentry_fields(
         data['data']['event'],
         observability,
         routing_data='',
     )
     task_note = service.create_task_note(asana_fields, None, None)
-    task_body = service.create_task_body(asana_fields, task_note)
+    task_body = await service.create_task_body(asana_fields, task_note)
 
     response = await service.create_task(task_body)
     assert response == 'new_project_gid'
@@ -469,14 +401,14 @@ async def test_create_task_from_datadog(
     with open(DATADOG_EVENT, encoding='utf-8') as file:
         data = json.load(file)
 
-    asana_fields: AsanaFields = await service.extract_datadog_fields(
-        data,
-        observability,
+    asana_fields: AsanaFields = extract_datadog_fields(
+        datadog_event=data,
+        team=observability,
         routing_data='',
     )
 
     task_note = service.create_task_note(asana_fields, None, None)
-    task_body = service.create_task_body(asana_fields, task_note)
+    task_body = await service.create_task_body(asana_fields, task_note)
 
     # We aren't actually doing this in the code yet, but we will.
     response = await service.create_task(task_body)

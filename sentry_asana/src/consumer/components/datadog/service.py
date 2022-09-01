@@ -7,8 +7,12 @@
 # pylint: disable=too-many-arguments
 from typing import Dict
 from logging import Logger
+from urllib import parse
+from datetime import datetime, timezone
 from common.constants import DATADOG_SOURCE_TYPE
 from common.components.serializer.service import SerializerService
+from common.components.entities.service import EngTeam
+from consumer.components.asana.entities import AsanaFields, PRIORITY, RUNBOOK_URL
 from datadog_api_client import ApiClient, Configuration
 from datadog_api_client.v1.api.events_api import EventsApi
 from datadog_api_client.v1.model.event_create_request import EventCreateRequest
@@ -62,3 +66,65 @@ def make_datadog_asana_event(record: Dict, asana_link: str) -> dict:
         'source_type_name': DATADOG_SOURCE_TYPE,
         'tags': tags,
     }
+
+
+def extract_datadog_fields(
+    datadog_event: Dict, team: EngTeam, routing_data: str
+) -> AsanaFields:
+    """Extract relevent fields from the datadog event"""
+    url = datadog_event['link']
+    tag_list = datadog_event['tags'].split(',')
+    tags = tag_list_to_dict(tag_list)
+    aws_region = tags.get('region', 'Unknown')
+    aws_account_id = tags.get('aws_account', 'Unknown')
+    customer = tags.get('customer_name', 'Unknown')
+    display_name = parse.quote(customer)
+    event_datetime = datetime.fromtimestamp(
+        int(datadog_event['date']) / 1000, tz=timezone.utc
+    ).strftime('%Y-%m-%dT%H:%M:%SZ')
+    title = datadog_event['title']
+    datadog_priority = datadog_event.get('priority', 'Unknown').lower()
+    priority = get_datadog_task_priority(datadog_priority)
+    environment = tags.get('env', 'Unknown').lower()
+    runbook_url = RUNBOOK_URL
+    return AsanaFields(
+        assigned_team=team,
+        aws_account_id=aws_account_id,
+        aws_region=aws_region,
+        customer=customer,
+        display_name=display_name,
+        environment=environment,
+        event_datetime=event_datetime,
+        priority=priority,
+        runbook_url=runbook_url,
+        tags=tags,
+        title=title,
+        url=url,
+        routing_data=routing_data,
+    )
+
+
+def tag_list_to_dict(tag_list: list) -> dict:
+    """Converts a list of colon delimited Key/Value pairs to a dictionary."""
+
+    tags = {}
+    for tag in tag_list:
+        key: str = tag
+        value: str = ''
+
+        if ':' in tag:
+            key = tag.split(':')[0]
+            value = tag.split(':')[1]
+
+        tags[key] = value
+
+    return tags
+
+
+def get_datadog_task_priority(level: str) -> PRIORITY:
+    """Returns a PRIORITY Enum based on the Datadog event level provided."""
+
+    if level in ['p5', 'p4', 'p3']:
+        return PRIORITY.MEDIUM
+
+    return PRIORITY.HIGH

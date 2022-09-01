@@ -6,7 +6,11 @@
 # falls under the Panther Commercial License to the extent it is permitted.
 from typing import List, Optional, Dict
 from logging import Logger
+from urllib import parse
+
+from common.components.entities.service import EngTeam
 from common.components.serializer.service import SerializerService
+from consumer.components.asana.entities import AsanaFields, RUNBOOK_URL, PRIORITY
 from ..requests.service import RequestsService
 
 
@@ -90,3 +94,46 @@ class SentryService:
             return None
 
         return asana_link
+
+
+def extract_sentry_fields(
+    sentry_event: Dict, team: EngTeam, routing_data: str
+) -> AsanaFields:
+    """Extract relevent fields from the sentry event"""
+    issue_id = sentry_event['issue_id']
+    url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
+    tags = dict(sentry_event['tags'])
+    aws_region = tags['aws_region']
+    aws_account_id = tags['aws_account_id']
+    customer = tags.get('customer_name', 'Unknown')
+    display_name = parse.quote(customer)
+    event_datetime = sentry_event['datetime'].lower()
+    title = sentry_event['title']
+    level = sentry_event['level'].lower()
+    priority = get_sentry_task_priority(level)
+    environment = sentry_event['environment'].lower()
+    runbook_url = RUNBOOK_URL
+    return AsanaFields(
+        assigned_team=team,
+        aws_account_id=aws_account_id,
+        aws_region=aws_region,
+        customer=customer,
+        display_name=display_name,
+        environment=environment,
+        event_datetime=event_datetime,
+        priority=priority,
+        runbook_url=runbook_url,
+        tags=tags,
+        title=title,
+        url=url,
+        routing_data=routing_data,
+    )
+
+
+def get_sentry_task_priority(level: str) -> PRIORITY:
+    """Returns a PRIORITY Enum based on the Sentry event level provided."""
+
+    if level == 'warning':
+        return PRIORITY.MEDIUM
+
+    return PRIORITY.HIGH

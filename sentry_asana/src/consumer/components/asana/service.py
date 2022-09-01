@@ -15,11 +15,9 @@ from urllib import parse
 from dateutil import parser
 from asana import Client
 from asana.error import ForbiddenError, NotFoundError
-from common.constants import AlertType
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import EngTeam
 from consumer.components.asana.entities import (
-    RUNBOOK_URL,
     PRIORITY,
     AsanaFields,
     CUSTOMFIELD,
@@ -104,80 +102,6 @@ class AsanaService:
         response = await self._create_asana_task(task_body)
         return response['gid']
 
-    async def extract_datadog_fields(
-        self, datadog_event: Dict, team: EngTeam, routing_data: str
-    ) -> AsanaFields:
-        """Extract relevent fields from the datadog event"""
-        self._logger.debug('Extracting fields')
-        url = datadog_event['link']
-        tag_list = datadog_event['tags'].split(',')
-        tags = self.tag_list_to_dict(tag_list)
-        aws_region = tags.get('region', 'Unknown')
-        aws_account_id = tags.get('aws_account', 'Unknown')
-        customer = tags.get('customer_name', 'Unknown')
-        display_name = parse.quote(customer)
-        event_datetime = datetime.fromtimestamp(
-            int(datadog_event['date']) / 1000
-        ).strftime('%Y-%m-%dT%H:%M:%S')
-        title = datadog_event['title']
-        datadog_priority = datadog_event.get('priority', 'Unknown').lower()
-        priority = self._get_task_priority(datadog_priority, AlertType.DATADOG)
-        environment = tags.get('env', 'Unknown').lower()
-        project_gids = await self._get_project_ids(environment, priority, team)
-        runbook_url = RUNBOOK_URL
-        return AsanaFields(
-            assigned_team=team,
-            aws_account_id=aws_account_id,
-            aws_region=aws_region,
-            customer=customer,
-            display_name=display_name,
-            environment=environment,
-            event_datetime=event_datetime,
-            priority=priority,
-            project_gids=project_gids,
-            runbook_url=runbook_url,
-            tags=tags,
-            title=title,
-            url=url,
-            routing_data=routing_data,
-        )
-
-    async def extract_sentry_fields(
-        self, sentry_event: Dict, team: EngTeam, routing_data: str
-    ) -> AsanaFields:
-        """Extract relevent fields from the sentry event"""
-        self._logger.debug('Extracting fields')
-        issue_id = sentry_event['issue_id']
-        url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
-        tags = dict(sentry_event['tags'])
-        aws_region = tags['aws_region']
-        aws_account_id = tags['aws_account_id']
-        customer = tags.get('customer_name', 'Unknown')
-        display_name = parse.quote(customer)
-        event_datetime = sentry_event['datetime'].lower()
-        title = sentry_event['title']
-        level = sentry_event['level'].lower()
-        priority = self._get_task_priority(level, AlertType.SENTRY)
-        environment = sentry_event['environment'].lower()
-        project_gids = await self._get_project_ids(environment, priority, team)
-        runbook_url = RUNBOOK_URL
-        return AsanaFields(
-            assigned_team=team,
-            aws_account_id=aws_account_id,
-            aws_region=aws_region,
-            customer=customer,
-            display_name=display_name,
-            environment=environment,
-            event_datetime=event_datetime,
-            priority=priority,
-            project_gids=project_gids,
-            runbook_url=runbook_url,
-            tags=tags,
-            title=title,
-            url=url,
-            routing_data=routing_data,
-        )
-
     def create_task_note(
         self,
         fields: AsanaFields,
@@ -187,7 +111,7 @@ class AsanaService:
         """Create the note for the asana task"""
         self._logger.debug('Creating asana task notes')
         note = (
-            f'Sentry Issue URL: {fields.url}\n\n'
+            f'Issue URL: {fields.url}\n\n'
             f'Event Datetime: {fields.event_datetime}\n\n'
             f'Customer Impacted: {fields.customer}\n\n'
             f'Environment: {fields.environment}\n\n'
@@ -270,6 +194,26 @@ class AsanaService:
             note = note + f'Routing Information: {fields.routing_data}\n\n'
 
         return ''.join(note)
+
+    async def create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
+        """Create an asana tasks details"""
+        self._logger.debug("Building asana task body")
+        project_gids = await self._get_project_ids(
+            fields.environment, fields.priority, fields.assigned_team
+        )
+        return {
+            'name': fields.title,
+            'projects': project_gids,
+            'custom_fields': {
+                CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
+                CUSTOMFIELD.PRIORITY.value: fields.priority.value,
+                CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
+                CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
+                CUSTOMFIELD.TEAM.value: fields.assigned_team.AsanaTeamId,
+                CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
+            },
+            'notes': notes,
+        }
 
     async def extract_root_asana_link(self, task_gid: str) -> Optional[str]:
         """Extract root asana link from an asana task"""
@@ -382,53 +326,3 @@ class AsanaService:
         if latest_project is None:
             return None
         return latest_project['gid']
-
-    def create_task_body(self, fields: AsanaFields, notes: str) -> Dict:
-        """Create an asana tasks details"""
-        self._logger.debug("Building asana task body")
-        return {
-            'name': fields.title,
-            'projects': fields.project_gids,
-            'custom_fields': {
-                CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
-                CUSTOMFIELD.PRIORITY.value: fields.priority.value,
-                CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
-                CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
-                CUSTOMFIELD.TEAM.value: fields.assigned_team.AsanaTeamId,
-                CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
-            },
-            'notes': notes,
-        }
-
-    @staticmethod
-    def _get_task_priority(level: str, alert_type: AlertType) -> PRIORITY:
-        """Returns a PRIORITY Enum based on the Sentry or Datadog event level provided."""
-
-        if alert_type.name == AlertType.SENTRY.name:
-            if level == 'warning':
-                return PRIORITY.MEDIUM
-
-        if alert_type.name == AlertType.DATADOG.name:
-            if level in ['p5', 'p4', 'p3']:
-                return PRIORITY.MEDIUM
-
-        return PRIORITY.HIGH
-
-    @staticmethod
-    def tag_list_to_dict(tag_list: list) -> dict:
-        """Converts a list of colon delimited Key/Value pairs to a dictionary."""
-        # When we refactor all of this stuff so that Datadog things live in the Datadog service and Sentry things live
-        # in the Sentry service we should move this over to Datadog, but we are currently making use of it here in the
-        # extract_datadog_fields method.
-        tags = {}
-        for tag in tag_list:
-            key: str = tag
-            value: str = ''
-
-            if ':' in tag:
-                key = tag.split(':')[0]
-                value = tag.split(':')[1]
-
-            tags[key] = value
-
-        return tags
