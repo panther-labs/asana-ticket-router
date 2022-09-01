@@ -14,6 +14,7 @@ parameters:
   description: |-
     A unique account name (such as Google) to identify the account.
     The domain will be "account_name.runpanther.net".
+  required: false
 - name: Deploy Group
   slug: deploy_group
   type: shorttext
