@@ -40,3 +40,10 @@ def get_snowflake_account_admin_secret():
     return _get_secret(secret_name=get_aws_const("SNOWFLAKE_ACCOUNT_ADMIN_SECRET_ARN"),
                        arns=get_aws_const("SNOWFLAKE_ACCOUNT_ADMIN_SECRET_READ_ROLE"),
                        region="us-west-2")
+
+
+def get_snowflake_customer_secret(fairytale_name):
+    """Requires the task to use the AirplaneWorkers-ReadSnowflakeCustomerCredentials ECS role."""
+    return _get_secret(secret_name=f"snowflake-accountadmin-{fairytale_name}",
+                       arns=get_aws_const("SNOWFLAKE_CUSTOMER_SECRET_READ_ROLE"),
+                       region="us-west-2")
