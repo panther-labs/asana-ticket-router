@@ -1,0 +1,19 @@
+name: Change Deploy Group to Hold
+slug: change_deploy_group_to_hold
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: change_deploy_group_to_hold.py
+requireRequests: false
+allowSelfApprovals: false
+timeout: 3600

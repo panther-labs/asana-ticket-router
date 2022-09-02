@@ -9,7 +9,7 @@ class SfResultMock:
         self.description = col_names
         self.return_data = return_data
 
-    def fetchmany(self):
+    def fetchmany(self, _):
         return self.return_data
 
 
