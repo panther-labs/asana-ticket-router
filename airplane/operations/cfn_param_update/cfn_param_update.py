@@ -15,6 +15,7 @@ class AirplaneParams:
     fairytale_name: str
     cfn_param_key_vals: str
     show_changes_only: bool = False
+    requires_runbook: bool = False
 
 
 @dataclass
@@ -22,13 +23,14 @@ class ParsedParams:
     fairytale_name: str
     cfn_params: dict[str, Any]
     show_changes_only: bool
+    requires_runbook: bool = False
 
 
 class CfnParamUpdate(AirplaneModifyGitTask):
     CFN_KEY = "CloudFormationParameters"
 
     def __init__(self, params):
-        super().__init__(params=params, git_repo=GithubRepo.HOSTED_DEPLOYMENTS)
+        super().__init__(params=params, git_repo=GithubRepo.HOSTED_DEPLOYMENTS, requires_runbook=params.requires_runbook)
         self.parsed_params = self.parse_params(params)
         self.customer_deploy_file = get_customer_deployment_filepath(fairytale_name=self.parsed_params.fairytale_name)
         self.old_cfn_cfg = None
