@@ -46,7 +46,7 @@ class TestNameGenerator:
 
     @staticmethod
     def test_generate_fairytale_and_domain_names(validator):
-        names = get_name_generator(get_defaulted_params(), validator).main()
+        names = get_name_generator(get_defaulted_params(), validator).run()
         assert names["fairytale_name"] is not None
         assert names["customer_domain"] == "mock-account-name.runpanther.net"
 
@@ -54,7 +54,7 @@ class TestNameGenerator:
     def test_fairytale_passed_in_and_domain_name_generated_for_non_trial(validator):
         params = get_defaulted_params()
         params["fairytale_name"] = "mock-fairytale"
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert params["fairytale_name"] == names["fairytale_name"]
         assert names["customer_domain"] == "mock-account-name.runpanther.net"
@@ -64,7 +64,7 @@ class TestNameGenerator:
         params = get_defaulted_params()
         params["fairytale_name"] = "mock-fairytale"
         params["deploy_group"] = "T"
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert params["fairytale_name"] == names["fairytale_name"]
         assert names["customer_domain"] == f"{params['fairytale_name']}.runpanther.net"
@@ -73,7 +73,7 @@ class TestNameGenerator:
     def test_generate_fairytale_and_domain_names_for_trial_accounts(validator):
         params = get_defaulted_params()
         params["deploy_group"] = "T"
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert names["customer_domain"] == f"{names['fairytale_name']}.runpanther.net"
 
@@ -83,13 +83,13 @@ class TestNameGenerator:
         params["deploy_group"] = "T"
         params["customer_domain"] = "custom.runpanther.net"
         with pytest.raises(ValueError):
-            get_name_generator(params, validator).main()
+            get_name_generator(params, validator).run()
 
     @staticmethod
     def test_custom_domain_passed_in_for_non_trial_succeeds(validator):
         params = get_defaulted_params()
         params["customer_domain"] = "custom"
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert names["customer_domain"] == "custom.runpanther.net"
 
@@ -97,7 +97,7 @@ class TestNameGenerator:
     def test_fairytale_in_use_create_new_one_for_non_trial(validator):
         params = get_defaulted_params()
         validator.run_validation.side_effect = [FairytaleNameAlreadyInUseException, lambda *args, **kwargs: None]
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert validator.run_validation.call_count == 2
 
@@ -106,7 +106,7 @@ class TestNameGenerator:
         params = get_defaulted_params()
         params["deploy_group"] = "T"
         validator.run_validation.side_effect = [FairytaleNameAlreadyInUseException, lambda *args, **kwargs: None]
-        names = get_name_generator(params, validator).main()
+        names = get_name_generator(params, validator).run()
         assert names["fairytale_name"] is not None
         assert names["fairytale_name"] in names["customer_domain"]
         assert validator.run_validation.call_count == 2

@@ -3,6 +3,7 @@ from re import sub
 from coolname import generate_slug
 from v2.exceptions import FairytaleNameAlreadyInUseException
 from operations.name_generator.name_validator import NameValidator
+from v2.task_models.airplane_task import AirplaneTask
 
 
 @dataclass
@@ -13,7 +14,7 @@ class AirplaneParams:
     customer_domain: str = ""
 
 
-class NameGenerator:
+class NameGenerator(AirplaneTask):
     """
         Why pass in the fairytale name and just return it?
         So Airplane runbooks can use this task to standardize an output variable future blocks can use, whether a
@@ -62,10 +63,13 @@ class NameGenerator:
                     self.domain_name = self._generate_domain_name()
                 self.validate()
 
-    def main(self):
+    def get_failure_slack_channel(self):
+        return "#triage-deployment"
+
+    def run(self):
         self.validate()
         return {"fairytale_name": self.fairytale_name, "customer_domain": self.domain_name}
 
 
 def main(params):
-    return NameGenerator(params).main()
+    return NameGenerator(params).run_notify_failures()
