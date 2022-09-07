@@ -54,4 +54,4 @@ class NewPantherDeployNotionRecord(AirplaneTask):
 
 
 def main(params):
-    NewPantherDeployNotionRecord(params).main()
+    NewPantherDeployNotionRecord(params).main_notify_failures()
