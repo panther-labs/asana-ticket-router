@@ -103,6 +103,9 @@ class DeploymentCustomerDetails(AirplaneGitTask):
                 self.accounts_per_region.setdefault(region, []).append(fairytale_name)
                 self.all_accounts_with_aws_id.append(fairytale_name)
 
+    def get_failure_slack_channel(self):
+        return "#triage-deployment"
+
 
 def main(params):
-    return DeploymentCustomerDetails().run(params)
+    return DeploymentCustomerDetails().run_notify_failures(params)

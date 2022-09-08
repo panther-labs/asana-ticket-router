@@ -4,6 +4,11 @@ parameters:
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
+- name: Send Slack Message
+  slug: send_slack_msg
+  type: boolean
+  description: Send a Slack message to the deployment team in case this is being used for cleanup purposes
+  default: false
 python:
   entrypoint: get_account_locator.py
   envVars:
