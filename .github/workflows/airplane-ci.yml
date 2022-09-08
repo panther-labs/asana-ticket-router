@@ -1,4 +1,4 @@
-name: Airplane
+name: Airplane-CI
 
 on:
   push:
