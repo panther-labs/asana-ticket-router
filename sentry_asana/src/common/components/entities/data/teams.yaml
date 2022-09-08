@@ -51,6 +51,7 @@
     Matchers: ["functionname:panther-users-api"],
     Matchers: ["url://api//"],
     Matchers: ["url://api-tokens//"],
+    Matchers: ["url://sign-in//"],
   ]
 -
   name: "Data Platform"
