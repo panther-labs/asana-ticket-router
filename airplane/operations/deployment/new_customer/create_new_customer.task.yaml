@@ -95,14 +95,16 @@ parameters:
   slug: sales_phase
   type: shorttext
   description: The customer's position in the sales pipeline
-  regex: ^(trial|proof_of_value|contract)$
+  regex: ^(trial|proof_of_concept|contract|internal)$
   options:
   - label: Trial
     value: trial
-  - label: Proof of Value
-    value: proof_of_value
+  - label: Proof of Concept
+    value: proof_of_concept
   - label: Contract
     value: contract
+  - label: Internal
+    value: internal
 python:
   entrypoint: create_new_customer.py
 timeout: 3600
