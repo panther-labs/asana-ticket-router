@@ -10,5 +10,5 @@ parameters:
   type: shorttext
   description: "A key and value to update in Notion for deprovisioning. Example: DNS_Records_Removed=Yes"
 python:
-  entrypoint: mark_airplane_creation_complete.py
+  entrypoint: update_deprov_status.py
 timeout: 3600
