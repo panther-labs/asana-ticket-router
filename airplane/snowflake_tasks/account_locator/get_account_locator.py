@@ -40,9 +40,6 @@ class AccountLocatorRetriever(AirplaneTask):
 
         self.send_slack_message(channel_name="#triage-deployment", message=msg)
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params):
-    return AccountLocatorRetriever().run_notify_failures(params)
+    return AccountLocatorRetriever().run(params)

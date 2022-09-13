@@ -37,9 +37,6 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
         with tmp_change_dir(repo_abs_path):
             self.git_add_commit_and_push(title=f"Disable Sentry alerts for '{fairytale_name}'")
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params: dict) -> None:
-    DisableCustomerSentryAlerts(requires_runbook=True).run_notify_failures(params)
+    DisableCustomerSentryAlerts(requires_runbook=True).run(params)

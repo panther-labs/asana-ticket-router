@@ -30,9 +30,6 @@ class DeployGroupHold(AirplaneModifyGitTask):
         generate_configs()
         return "."
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params):
-    DeployGroupHold(params).main_notify_failures(params)
+    DeployGroupHold(params).main(params)

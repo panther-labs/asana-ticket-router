@@ -73,9 +73,6 @@ class DnsRecordRemover(AirplaneGitTask):
 
         self._remove_from_deprov_info(fairytale_name=params["fairytale_name"], organization=params["organization"])
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params):
-    DnsRecordRemover(requires_runbook=True).run_notify_failures(params)
+    DnsRecordRemover(requires_runbook=True).run(params)

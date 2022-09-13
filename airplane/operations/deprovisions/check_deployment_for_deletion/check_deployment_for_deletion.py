@@ -46,9 +46,6 @@ class DeploymentDeletionChecker(AirplaneMultiCloneGitTask):
                               org=deprov_info.organization)
         return None
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(_):
-    return DeploymentDeletionChecker().main_notify_failures({})
+    return DeploymentDeletionChecker().main({})

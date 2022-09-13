@@ -68,9 +68,6 @@ Notify the deployment team to remove deletion info from the deployment file for 
         time_format = "%m/%d/%Y, %H:%M:%S %Z"
         return deprov_info.dns_removal_time.strftime(time_format), deprov_info.teardown_time.strftime(time_format)
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params):
-    DeploymentDeletionMarker(api_use_only=params["api_use_only"], requires_runbook=True).main_notify_failures(params)
+    DeploymentDeletionMarker(api_use_only=params["api_use_only"], requires_runbook=True).main(params)
