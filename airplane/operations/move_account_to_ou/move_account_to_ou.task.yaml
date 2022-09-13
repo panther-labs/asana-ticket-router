@@ -1,5 +1,6 @@
 name: Move Account to OU
 slug: move_account_to_ou
+description: Moves an account from one OU to another. Must be run within a runbook.
 parameters:
 - name: Organization
   slug: organization
@@ -30,14 +31,11 @@ parameters:
     value: staging
   - label: Dev Accounts OU (Panther Root)
     value: dev-accounts
-- name: Airplane Test Run
-  slug: airplane_test_run
-  type: boolean
 python:
   entrypoint: move_account_to_ou.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-OrganizationsMoveAccount
-requireRequests: true
+requireRequests: false
 allowSelfApprovals: false
 timeout: 3600
