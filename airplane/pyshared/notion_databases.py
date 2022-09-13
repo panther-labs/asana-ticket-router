@@ -43,6 +43,7 @@ def create_date_time_value(updated_datetime):
 
 
 class AccountsDatabaseSchema:
+    AWS_Account_Deleted = Property("Account Deleted?", schema.Select())
     AWS_Account_ID = Property("AWS Account ID", schema.RichText())
     AWS_Organization = Property("AWS Organization", schema.Select())
     Account_Info_Auto_Updated = Property("Account Info Auto-Updated", schema.Checkbox())

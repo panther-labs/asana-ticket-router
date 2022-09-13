@@ -1,0 +1,23 @@
+name: Tag AWS Account for Removal
+slug: tag_aws_account_for_removal
+description: Tag an AWS account with the label required for account closure
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+python:
+  entrypoint: tag_aws_account_for_removal.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-OrganizationsTagAccount
+requireRequests: false
+allowSelfApprovals: false
+timeout: 3600
