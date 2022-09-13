@@ -392,6 +392,29 @@ async def test_create_task_from_sentry(
 
 
 @pytest.mark.asyncio
+async def test_create_task_from_sentry_no_request_id(
+    container: AsanaContainer, observability: EngTeam
+) -> None:
+    """Test create_task when sentry has no request_id set."""
+    service: AsanaService = container.asana_service()
+    with open(SENTRY_EVENT, encoding='utf-8') as file:
+        data = json.load(file)
+
+    asana_fields: AsanaFields = extract_sentry_fields(
+        data['data']['event'],
+        observability,
+        routing_data='',
+    )
+    asana_fields.tags.pop('zap_lambdaRequestId')
+    task_note = service.create_task_note(asana_fields, None, None)
+    assert 'Datadog Logs Link:' in task_note
+    task_body = await service.create_task_body(asana_fields, task_note)
+
+    response = await service.create_task(task_body)
+    assert response == 'new_project_gid'
+
+
+@pytest.mark.asyncio
 async def test_create_task_from_datadog(
     container: AsanaContainer, observability: EngTeam
 ) -> None:

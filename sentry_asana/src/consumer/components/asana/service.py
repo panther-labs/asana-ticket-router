@@ -8,7 +8,7 @@ from asyncio import AbstractEventLoop
 import asyncio
 from datetime import datetime, timedelta
 import re
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Any
 from functools import partial
 from logging import Logger
 from urllib import parse
@@ -137,7 +137,7 @@ class AsanaService:
             request_id = fields.tags['zap_lambdaRequestId']
 
             base_datadog_trace_url = 'https://app.datadoghq.com/apm/traces?'
-            query_params = {
+            query_params: Dict[str, Any] = {
                 'query': f'@account_id:{fields.aws_account_id} @request_id:{request_id}',
                 'start': one_hour_before_ts,
                 'historicalData': 'true',
@@ -146,6 +146,27 @@ class AsanaService:
             datadog_trace_url = base_datadog_trace_url + parse.urlencode(query_params)
 
             note = note + f'Datadog Trace Link: {datadog_trace_url}\n\n'
+        else:  # If no trace, just provide a logs link
+            event_time = parser.parse(fields.event_datetime)
+            three_hours_before = event_time - timedelta(hours=3)
+            three_hours_before_ts = int(three_hours_before.timestamp() * 1000.0)
+            one_hour_after = event_time + timedelta(hours=1)
+            one_hour_after_ts = int(one_hour_after.timestamp() * 1000.0)
+
+            server_name = fields.tags.get('server_name', None)
+            query_params = {
+                'query': f'@account_id:{fields.aws_account_id} env:{fields.environment}',
+                'from_ts': three_hours_before_ts,
+                'to_ts': one_hour_after_ts,
+            }
+            if server_name is not None:
+                query_params['query'] = (
+                    query_params['query'] + f'functionname:{server_name}'
+                )
+            datadog_logs_url = 'https://app.datadoghq.com/logs?' + parse.urlencode(
+                query_params
+            )
+            note = note + f'Datadog Logs Link: ${datadog_logs_url}\n\n'
 
         if 'monitor_id' in fields.tags:
             event_time = parser.parse(fields.event_datetime)
