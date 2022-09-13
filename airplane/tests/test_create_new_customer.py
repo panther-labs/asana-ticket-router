@@ -2,7 +2,6 @@
 # this ensures the interface is used properly.
 import pytest
 import re
-import pytz
 from unittest import mock
 
 from operations.deployment.new_customer import create_new_customer
@@ -97,6 +96,14 @@ def test_invalid_deploy_group():
     params["deploy_group"] = "bad-deploy-group"
     with pytest.raises(ValueError):
         main(params)
+
+
+def test_no_sales_opportunity_id_given(create_customer_metadata):
+    params = get_params()
+    params.pop("sales_opportunity_id")
+    main(params)
+    cfg = _get_cfg_args(create_customer_metadata)
+    assert cfg["sales_opportunity_id"] == ""
 
 
 def test_outputs():

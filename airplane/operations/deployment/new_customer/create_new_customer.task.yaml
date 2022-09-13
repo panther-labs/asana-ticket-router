@@ -91,6 +91,7 @@ parameters:
   slug: sales_opportunity_id
   type: shorttext
   description: Case-sensitive 18 character ID
+  required: false
 - name: Sales phase
   slug: sales_phase
   type: shorttext

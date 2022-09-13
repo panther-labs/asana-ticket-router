@@ -34,7 +34,7 @@ class NewCustomerCreator(AirplaneGitTask):
             "snowflake_edition": params["snowflake_edition"],
             "sales_customer_id": params["sales_customer_id"],
             "sales_phase": params["sales_phase"],
-            "sales_opportunity_id": params["sales_opportunity_id"]
+            "sales_opportunity_id": params.get("sales_opportunity_id", "")
         }
 
         if "customer_domain" in params:
