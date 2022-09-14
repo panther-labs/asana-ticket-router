@@ -1,0 +1,23 @@
+slug: list_codebuild_builds
+name: "List CodeBuild Builds"
+description: List AWS CodeBuild builds for the given account, project, region
+parameters:
+  - name: AWS Account ID
+    slug: aws_account_id
+    type: shorttext
+  - name: Region
+    slug: region
+    type: shorttext
+  - name: Project Name
+    slug: project_name
+    type: shorttext
+  - name: Count
+    slug: count
+    type: integer
+    default: 5
+node:
+  entrypoint: main.js
+  nodeVersion: "18"
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CodeBuildReadOnly

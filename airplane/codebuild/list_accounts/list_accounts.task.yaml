@@ -1,0 +1,6 @@
+slug: list_accounts
+name: "List AWS Accounts"
+description: List Accounts
+node:
+  entrypoint: main.js
+  nodeVersion: "18"

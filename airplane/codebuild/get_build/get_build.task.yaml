@@ -1,0 +1,22 @@
+slug: get_codebuild_build
+name: "Get details for CodeBuild build"
+description: CodeBuild readonly
+parameters:
+  - name: AWS Account ID
+    slug: aws_account_id
+    type: shorttext
+  - name: Region
+    slug: region
+    type: shorttext
+  - name: Project Name
+    slug: project_name
+    type: shorttext
+  - name: Build
+    slug: build
+    type: shorttext
+node:
+  entrypoint: main.js
+  nodeVersion: "18"
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CodeBuildReadOnly

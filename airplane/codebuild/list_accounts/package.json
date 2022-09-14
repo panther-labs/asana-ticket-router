@@ -1,0 +1,8 @@
+{
+  "name": "list-accounts",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies": {
+    "airplane": "^0.1.2"
+  }
+}

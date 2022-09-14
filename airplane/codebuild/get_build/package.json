@@ -1,0 +1,11 @@
+{
+  "name": "get-build",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.154.0",
+    "@aws-sdk/client-codebuild": "^3.154.0",
+    "@aws-sdk/client-sts": "^3.154.0",
+    "airplane": "^0.1.2"
+  }
+}

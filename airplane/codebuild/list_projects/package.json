@@ -1,0 +1,13 @@
+{
+  "name": "list-projects",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "build": "node main.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-codebuild": "^3.145.0",
+    "@aws-sdk/client-sts": "^3.145.0",
+    "airplane": "^0.1.2"
+  }
+}
