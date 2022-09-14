@@ -155,7 +155,7 @@ class AsanaService:
 
             server_name = fields.tags.get('server_name', None)
             query_params = {
-                'query': f'@account_id:{fields.aws_account_id} env:{fields.environment}',
+                'query': f'account_id:{fields.aws_account_id} env:{fields.environment}',
                 'from_ts': three_hours_before_ts,
                 'to_ts': one_hour_after_ts,
             }
@@ -166,7 +166,7 @@ class AsanaService:
             datadog_logs_url = 'https://app.datadoghq.com/logs?' + parse.urlencode(
                 query_params
             )
-            note = note + f'Datadog Logs Link: ${datadog_logs_url}\n\n'
+            note = note + f'Datadog Logs Link: {datadog_logs_url}\n\n'
 
         if 'monitor_id' in fields.tags:
             event_time = parser.parse(fields.event_datetime)
