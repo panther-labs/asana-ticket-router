@@ -1,0 +1,20 @@
+name: Remove Deployment Files
+slug: remove_deployment_files
+description: Remove an account from the hosted-deployments repo
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+python:
+  entrypoint: remove_deployment_files.py
+timeout: 3600
+requireRequests: false
+allowSelfApprovals: false

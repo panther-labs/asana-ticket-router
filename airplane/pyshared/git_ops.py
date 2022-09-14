@@ -67,14 +67,15 @@ def _get_existing_dir(repo):
 
 
 def git_add_commit_push(files: List[str], title, description="", test_run=False):
-    if not test_run:
-        git_add(files=files)
-        git_commit(title=title, description=description)
-        git_push()
-    else:
-        print(Repo(".").git.diff())
-        print(Repo(".").git.log("--graph --oneline --all --decorate -5".split()))
-        print("\n\n\nYour filesystem has been changed. You may want to undo those local changes listed above")
+    if files:
+        if not test_run:
+            git_add(files=files)
+            git_commit(title=title, description=description)
+            git_push()
+        else:
+            print(Repo(".").git.diff())
+            print(Repo(".").git.log("--graph --oneline --all --decorate -5".split()))
+            print("\n\n\nYour filesystem has been changed. You may want to undo those local changes listed above")
 
 
 class AirplaneMultiCloneGitTask(AirplaneTask):
