@@ -29,26 +29,32 @@ class TestAccountLocatorRetriever:
         return self.send_slack_mock.call_args.kwargs["message"]
 
     def test_one_locator_no_slack_messages(self):
-        locator = "12345"
-        self.set_results([{"account_locator": locator}])
+        self.set_results([{"account_locator": "12345", "account_name": "FAIRYTALE_NAME"}])
         main(params)
         assert self.send_slack_mock.call_count == 0
 
     def test_slack_msg_no_locators(self):
         self.set_results([])
-        assert main(params_slack) == {"account_locators": []}
-        assert "No locators" in self.get_sent_slack_msg()
+        assert main(params_slack) == {"account_names_and_locators": []}
+        assert "no Snowflake locators" in self.get_sent_slack_msg()
 
     def test_slack_msg_one_locator(self):
         locator = "12345"
-        self.set_results([{"account_locator": locator}])
-        assert main(params_slack) == {"account_locators": [locator]}
+        account_name = "FAIRYTALE_NAME"
+        self.set_results([{"account_locator": locator, "account_name": account_name}])
+        assert main(params_slack) == {"account_names_and_locators": [(account_name, locator)]}
         # Assert a link to documentation is in the message
         assert "notion" in self.get_sent_slack_msg()
 
     def test_slack_msg_multiple_locators(self):
-        self.set_results([{"account_locator": "12345"}, {"account_locator": "67890"}])
+        self.set_results([{
+            "account_locator": "12345",
+            "account_name": "FAIRYTALE_NAME1"
+        }, {
+            "account_locator": "67890",
+            "account_name": "FAIRYTALE_NAME2"
+        }])
         return_val = main(params_slack)
-        assert isinstance(return_val["account_locators"], list)
-        assert len(return_val["account_locators"]) > 1
-        assert "Multiple" in self.get_sent_slack_msg()
+        assert isinstance(return_val["account_names_and_locators"], list)
+        assert len(return_val["account_names_and_locators"]) > 1
+        assert "multiple" in self.get_sent_slack_msg()
