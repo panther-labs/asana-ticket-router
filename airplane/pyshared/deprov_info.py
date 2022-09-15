@@ -18,22 +18,31 @@ class DeprovInfoDeployFile:
 
     def __init__(self, filepath: str):
         self.filepath = filepath
+        self._cfg = None
+
+    @property
+    def cfg(self):
+        if self._cfg is None:
+            self._cfg = load_yaml_cfg(self.filepath, load_tz=True)
+        return self._cfg
 
     def retrieve_deprov_info(self) -> DeprovInfo:
-        cfg = load_yaml_cfg(self.filepath, load_tz=True)
-        return DeprovInfo(**cfg.get(self.CFG_KEY, {}))
+        return DeprovInfo(**self.cfg.get(self.CFG_KEY, {}))
+
+    def get_deprov_region(self) -> str:
+        return self.cfg["CustomerRegion"]
 
     def remove_deprov_info(self):
-        with change_yaml_file(self.filepath) as cfg:
-            cfg.pop(self.CFG_KEY, None)
+        with change_yaml_file(self.filepath) as self._cfg:
+            self._cfg.pop(self.CFG_KEY, None)
 
     def write_deprov_info(self, deprov_info: DeprovInfo):
-        with change_yaml_file(self.filepath) as cfg:
-            cfg[self.CFG_KEY] = asdict(deprov_info)
+        with change_yaml_file(self.filepath) as self._cfg:
+            self._cfg[self.CFG_KEY] = asdict(deprov_info)
 
     def remove_dns_time(self):
-        with change_yaml_file(self.filepath) as cfg:
-            cfg.get(self.CFG_KEY, {}).pop("dns_removal_time", None)
+        with change_yaml_file(self.filepath) as self._cfg:
+            self._cfg.get(self.CFG_KEY, {}).pop("dns_removal_time", None)
 
     def dns_removed(self):
         info = self.retrieve_deprov_info()

@@ -9,10 +9,11 @@ from pyshared.git_ops import AirplaneMultiCloneGitTask
 
 @dataclass
 class TaskOutput:
+    aws_account_id: str = ""
     deprov_type: str = ""
     fairytale_name: str = ""
-    aws_account_id: str = ""
     org: str = ""
+    region: str = ""
 
 
 class DeploymentDeletionChecker(AirplaneMultiCloneGitTask):
@@ -33,7 +34,8 @@ class DeploymentDeletionChecker(AirplaneMultiCloneGitTask):
         return asdict(TaskOutput())
 
     def _add_teardowns_for_customer(self, filepath):
-        deprov_info = DeprovInfoDeployFile(filepath).retrieve_deprov_info()
+        deprov_info_deploy_file = DeprovInfoDeployFile(filepath)
+        deprov_info = deprov_info_deploy_file.retrieve_deprov_info()
         deprov_type = None
         if deprov_info.dns_removal_time and deprov_info.dns_removal_time < self.now:
             deprov_type = "dns"
@@ -43,7 +45,8 @@ class DeploymentDeletionChecker(AirplaneMultiCloneGitTask):
             return TaskOutput(deprov_type=deprov_type,
                               fairytale_name=get_fairytale_name_from_target_file(filepath),
                               aws_account_id=deprov_info.aws_account_id,
-                              org=deprov_info.organization)
+                              org=deprov_info.organization,
+                              region=deprov_info_deploy_file.get_deprov_region())
         return None
 
 

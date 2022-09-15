@@ -30,6 +30,7 @@ class TestCheckDeploymentForDeletion:
                 request.addfinalizer(patch.stop)
             self.deploy_targets_mock.return_value = [f"path/to/{FAIRYTALE_NAME}.yml"]
             self.deprov_info_mock = self.deprov_info_deploy_file_mock.return_value.retrieve_deprov_info
+            self.region_mock = self.deprov_info_deploy_file_mock.return_value.get_deprov_region
             self.now = datetime.now()
             self.datetime_mock.now.return_value = self.now
             self.before_now = self.now - timedelta(hours=1)
@@ -48,18 +49,23 @@ class TestCheckDeploymentForDeletion:
 
     def test_no_deprov_info_returns_no_teardown_info(self):
         self.deprov_info_mock.return_value = DeprovInfo()
+        self.region_mock.return_value = ""
         output = self.run_main()
         assert output.deprov_type == ""
         assert output.fairytale_name == ""
         assert output.org == ""
+        assert output.region == ""
 
     def test_all_return_attributes_match_deprov_info(self):
+        region = "us-west-2"
         self.deprov_info_mock.return_value = self.get_deprov_info(dns_removal_time=self.before_now)
+        self.region_mock.return_value = region
         output = self.run_main()
         assert output.aws_account_id == AWS_ACCOUNT_ID
         assert output.deprov_type == "dns"
         assert output.fairytale_name == FAIRYTALE_NAME
         assert output.org == ORG
+        assert output.region == region
 
     def test_dns_ready(self):
         self.deprov_info_mock.return_value = self.get_deprov_info(dns_removal_time=self.before_now,

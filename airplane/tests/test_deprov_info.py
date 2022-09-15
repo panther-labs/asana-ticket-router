@@ -16,9 +16,13 @@ class TestDeprovInfo:
             request.addfinalizer(patch.stop)
         self.deprov_info_deploy_file = DeprovInfoDeployFile("filepath-not-used")
 
+    def set_yaml_file_to_be_loaded(self, cfg):
+        self.load_yaml_cfg_mock.return_value = cfg
+        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+
     def test_write_deprov_info(self):
         cfg = {}
-        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+        self.set_yaml_file_to_be_loaded(cfg)
         dns_time = datetime.now()
         teardown_time = datetime.now() + timedelta(hours=8)
         aws_account_id = "12345678012"
@@ -35,7 +39,7 @@ class TestDeprovInfo:
         assert deprov_status["organization"] == organization
 
     def test_retrieve_deprov_info_with_no_deprov_info_has_none_attributes(self):
-        self.load_yaml_cfg_mock.return_value = {"CustomerId": "my-customer"}
+        self.set_yaml_file_to_be_loaded({"CustomerId": "my-customer"})
         deprov_info = self.deprov_info_deploy_file.retrieve_deprov_info()
         assert deprov_info.dns_removal_time is None
         assert deprov_info.teardown_time is None
@@ -64,19 +68,28 @@ class TestDeprovInfo:
 
     def test_dns_time_existence(self):
         cfg = {"DeprovisionStatus": {"teardown_time": datetime.now()}}
-        self.load_yaml_cfg_mock.return_value = cfg
+        self.set_yaml_file_to_be_loaded(cfg)
         assert self.deprov_info_deploy_file.dns_removed()
         cfg["DeprovisionStatus"]["dns_removal_time"] = datetime.now()
         assert not self.deprov_info_deploy_file.dns_removed()
 
     def test_remove_dns_time_deprov_info_does_not_exist(self):
-        cfg = {}
-        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+        self.set_yaml_file_to_be_loaded({})
         # Make sure this does not raise an exception
         self.deprov_info_deploy_file.remove_dns_time()
 
     def test_remove_dns_time(self):
         cfg = {"DeprovisionStatus": {"dns_removal_time": datetime.now()}}
-        self.change_yaml_file_mock.return_value.__enter__.return_value = cfg
+        self.set_yaml_file_to_be_loaded(cfg)
         self.deprov_info_deploy_file.remove_dns_time()
         assert "dns_removal_time" not in cfg["DeprovisionStatus"]
+
+    def test_get_deprov_region_does_not_exist_raises_key_error(self):
+        self.set_yaml_file_to_be_loaded({})
+        with pytest.raises(KeyError):
+            self.deprov_info_deploy_file.get_deprov_region()
+
+    def test_get_deprov_region(self):
+        region = "us-east-1"
+        self.set_yaml_file_to_be_loaded({"CustomerRegion": region})
+        assert self.deprov_info_deploy_file.get_deprov_region() == region
