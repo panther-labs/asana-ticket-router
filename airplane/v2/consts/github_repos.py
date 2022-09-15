@@ -4,14 +4,14 @@ class GithubRepo:
     STAGING_DEPLOYMENTS = "staging-deployments"
     CONDUIT_DEPLOYMENTS = "conduit-deployments"
     HOSTED_AWS_MANAGEMENT = "hosted-aws-management"
+    PANTHER_ENTERPRISE = "panther-enterprise"
 
     @classmethod
     def get_values(cls) -> list[str]:
-        return [cls.AWS_VAULT_CONFIG,
-                cls.HOSTED_DEPLOYMENTS,
-                cls.STAGING_DEPLOYMENTS,
-                cls.CONDUIT_DEPLOYMENTS,
-                cls.HOSTED_AWS_MANAGEMENT]
+        return [
+            cls.AWS_VAULT_CONFIG, cls.HOSTED_DEPLOYMENTS, cls.STAGING_DEPLOYMENTS, cls.CONDUIT_DEPLOYMENTS,
+            cls.HOSTED_AWS_MANAGEMENT, cls.PANTHER_ENTERPRISE
+        ]
 
     @classmethod
     def _validate_repo(cls, repo_name: str) -> None:

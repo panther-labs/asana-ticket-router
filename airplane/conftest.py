@@ -43,7 +43,7 @@ def manual_test_suite_setup(manual_test_run, request, airplane_session_id):
         return
     _common_test_setup(request, airplane_session_id)
     local_env = _import_local_env()
-    for repo_name in ("hosted-aws-management", "hosted-deployments", "staging-deployments"):
+    for repo_name in ("hosted-aws-management", "hosted-deployments", "panther-enterprise", "staging-deployments"):
         os.environ[repo_name] = getattr(local_env, repo_name, os.path.join(local_env.repos_parent_dir, repo_name))
 
 
