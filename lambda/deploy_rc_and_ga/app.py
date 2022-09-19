@@ -40,29 +40,13 @@ class RepoDetails:
 
 
 class DeploymentDetails:
-    STAGING = RepoDetails(
-        "staging-deployments",
-        "main",
-        [
-            DeploymentGroup("staging", RC.VERSION),
-            DeploymentGroup("ga", GA.VERSION)
-        ]
-    )
-    HOSTED = RepoDetails(
-        "hosted-deployments",
-        "master",
-        [
-            DeploymentGroup("internal", RC.VERSION),
-            DeploymentGroup("alpha", GA.VERSION),
-        ]
-    )
-    DEMO = RepoDetails(
-        "hosted-deployments",
-        "master",
-        [
-            DeploymentGroup("demo", GA.VERSION)
-        ]
-    )
+    STAGING = RepoDetails("staging-deployments", "main",
+                          [DeploymentGroup("staging", RC.VERSION),
+                           DeploymentGroup("ga", GA.VERSION)])
+    HOSTED = RepoDetails("hosted-deployments", "master", [
+        DeploymentGroup("internal", RC.VERSION),
+    ])
+    DEMO = RepoDetails("hosted-deployments", "master", [DeploymentGroup("demo", GA.VERSION)])
 
 
 def get_available_versions(bucket_name: str) -> list[VersionInfo]:
