@@ -13,36 +13,80 @@ parameters:
     slug: group_a
     type: boolean
     default: false
+  - name: Group B
+    slug: group_b
+    type: boolean
+    default: false
   - name: Group C
     slug: group_c
     type: boolean
     default: false
-  - name: Group E
-    slug: group_e
-    type: boolean
-    default: false
-  - name: Group G
-    slug: group_g
+  - name: Group D
+    slug: group_d
     type: boolean
     default: false
   - name: Group J
     slug: group_j
     type: boolean
     default: false
+  - name: Group K
+    slug: group_k
+    type: boolean
+    default: false
   - name: Group L
     slug: group_l
+    type: boolean
+    default: false
+  - name: Group M
+    slug: group_m
     type: boolean
     default: false
   - name: Group N
     slug: group_n
     type: boolean
     default: false
+  - name: Group O
+    slug: group_o
+    type: boolean
+    default: false
   - name: Group P
     slug: group_p
     type: boolean
     default: false
+  - name: Group Q
+    slug: group_q
+    type: boolean
+    default: false
+  - name: Group R
+    slug: group_r
+    type: boolean
+    default: false
+  - name: Group S
+    slug: group_s
+    type: boolean
+    default: false
   - name: Group T
     slug: group_t
+    type: boolean
+    default: false
+  - name: Group U
+    slug: group_u
+    type: boolean
+    default: false
+  - name: Group V
+    slug: group_v
+    type: boolean
+    default: false
+  - name: Group W
+    slug: group_w
+    type: boolean
+    default: false
+  - name: Group X
+    slug: group_x
+    type: boolean
+    default: false
+  - name: Group Y
+    slug: group_y
     type: boolean
     default: false
   - name: Group Z
