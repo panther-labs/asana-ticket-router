@@ -53,7 +53,11 @@ def git_clone(repo, github_setup=False, existing_dir=None):
 
 
 def git_commit(title, description=""):
-    _run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" {_get_util_path()}/git-commit')
+    try:
+        _run_cmd(f'TITLE="{title}" DESCRIPTION="{description}" {_get_util_path()}/git-commit')
+    except RuntimeError as exc:
+        if "working tree clean" in str(exc):
+            pass
 
 
 def git_push():
