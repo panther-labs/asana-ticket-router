@@ -112,8 +112,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         return {
             "cpaas": "CPaaS",
             "hold": "hold",
-            "internal": "Internal",
-            "legacy-sf": "legacy-sf"
+            "internal": "Internal"
         }.get(deploy_group.lower(), deploy_group.upper())
 
     @staticmethod

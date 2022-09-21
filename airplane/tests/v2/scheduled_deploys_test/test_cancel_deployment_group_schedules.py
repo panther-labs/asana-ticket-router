@@ -17,22 +17,9 @@ class TestUpdateDeploymentGroups:
 
     @staticmethod
     def get_params(repo_path: pathlib.Path, params_to_update: dict) -> dict:
-        params = {
-            "hosted_deployments_path": repo_path,
-            "all_groups": False,
-            "group_a": False,
-            "group_c": False,
-            "group_e": False,
-            "group_g": False,
-            "group_j": False,
-            "group_l": False,
-            "group_n": False,
-            "group_p": False,
-            "group_t": False,
-            "group_z": False,
-            "group_cpaas": False,
-            "group_legacy_sf": False
-        }
+        params = {"hosted_deployments_path": repo_path, "all_groups": False, "group_cpaas": False}
+        for group_letter in HostedDeploymentGroup.get_values():
+            params[f"group_{group_letter}"] = False
         params.update(params_to_update)
         return params
 

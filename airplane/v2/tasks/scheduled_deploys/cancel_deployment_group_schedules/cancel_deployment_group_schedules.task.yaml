@@ -97,10 +97,6 @@ parameters:
     slug: group_cpaas
     type: boolean
     default: false
-  - name: Group Legacy-SF
-    slug: group_legacy_sf
-    type: boolean
-    default: false
 python:
   entrypoint: cancel_deployment_group_schedules.py
 requireRequests: false

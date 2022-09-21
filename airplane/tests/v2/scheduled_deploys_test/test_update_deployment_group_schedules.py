@@ -23,14 +23,14 @@ class TestUpdateDeploymentGroupSchedules:
             hosted_deployments_repo, valid_new_version, {
                 "group_a_deployment_date": valid_date,
                 "group_a_deployment_time": valid_time,
-                "group_legacy_sf_deployment_date": valid_date,
-                "group_legacy_sf_deployment_time": valid_time
+                "group_cpaas_deployment_date": valid_date,
+                "group_cpaas_deployment_time": valid_time
             })
 
         self._TASK.run(params)
 
-        # Groups A and Legacy-SF deployment schedules are updated
-        updated_groups = [HostedDeploymentGroup.A, HostedDeploymentGroup.LEGACY_SF]
+        # Groups A and CPaaS deployment schedules are updated
+        updated_groups = [HostedDeploymentGroup.A, HostedDeploymentGroup.CPAAS]
         for group in updated_groups:
             assert_group_was_updated(hosted_deployments_repo, group, deployment_group_files[group])
 
@@ -48,13 +48,13 @@ class TestUpdateDeploymentGroupSchedules:
             hosted_deployments_repo, valid_new_version_without_v_prefix, {
                 "group_a_deployment_date": valid_date,
                 "group_a_deployment_time": valid_time,
-                "group_legacy_sf_deployment_date": valid_date,
-                "group_legacy_sf_deployment_time": valid_time
+                "group_cpaas_deployment_date": valid_date,
+                "group_cpaas_deployment_time": valid_time
             })
         self._TASK.run(params)
 
-        # Groups A and Legacy-SF deployment schedules are updated
-        updated_groups = [HostedDeploymentGroup.A, HostedDeploymentGroup.LEGACY_SF]
+        # Groups A and CPaaS deployment schedules are updated
+        updated_groups = [HostedDeploymentGroup.A, HostedDeploymentGroup.CPAAS]
         for group in updated_groups:
             assert_group_was_updated(hosted_deployments_repo, group, deployment_group_files[group])
 
@@ -74,7 +74,7 @@ class TestUpdateDeploymentGroupSchedules:
 
         self._TASK.run(params)
 
-        # Groups A and Legacy-SF deployment schedules are updated
+        # Group A deployment schedule is updated
         updated_groups = [HostedDeploymentGroup.A]
         for group in updated_groups:
             assert_group_was_updated(hosted_deployments_repo, group, deployment_group_files[group])

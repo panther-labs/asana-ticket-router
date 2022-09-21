@@ -10,8 +10,8 @@ parameters:
   type: shorttext
   description: |-
     A comma-separated list of groups to upgrade.
-    e.g. a, c, e, legacy-sf
-    Available groups (excluding auto deploys): a, c, cpaas, e, g, j, l, legacy-sf, n, p, z
+    e.g. a, c, e
+    Available groups (excluding auto deploys): a, c, cpaas, e, g, j, l, n, p, z
 - name: Version
   slug: version
   type: shorttext

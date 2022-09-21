@@ -13,8 +13,7 @@ from v2.task_models.airplane_git_task import AirplaneGitTask
 def get_group_name(param_name: str) -> str or None:
     re_result = re.match("^group_(.*)$", param_name)
     if re_result:
-        # Do the replacement for 'legacy_sf' -> 'legacy-sf'
-        return re_result.group(1).replace("_", "-")
+        return re_result.group(1)
 
 
 def get_group_deployments_to_update(params: dict) -> set:
