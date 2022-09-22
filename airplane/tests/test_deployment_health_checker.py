@@ -19,7 +19,7 @@ FAKE_SESSION_ID = "123"
 def day_of_week() -> mock.MagicMock:
     with mock.patch("operations.deployment.deployment_health_checker.deployment_health_checker.get_day_of_week_name") \
             as mock_day_of_week:
-        mock_day_of_week.return_value = "Thursday"
+        mock_day_of_week.return_value = "Friday"
         yield mock_day_of_week
 
 

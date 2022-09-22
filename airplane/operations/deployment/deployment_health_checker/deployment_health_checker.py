@@ -32,7 +32,7 @@ class DeploymentHealthChecker(AirplaneTask):
 
     def _get_deploy_group_inconsistency(self, latest_deployed_ga_version):
         # Only check on non-upgrade days. This likely isn't the best way to do this, but it works for now.
-        if get_day_of_week_name(get_today(Timezone.PDT)) in ("Tuesday", "Wednesday"):
+        if get_day_of_week_name(get_today(Timezone.PDT)) in ("Tuesday", "Wednesday", "Thursday"):
             return []
         inconsistencies = []
 
