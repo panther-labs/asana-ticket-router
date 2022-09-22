@@ -27,4 +27,5 @@
     Matchers: ['region:us-east-2', 'platform:snowflake'],
     Matchers: ['team:foo'],
     Matchers: ['url://some/'],
+    Matchers: ['url://settings/general//'],
   ]

@@ -95,6 +95,13 @@ def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
     assert team.Name == "OtherTeam"
     assert routing.Matches[0] == Matcher("url://some/")
 
+    # Test slash in path
+    # Ensure entities match on regexp matchers
+    entity = {"url": "https://panther-tse.runpanther.net/settings/general/"}
+    team, routing = heuristics.get_team(teams_service, entity)
+    assert team.Name == "OtherTeam"
+    assert routing.Matches[0] == Matcher('url://settings/general//')
+
 
 def test_prod_config() -> None:
     teams_service = EntitiesContainer(

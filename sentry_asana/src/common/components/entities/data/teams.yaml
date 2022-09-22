@@ -52,6 +52,7 @@
     Matchers: ["url://api//"],
     Matchers: ["url://api-tokens//"],
     Matchers: ["url://sign-in//"],
+    Matchers: ["url://settings/general//"],
   ]
 -
   name: "Data Platform"
