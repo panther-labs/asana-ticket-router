@@ -151,7 +151,7 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
         if account_info.github_repo == DeploymentsRepo.STAGING:
             return "panther-root"
 
-        if account_info.dynamo_info["DeploymentType"].lower() == "cpaas":
+        if account_info.dynamo_info["DeploymentType"].lower() in ["cpaas", "self hosted"]:
             return "customer"
 
         return "panther-hosted-root"
