@@ -66,9 +66,13 @@ class DynamoDbSearch:
                 organized_scan_result[key] = item
         return organized_scan_result
 
-    def get_query_item(self, key, val):
+    def _query_gsi(self, dynamo_filter, gsi_name):
+        return self.table.query(IndexName=gsi_name, KeyConditionExpression=dynamo_filter)
+
+    def get_query_item(self, key, val, gsi_name=""):
         dynamo_filter = Key(key).eq(val)
-        query_result = self.table.query(KeyConditionExpression=dynamo_filter)
+        query_result = self._query_gsi(dynamo_filter, gsi_name) if gsi_name else self.table.query(
+            KeyConditionExpression=dynamo_filter)
 
         if query_result["Count"] > 1:
             raise RuntimeError(f"Found more than one query result for key '{key}' and value '{val}':"

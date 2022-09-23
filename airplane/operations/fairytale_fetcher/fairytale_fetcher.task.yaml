@@ -1,0 +1,15 @@
+name: Fairytale Fetcher
+slug: fairytale_fetcher
+description: Get a customer's fairytale name from the sales customer id/salesforce account id
+parameters:
+- name: Sales Customer Id / Salesforce Account Id
+  slug: sales_customer_id
+  type: shorttext
+  description: Sales Customer Id, also known as Salesforce Account Id
+  required: true
+python:
+  entrypoint: fairytale_fetcher.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+timeout: 3600
