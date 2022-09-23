@@ -10,6 +10,10 @@ class FairytaleNameAlreadyInUseException(Exception):
     pass
 
 
+class SalesCustomerIdNotFoundException(Exception):
+    pass
+
+
 class DuplicateNotionFairytaleNameException(Exception):
 
     def __init__(self, fairytale_name, *args, **kwargs):
