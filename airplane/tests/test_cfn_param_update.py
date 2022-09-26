@@ -3,6 +3,7 @@ import pytest
 
 from dataclasses import asdict
 
+from v2.exceptions import InvalidSalesPhaseChange
 from operations.cfn_param_update.cfn_param_update import AirplaneParams, CfnParamUpdate, main
 
 params = AirplaneParams(fairytale_name="tuscan-beagle",
@@ -22,6 +23,13 @@ def test_return_val_shows_changed_values():
     return_val = CfnParamUpdate.gen_changed_values(old_cfg=old_cfg, new_cfg=new_cfg)
     assert return_val["new_items"] == {"key4": "val4"}
     assert return_val["changed_items"] == {"key1": "val1 -> new_val_1", "key3": "val3 -> new_val_3"}
+
+
+def test_contract_cannot_become_trial():
+    old_cfg = {"SalesPhase": "contract", "key2": "val2", "key3": "val3"}
+    new_cfg = {"SalesPhase": "trial", "key3": "new_val_3", "key4": "val4"}
+    with pytest.raises(InvalidSalesPhaseChange):
+        CfnParamUpdate.gen_changed_values(old_cfg=old_cfg, new_cfg=new_cfg)
 
 
 @pytest.mark.manual_test

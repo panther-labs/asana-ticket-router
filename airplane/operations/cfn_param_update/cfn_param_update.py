@@ -8,6 +8,7 @@ from v2.consts.github_repos import GithubRepo
 from v2.pyshared.deployments_file import generate_configs, get_customer_deployment_filepath, lint_configs, \
     pip_install_auto_scripts_requirements
 from v2.pyshared.yaml_utils import load_yaml_cfg, save_yaml_cfg
+from v2.exceptions import InvalidSalesPhaseChange
 
 
 @dataclass
@@ -30,7 +31,9 @@ class CfnParamUpdate(AirplaneModifyGitTask):
     CFN_KEY = "CloudFormationParameters"
 
     def __init__(self, params):
-        super().__init__(params=params, git_repo=GithubRepo.HOSTED_DEPLOYMENTS, requires_runbook=params.requires_runbook)
+        super().__init__(params=params,
+                         git_repo=GithubRepo.HOSTED_DEPLOYMENTS,
+                         requires_runbook=params.requires_runbook)
         self.parsed_params = self.parse_params(params)
         self.customer_deploy_file = get_customer_deployment_filepath(fairytale_name=self.parsed_params.fairytale_name)
         self.old_cfn_cfg = None
@@ -75,6 +78,9 @@ class CfnParamUpdate(AirplaneModifyGitTask):
                 new_items[key] = new_cfg[key]
             elif old_cfg[key] != new_cfg[key]:
                 changed_items[key] = f"{old_cfg[key]} -> {new_cfg[key]}"
+                if key == "SalesPhase" and old_cfg[key] == "contract" and new_cfg[key] == "trial":
+                    raise InvalidSalesPhaseChange(
+                        f"ERROR: Unable to change customer SalesPhase from {old_cfg[key]} to {new_cfg[key]}")
         return {"new_items": new_items, "changed_items": changed_items}
 
     def _get_cfn_vals(self):
