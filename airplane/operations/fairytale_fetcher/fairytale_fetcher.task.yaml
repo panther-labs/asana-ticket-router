@@ -7,6 +7,10 @@ parameters:
   type: shorttext
   description: Sales Customer Id, also known as Salesforce Account Id
   required: true
+- name: Sales Opportunity Id
+  slug: sales_opportunity_id
+  type: shorttext
+  required: true
 python:
   entrypoint: fairytale_fetcher.py
   envVars:

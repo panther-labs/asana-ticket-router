@@ -69,7 +69,15 @@ class DynamoDbSearch:
     def _query_gsi(self, dynamo_filter, gsi_name):
         return self.table.query(IndexName=gsi_name, KeyConditionExpression=dynamo_filter)
 
-    def get_query_item(self, key, val, gsi_name=""):
+    def get_query_items(self, key, val, gsi_name="") -> list:
+        """ This is the same as get_query_item but allows multiple results """
+        dynamo_filter = Key(key).eq(val)
+        query_result = self._query_gsi(dynamo_filter, gsi_name) if gsi_name else self.table.query(
+            KeyConditionExpression=dynamo_filter)
+
+        return [] if query_result["Count"] == 0 else query_result["Items"]
+
+    def get_query_item(self, key, val, gsi_name="") -> dict:
         dynamo_filter = Key(key).eq(val)
         query_result = self._query_gsi(dynamo_filter, gsi_name) if gsi_name else self.table.query(
             KeyConditionExpression=dynamo_filter)

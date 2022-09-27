@@ -10,7 +10,7 @@ class FairytaleNameAlreadyInUseException(Exception):
     pass
 
 
-class SalesCustomerIdNotFoundException(Exception):
+class SalesIdNotFoundException(Exception):
     pass
 
 
