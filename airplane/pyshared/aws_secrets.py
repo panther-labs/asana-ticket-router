@@ -18,7 +18,7 @@ def _get_env_var(secret_name: str) -> str:
 def _get_secret(secret_name: str, arns: Optional[str | List[str]] = None, region: str = None) -> dict:
     secret = _get_env_var(secret_name=secret_name)
     if secret:
-        return secret
+        return {"key": secret}
 
     secrets_client = get_credentialed_client(service_name="secretsmanager",
                                              arns=arns,

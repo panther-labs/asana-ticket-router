@@ -1,4 +1,5 @@
 CLOUDFORMATION_READ_ONLY_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationReadOnly
+CODEBUILD_LAUNCH_RETRIEVE_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCodebuildLaunchRetrieve
 CUSTOMER_SUPPORT_ROLE_ARN=arn:aws:iam::255674391660:role/CustomerSupport
 HOSTED_CFN_DELETE_STACK_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneCloudFormationDeleteStack
 HOSTED_CLOSE_ACCOUNT_ROLE_ARN=arn:aws:iam::255674391660:role/AirplaneOrganizationsCloseAccount
