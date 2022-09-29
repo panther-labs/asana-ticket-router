@@ -1,6 +1,12 @@
-*   @panther-labs/observability-performance @panther-labs/productivity @panther-labs/deployment
+*   @panther-labs/productivity @panther-labs/deployment
 /lambda/ @panther-labs/deployment @panther-labs/productivity
 /airplane/solution-engineering/ @panther-labs/solution_engineering @panther-labs/productivity @panther-labs/deployment
 /airplane/productivity/ @panther-labs/productivity @panther-labs/deployment
 /airplane/security/ @panther-labs/security @panther-labs/productivity @panther-labs/deployment
 /airplane/deployment/ @panther-labs/deployment
+
+# Observability ownership
+/sentry-asana/ @panther-labs/observability-performance
+/scripts/ @panther-labs/observability-performance
+/Pulumi.yaml @panther-labs/observability-performance
+/Pulumi.sentry-asana.yaml @panther-labs/observability-performance
