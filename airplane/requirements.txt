@@ -6,6 +6,7 @@
 airplanesdk
 boto3>=1.20.20
 coolname>=1.1.0
+datadog_api_client
 GitPython
 notional==0.4.0
 python-dateutil

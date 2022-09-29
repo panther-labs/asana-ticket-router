@@ -1,0 +1,5 @@
+name: Get Current Timestamp
+slug: get_current_timestamp
+
+shell:
+  entrypoint: get_current_timestamp.sh
