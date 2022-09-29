@@ -7,5 +7,6 @@ parameters:
 - name: Start Time
   slug: start_time
   type: integer
+  description: Unix timestamp representing the account creation time.
 python:
   entrypoint: account_creation_time.py
