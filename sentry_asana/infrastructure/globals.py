@@ -1,10 +1,12 @@
 import os
 
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
+REGION = os.environ.get('AWS_REGION')
 
 # Lambda parameters
 LAMBDA_TIMEOUT_SECONDS = 120
-LAMBDA_RUNTIME = 'python3.9'
+LAMBDA_RUNTIME_VERSION = '3.9'
+LAMBDA_RUNTIME = f'python{LAMBDA_RUNTIME_VERSION}'
 LAMBDA_ARCHITECTURE = 'arm64'
 LAMBDA_FILE = 'handler'
 LAMBDA_HANDLER = 'handler'
@@ -23,3 +25,7 @@ INIT_PATH = '__init__.py'
 COMMON_PATH = 'common'
 LAMBDA_CONSUMER = 'consumer'
 LAMBDA_PRODUCER = 'producer'
+
+# Datadog lambda extension
+DATADOG_LAMBDA_EXTENSION_VERSION = 28
+DATADOG_PYTHON_LAYER_VERSION = 60

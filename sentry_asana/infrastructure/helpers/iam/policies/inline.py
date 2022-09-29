@@ -53,6 +53,20 @@ def add_secretsmanager(name: str, secret_arn: str) -> aws.iam.RoleInlinePolicyAr
     )
 
 
+def add_kms_datadog(name: str, kms_arn: str) -> aws.iam.RoleInlinePolicyArgs:
+    """Create an inline policy to access KMS in other accounts."""
+    return aws.iam.RoleInlinePolicyArgs(
+        name=f'{name}-GetKey',
+        policy=json.dumps(
+            {
+                'Statement': [
+                    {'Effect': 'Allow', 'Action': 'kms:Decrypt', 'Resource': kms_arn}
+                ]
+            }
+        ),
+    )
+
+
 def add_sqs_consumer(name: str, que: aws.sqs.Queue) -> aws.iam.RoleInlinePolicyArgs:
     """Create an inline policy for SQS consumption"""
     return aws.iam.RoleInlinePolicyArgs(

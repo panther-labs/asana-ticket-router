@@ -4,7 +4,7 @@
 # Panther Labs Inc ("Panther Commercial License") by contacting contact@runpanther.com.
 # All use, distribution, and/or modification of this software, whether commercial or non-commercial,
 # falls under the Panther Commercial License to the extent it is permitted.
-from typing import List, Optional
+from typing import List, Optional, Any
 import pulumi_aws as aws
 import pulumi
 from .globals import LAMBDA_PRODUCER
@@ -44,6 +44,19 @@ class Producer(pulumi.ComponentResource):
         ##################################
         region = aws.config.region  # type: ignore
         account = aws.get_caller_identity().account_id
+        config = pulumi.Config()
+        deployment_params: Any = config.get_object('deploymentParams')
+
+        is_local_dev = 'false'
+        dev_env = deployment_params.get('development')
+        dd_kms_arn = deployment_params['DevDatadogAPIKMSArn']
+        dd_secret_arn = deployment_params['DevDatadogAPISecretArn']
+        if dev_env in ['1', 'true', True]:
+            is_local_dev = 'true'
+        else:
+            dd_secret_arn = deployment_params['ProdDatadogAPISecretArn']
+            dd_kms_arn = deployment_params['ProdDatadogAPIKMSArn']
+
         secret_arn = (
             f'arn:aws:secretsmanager:{region}:{account}:secret:Sentry_Asana_Secrets-*'
         )
@@ -61,6 +74,8 @@ class Producer(pulumi.ComponentResource):
             inline.add_log_groups(name, log_group),
             inline.add_secretsmanager(name, secret_arn),
             inline.add_sqs_producer(name, que.get_que()),
+            inline.add_secretsmanager(f'{name}-datadog', dd_secret_arn),
+            inline.add_kms_datadog(f'{name}-datadog', dd_kms_arn),
         ]
 
         ##################################
@@ -72,13 +87,6 @@ class Producer(pulumi.ComponentResource):
         ##################################
         # Serverless (Lambda)
         ##################################
-        config = pulumi.Config()
-        deployment_params = config.get_object('deploymentParams')
-        is_local_dev = 'false'
-        if deployment_params and 'development' in deployment_params:
-            dev_env = deployment_params.get('development')
-            if dev_env in ['1', 'true', True]:
-                is_local_dev = 'true'
 
         lambda_function = lmbda.create(
             name=name,
@@ -92,6 +100,8 @@ class Producer(pulumi.ComponentResource):
                     'DEVELOPMENT': is_local_dev,
                     'SECRET_NAME': 'Sentry_Asana_Secrets',
                     'QUEUE_URL': que.get_que().url.apply(lambda url: url),
+                    'DD_ENV': 'hosted-ops',
+                    'DD_API_KEY_SECRET_ARN': dd_secret_arn,
                 }
             ),
         )

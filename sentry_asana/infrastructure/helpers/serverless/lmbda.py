@@ -9,12 +9,16 @@ import pulumi_aws as aws
 import pulumi
 
 from sentry_asana.infrastructure.globals import (
-    LAMBDA_TIMEOUT_SECONDS,
+    BATCH_SECONDS,
+    DATADOG_LAMBDA_EXTENSION_VERSION,
+    DATADOG_PYTHON_LAYER_VERSION,
     LAMBDA_ARCHITECTURE,
-    LAMBDA_RUNTIME,
     LAMBDA_FILE,
     LAMBDA_HANDLER,
-    BATCH_SECONDS,
+    LAMBDA_RUNTIME,
+    LAMBDA_RUNTIME_VERSION,
+    LAMBDA_TIMEOUT_SECONDS,
+    REGION,
 )
 from sentry_asana.infrastructure.helpers.serverless.util import create_lambda_package
 
@@ -28,6 +32,11 @@ def create(
 ) -> aws.lambda_.Function:
     """Create a new AWS Lambda"""
     folder = name.split('-')[-1]
+    # Pulumi env is immutable, so copy it and inject DD handler.
+    env: dict = {}
+    if environment is not None:
+        env.update(environment.variables)
+        env['DD_LAMBDA_HANDLER'] = f'{folder}.{LAMBDA_FILE}.{LAMBDA_HANDLER}'
     return aws.lambda_.Function(
         resource_name=name,
         name=name,
@@ -36,13 +45,18 @@ def create(
                 '.': pulumi.FileArchive(create_lambda_package(archive_path)),
             }
         ),
-        environment=environment,
+        environment=aws.lambda_.FunctionEnvironmentArgs(variables=env),
         runtime=LAMBDA_RUNTIME,
         architectures=[LAMBDA_ARCHITECTURE],
         role=role_arn,
-        handler=f'{folder}.{LAMBDA_FILE}.{LAMBDA_HANDLER}',
+        handler='datadog_lambda.handler.handler',
         description=f'The {name} in the Sentry-Asana service',
         timeout=LAMBDA_TIMEOUT_SECONDS,
+        layers=[
+            f'arn:aws:lambda:{REGION}:464622532012:layer:Datadog-Extension-ARM:{DATADOG_LAMBDA_EXTENSION_VERSION}',
+            f'arn:aws:lambda:{REGION}:464622532012:layer:Datadog-Python{LAMBDA_RUNTIME_VERSION.replace(".", "")}'
+            f'-ARM:{DATADOG_PYTHON_LAYER_VERSION}',
+        ],
         opts=opts,
     )
 

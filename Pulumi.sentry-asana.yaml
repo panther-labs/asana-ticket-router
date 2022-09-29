@@ -6,3 +6,8 @@ config:
       - arn:aws:sns:us-west-2:246537256134:hosted-ops-on-call
     alarmEmailSubscriptions:
       - team-platform-observability@panther.io
+    # Prod reads out of hosted-ops
+    ProdDatadogAPISecretArn: arn:aws:secretsmanager:us-west-2:246537256134:secret:DatadogAPIKeySecret-gKMcf1z9Ut5k-eYK1bG
+    ProdDatadogAPIKMSArn: arn:aws:kms:us-west-2:246537256134:key/9611a852-6390-4d8f-874f-cebebc2cb40a
+    DevDatadogAPISecretArn: arn:aws:secretsmanager:us-west-2:292442345278:secret:DatadogAPIKeySecret-UbmyXQsBws02-SXIHog
+    DevDatadogAPIKMSArn: arn:aws:kms:us-west-2:292442345278:key/ef5efdfc-2bb0-4983-8070-a79b3e681026
