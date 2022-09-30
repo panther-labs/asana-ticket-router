@@ -224,4 +224,4 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
 
 def main(_):
-    UpdateDeploymentRecords().main()
+    UpdateDeploymentRecords().main({})
