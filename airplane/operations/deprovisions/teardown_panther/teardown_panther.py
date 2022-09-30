@@ -23,7 +23,7 @@ class PantherTeardown(AirplaneTask):
 
     @staticmethod
     def _get_override_env_vars(region, aws_account_id):
-        name_vals = {"PANTHER_REGION": region, "ROLE_ARN": aws_account_id}
+        name_vals = {"PANTHER_REGION": region, "ROLE_ARN": f"arn:aws:iam::{aws_account_id}:role/PantherTeardownRole"}
         return [{"name": name, "value": value, "type": "PLAINTEXT"} for name, value in name_vals.items()]
 
     def run(self, params):
