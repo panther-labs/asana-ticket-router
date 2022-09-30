@@ -7,6 +7,7 @@ from pyshared.aws_creds import get_credentialed_client
 
 
 class DeploymentStatistics(AirplaneTask):
+
     def statistics(self, ro_arn, state_machine_arn, date):
         client = get_credentialed_client(service_name="stepfunctions",
                                          arns=get_aws_const(ro_arn),
@@ -35,8 +36,12 @@ class DeploymentStatistics(AirplaneTask):
 
         success = total - failed
 
-        return {"total": total, "failed": failed, "success": success, "human_rate": f"{round(success / total * 100, 4)}%"}
-
+        return {
+            "total": total,
+            "failed": failed,
+            "success": success,
+            "human_rate": f"{round(success / total * 100, 4)}%"
+        }
 
     def main(self, params):
         print("parameters:", params)
@@ -63,7 +68,6 @@ class DeploymentStatistics(AirplaneTask):
             }
         }
 
-
     @staticmethod
     def get_date(time_range):
         options = {
@@ -72,9 +76,6 @@ class DeploymentStatistics(AirplaneTask):
         }
         return options.get(time_range)
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params):
-    return DeploymentStatistics().main_notify_failures(params)
+    return DeploymentStatistics().main(params)

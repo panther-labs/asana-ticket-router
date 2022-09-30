@@ -39,22 +39,6 @@ class AirplaneTask:
     def main(self, params: dict = {}):
         raise NotImplementedError
 
-    def main_notify_failures(self, params: dict = {}):
-        """Same as main function, but it sends a Slack message to the failure channel if it fails."""
-        try:
-            return self.main(params)
-        except Exception:
-            if is_prod_env():
-                self.send_slack_message(
-                    channel_name=self.get_failure_slack_channel(),
-                    message=f"Airplane task {self.get_task_run_url()} failed:\n```{traceback.format_exc()}```")
-            raise
-
-    @staticmethod
-    def get_failure_slack_channel(self):
-        """Failure notifications will be directed to this channel if main_notify_failures is called."""
-        return ""
-
     @staticmethod
     def send_slack_message(channel_name: str, message: str):
         """

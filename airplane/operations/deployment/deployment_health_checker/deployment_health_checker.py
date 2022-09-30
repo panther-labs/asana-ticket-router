@@ -68,9 +68,6 @@ class DeploymentHealthChecker(AirplaneTask):
             "latest_deployed_ga_version": str(latest_deployed_ga_version),
         }
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(_):
-    return DeploymentHealthChecker().main_notify_failures({})
+    return DeploymentHealthChecker().main({})

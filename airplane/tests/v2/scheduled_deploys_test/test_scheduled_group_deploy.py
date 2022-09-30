@@ -20,9 +20,7 @@ class TestUpdateDeploymentGroupSchedules:
     _TASK = ScheduledGroupDeploy(is_dry_run=True)
 
     @staticmethod
-    def _mock_deployment_file(repo_path: pathlib.Path,
-                              group: str,
-                              version: str,
+    def _mock_deployment_file(repo_path: pathlib.Path, group: str, version: str,
                               deployment_time: str) -> ruamel.yaml.CommentedMap:
         add_group_deployment_schedule(repo_path, group, version, deployment_time)
         return read_deployment_group_file(repo_path, group)
@@ -44,29 +42,23 @@ class TestUpdateDeploymentGroupSchedules:
             f"Group '{group}' deployment schedule was expected to not be removed."
 
     def test_no_due_deployments(self, hosted_deployments_repo, valid_new_version, future_datetime):
-        a_cfg = self._mock_deployment_file(hosted_deployments_repo,
-                                           HostedDeploymentGroup.A,
-                                           valid_new_version,
+        a_cfg = self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.A, valid_new_version,
                                            future_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
-        self._TASK.run_notify_failures(params)
+        self._TASK.run(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
 
     def test_due_deployments(self, hosted_deployments_repo, valid_new_version, future_datetime, past_datetime):
-        a_cfg = self._mock_deployment_file(hosted_deployments_repo,
-                                           HostedDeploymentGroup.A,
-                                           valid_new_version,
+        a_cfg = self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.A, valid_new_version,
                                            future_datetime)
-        c_cfg = self._mock_deployment_file(hosted_deployments_repo,
-                                           HostedDeploymentGroup.C,
-                                           valid_new_version,
+        c_cfg = self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.C, valid_new_version,
                                            past_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
-        self._TASK.run_notify_failures(params)
+        self._TASK.run(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -74,29 +66,25 @@ class TestUpdateDeploymentGroupSchedules:
         self._assert_group_was_deployed(hosted_deployments_repo, c_cfg, HostedDeploymentGroup.C)
 
     def test_invalid_bump_deployment(self, hosted_deployments_repo, base_version, invalid_bump, past_datetime):
-        a_cfg = self._mock_deployment_file(hosted_deployments_repo,
-                                           HostedDeploymentGroup.A,
-                                           invalid_bump,
+        a_cfg = self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.A, invalid_bump,
                                            past_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{invalid_bump}' is not a valid bump from '{base_version}'."
         with pytest.raises(AttributeError, match=expected_error_msg):
-            self._TASK.run_notify_failures(params)
+            self._TASK.run(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
 
     def test_same_version_deployment(self, hosted_deployments_repo, base_version, past_datetime):
-        a_cfg = self._mock_deployment_file(hosted_deployments_repo,
-                                           HostedDeploymentGroup.A,
-                                           base_version,
+        a_cfg = self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.A, base_version,
                                            past_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
         expected_error_msg = f"Group '{HostedDeploymentGroup.A}': new version '{base_version}' is not a valid bump from '{base_version}'."
         with pytest.raises(AttributeError, match=expected_error_msg):
-            self._TASK.run_notify_failures(params)
+            self._TASK.run(params)
 
         # Group A was not deployed and still contains the deployment schedule
         self._assert_group_was_not_deployed(hosted_deployments_repo, a_cfg, HostedDeploymentGroup.A)
@@ -104,11 +92,8 @@ class TestUpdateDeploymentGroupSchedules:
     def test_unpublished_version_fails(self, hosted_deployments_repo, past_datetime, version_published):
         version = "v1.35.999"
         version_published.return_value = False
-        self._mock_deployment_file(hosted_deployments_repo,
-                                   HostedDeploymentGroup.A,
-                                   version,
-                                   past_datetime)
+        self._mock_deployment_file(hosted_deployments_repo, HostedDeploymentGroup.A, version, past_datetime)
         params = {"hosted_deployments_path": hosted_deployments_repo}
 
         with pytest.raises(UnpublishedPantherVersion, match=version):
-            self._TASK.run_notify_failures(params)
+            self._TASK.run(params)

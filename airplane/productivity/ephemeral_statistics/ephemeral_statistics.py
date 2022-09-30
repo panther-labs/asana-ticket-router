@@ -66,7 +66,7 @@ class EphemeralStatistics(AirplaneTask):
         return output[0].get("count", 0)
 
     def invoke(self, query):
-        print(query) # Useful for debugging execution failures
+        print(query)  # Useful for debugging execution failures
 
         message_bytes = query.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes).decode("utf-8")
@@ -119,7 +119,9 @@ class EphemeralStatistics(AirplaneTask):
         return deployment_info
 
     def _get_avg_from_query(self, start_time, comparison):
-        deployments = self.invoke(f"SELECT rank_filter.updated_at - rank_filter.created_at as diff FROM (select deployments.*, rank() over (partition by ref_host_id order by created_at) from deployments) rank_filter where step_function_result = 'success' and {comparison} and created_at > '{start_time}'")
+        deployments = self.invoke(
+            f"SELECT rank_filter.updated_at - rank_filter.created_at as diff FROM (select deployments.*, rank() over (partition by ref_host_id order by created_at) from deployments) rank_filter where step_function_result = 'success' and {comparison} and created_at > '{start_time}'"
+        )
 
         result = 0
         if deployments is not None:
@@ -158,12 +160,9 @@ class EphemeralStatistics(AirplaneTask):
             "host_sign_in_human": f"{round(host_sign_in / count * 100, 4)}%",
         }
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(_):
-    return EphemeralStatistics().main_notify_failures({})
+    return EphemeralStatistics().main({})
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ TEMP_COMMENT_REGEX = "^# Temporary: .+ Expires: (20\d{2}-\d{1,2}-\d{1,2})(\\n)*$
 
 
 class CustomerDeploymentGroupRemover(AirplaneTask):
+
     def flatten_list(self, nd_list: list) -> list:
         if isinstance(nd_list, Iterable):
             return [item for sublist in nd_list for item in self.flatten_list(sublist)]
@@ -92,9 +93,6 @@ class CustomerDeploymentGroupRemover(AirplaneTask):
                                 description=commit_description,
                                 test_run=params["airplane_test_run"])
 
-    def get_failure_slack_channel(self):
-        return "#triage-productivity"
-
 
 def main(params):
-    return CustomerDeploymentGroupRemover().main_notify_failures(params)
+    return CustomerDeploymentGroupRemover().main(params)

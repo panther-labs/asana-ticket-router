@@ -74,9 +74,6 @@ class ScheduledGroupDeploy(AirplaneGitTask):
             self.git_add_commit_and_push(title=self._short_deployment_summary,
                                          description=self._long_deployment_summary)
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
 
 def main(params: dict) -> None:
-    ScheduledGroupDeploy().run_notify_failures(params)
+    ScheduledGroupDeploy().run(params)

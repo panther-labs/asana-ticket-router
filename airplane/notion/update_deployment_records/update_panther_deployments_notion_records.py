@@ -215,9 +215,6 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             expected_attrs["Expected_Version"] = create_rtf_value(text=expected_version, color=version_color)
         return expected_attrs
 
-    def get_failure_slack_channel(self):
-        return "#triage-deployment"
-
     @staticmethod
     def _get_notion_page(notion_info):
         # This private member used to be public, and to my knowledge, is the only way to get the actual
@@ -227,4 +224,4 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
 
 
 def main(_):
-    UpdateDeploymentRecords().main_notify_failures()
+    UpdateDeploymentRecords().main()

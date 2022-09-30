@@ -29,22 +29,6 @@ class AirplaneTask:
         """
         raise NotImplementedError("The method must be implemented in the concrete class.")
 
-    def run_notify_failures(self, params: dict) -> any:
-        """Same as run function, but it sends a Slack message to the failure channel if it fails."""
-        try:
-            return self.run(params)
-        except Exception:
-            if AirplaneEnv.is_prod_env():
-                self.send_slack_message(
-                    channel_name=self.get_failure_slack_channel(),
-                    message=f"Airplane task {AirplaneEnv.get_task_run_url()} failed:\n```{traceback.format_exc()}```")
-            raise
-
-    @staticmethod
-    def get_failure_slack_channel():
-        """Failure notifications will be directed to this channel if main_notify_failures is called."""
-        return ""
-
     @staticmethod
     def send_slack_message(channel_name: str, message: str):
         """

@@ -19,6 +19,7 @@ GroupUser = namedtuple('GroupUser', ['group', 'user'])
 
 
 class HostedRootGroupMembershipRemover(AirplaneTask):
+
     @staticmethod
     def is_membership_expired(comment: str) -> bool:
         re_result = re.match(TEMP_COMMENT_REGEX, comment)
@@ -43,7 +44,8 @@ class HostedRootGroupMembershipRemover(AirplaneTask):
                     removed_memberships.append(
                         GroupUser(group=group_name_from_resource(data, value['Properties']['GroupName'].value),
                                   user=get_cloudformation_export_value(
-                                      export_name=value['Properties']['Users'][index - previously_removed_user_count].value,
+                                      export_name=value['Properties']['Users'][index -
+                                                                               previously_removed_user_count].value,
                                       role_arn=CLOUDFORMATION_READ_ONLY_ROLE_ARN)))
                     value['Properties']['Users'].pop(index - previously_removed_user_count)
                     print(f"Removing {removed_memberships[-1].user} from {removed_memberships[-1].group}")
@@ -76,9 +78,6 @@ class HostedRootGroupMembershipRemover(AirplaneTask):
                                 description=commit_description,
                                 test_run=params["airplane_test_run"])
 
-    def get_failure_slack_channel(self):
-        return "#triage-productivity"
-
 
 def main(params):
-    return HostedRootGroupMembershipRemover().main_notify_failures(params)
+    return HostedRootGroupMembershipRemover().main(params)
