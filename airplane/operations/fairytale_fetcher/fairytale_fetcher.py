@@ -36,7 +36,7 @@ class FairytaleFetcher(AirplaneTask):
 
 
 def main(params: dict) -> dict:
-    sales_customer_id = params['sales_customer_id']
-    sales_opportunity_id = params['sales_opportunity_id']
+    sales_customer_id = params['sales_customer_id'].strip()
+    sales_opportunity_id = params['sales_opportunity_id'].strip()
     fairytale = FairytaleFetcher().main(sales_customer_id, sales_opportunity_id)
     return {"fairytale_name": fairytale}
