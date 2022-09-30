@@ -159,9 +159,9 @@ class AsanaService:
                 'from_ts': three_hours_before_ts,
                 'to_ts': one_hour_after_ts,
             }
-            if server_name is not None:
+            if server_name is not None and '-queue' not in server_name:
                 query_params['query'] = (
-                    query_params['query'] + f'functionname:{server_name}'
+                    query_params['query'] + f' functionname:{server_name}'
                 )
             datadog_logs_url = 'https://app.datadoghq.com/logs?' + parse.urlencode(
                 query_params
