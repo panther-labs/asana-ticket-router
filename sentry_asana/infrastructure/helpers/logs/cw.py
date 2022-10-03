@@ -18,33 +18,38 @@ def create_log_group(
     )
 
 
+# pylint: disable=too-many-arguments
 def create_alarm_for_lambda(
-    name: str, lambda_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions
+    name: str,
+    lambda_name: str,
+    topic_arns: List[str],
+    opts: pulumi.ResourceOptions,
+    evaluation_periods: int = 1,
+    period: int = 60,
 ) -> aws.cloudwatch.MetricAlarm:
     """Create a new CW Metric Alarm for Lambda"""
     return aws.cloudwatch.MetricAlarm(
         resource_name=f'{name}-lambda-alarm',
         comparison_operator='GreaterThanOrEqualToThreshold',
-        evaluation_periods=1,
-        datapoints_to_alarm=1,
+        evaluation_periods=evaluation_periods,
         actions_enabled=True,
         metric_name='Errors',
         namespace='AWS/Lambda',
-        period=60,
+        period=period,
         statistic='Maximum',
         threshold=1,
         treat_missing_data='missing',
-        alarm_description='Sentry Asana Lambda function encountered an error',
+        alarm_description=f'Sentry Asana Lambda {lambda_name} encountered an error',
         alarm_actions=topic_arns,
         dimensions={'FunctionName': lambda_name},
         opts=opts,
     )
 
 
-def create_alarm_for_sqs(
+def create_alarm_for_sqs_dlq(
     name: str, queue_name: str, topic_arns: List[str], opts: pulumi.ResourceOptions
 ) -> aws.cloudwatch.MetricAlarm:
-    """Create a new CW Threshold Alarm for SQS"""
+    """Alerts when a message ends up in the DLQ"""
     return aws.cloudwatch.MetricAlarm(
         resource_name=f'{name}-sqs-alarm',
         comparison_operator='GreaterThanThreshold',
@@ -53,11 +58,12 @@ def create_alarm_for_sqs(
         actions_enabled=True,
         metric_name='ApproximateNumberOfMessagesVisible',
         namespace='AWS/SQS',
-        period=60,
+        period=300,
         statistic='Sum',
         threshold=0,
-        treat_missing_data='missing',
-        alarm_description='Sentry Asana SQS has messages. Please investigate and re-queue.',
+        treat_missing_data='notBreaching',
+        unit='Count',
+        alarm_description='Sentry Asana SQS DLQ has messages. Please investigate and re-queue.',
         alarm_actions=topic_arns,
         dimensions={'QueueName': queue_name},
         opts=opts,

@@ -37,7 +37,7 @@ class Queue(pulumi.ComponentResource):
         )
 
         # Add alarm for the DQL to notify SNS if messages are present
-        cw.create_alarm_for_sqs(
+        cw.create_alarm_for_sqs_dlq(
             name=name,
             queue_name=self.dlq.name,
             topic_arns=sns.get_topic_arns(),

@@ -109,6 +109,7 @@ class Producer(pulumi.ComponentResource):
         ##################################
         # CloudWatch
         ##################################
+        # The producer will trigger an alarm if a single error occurs.
         cw.create_alarm_for_lambda(
             name,
             lambda_function.name,

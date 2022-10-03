@@ -112,10 +112,16 @@ class Consumer(pulumi.ComponentResource):
         ##################################
         # CloudWatch
         ##################################
+        # The consumer lambda can be invoked up to 10x with the same message
+        # from the redrive policy on the SQS queue that triggers it.
+        # This will go into alarm if there is at least 1 error during each
+        # 180s period, over 3 periods.
         cw.create_alarm_for_lambda(
-            name,
-            lambda_function.name,
-            sns.get_topic_arns(),
+            evaluation_periods=3,
+            period=180,
+            name=name,
+            lambda_name=lambda_function.name,
+            topic_arns=sns.get_topic_arns(),
             opts=pulumi.ResourceOptions(parent=lambda_function),
         )
 
