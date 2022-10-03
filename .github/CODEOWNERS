@@ -6,7 +6,7 @@
 /airplane/deployment/ @panther-labs/deployment
 
 # Observability ownership
-/sentry-asana/ @panther-labs/observability-performance
+/sentry_asana/ @panther-labs/observability-performance
 /scripts/ @panther-labs/observability-performance
 ./Pulumi.yaml @panther-labs/observability-performance
 ./Pulumi.sentry-asana.yaml @panther-labs/observability-performance
