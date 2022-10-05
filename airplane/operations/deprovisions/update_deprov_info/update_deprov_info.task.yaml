@@ -1,0 +1,97 @@
+name: Update Deprov Info
+slug: update_deprov_info
+description: Updates the deployment metadata DDB table with deprovision information for a customer
+parameters:
+- name: Fairytale Name
+  slug: fairytale_name
+  type: shorttext
+  required: true
+- name: DNS Removal Time
+  slug: dns_removal_time
+  type: shorttext
+  required: false
+- name: Teardown Time
+  slug: teardown_time
+  type: shorttext
+  required: false
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+  required: false
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+  required: true
+- name: Region
+  slug: region
+  type: shorttext
+  options:
+  - label: ""
+    value: ap-northeast-1
+  - label: ""
+    value: ap-south-1
+  - label: ""
+    value: ap-southeast-1
+  - label: ""
+    value: ap-southeast-2
+  - label: ""
+    value: eu-central-1
+  - label: ""
+    value: eu-west-1
+  - label: ""
+    value: eu-west-2
+  - label: ""
+    value: us-east-1
+  - label: ""
+    value: us-east-2
+  - label: ""
+    value: us-west-2
+  required: false
+- name: Teardown Attempt
+  description: Teardown attempt number. Teardowns can retry in the deprovision workflow a certain number of times.
+  slug: teardown_attempt
+  type: shorttext
+  required: false
+- name: Teardown Execution ARN
+  slug: teardown_execution_arn
+  type: shorttext
+  required: false
+- name: Deprovision State
+  slug: deprovision_state
+  type: shorttext
+  options:
+    - label: ""
+      value: aws_closed
+    - label: ""
+      value: deployment_files_removed
+    - label: ""
+      value: hold_group
+    - label: ""
+      value: in_suspended_ou
+    - label: ""
+      value: in_terminate_ou
+    - label: ""
+      value: sentry_disabled
+    - label: ""
+      value: tagged_for_closing
+    - label: ""
+      value: teardown_failed
+    - label: ""
+      value: teardown_in_progress
+    - label: ""
+      value: teardown_successful
+    - label: ""
+      value: waiting_for_dns_time
+    - label: ""
+      value: waiting_for_teardown_time
+  required: false
+python:
+  entrypoint: update_deprov_info.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-MetadataUpdate

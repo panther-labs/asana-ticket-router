@@ -5,12 +5,16 @@ from typing import Optional
 from pyshared.yaml_utils import change_yaml_file, load_yaml_cfg
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DeprovInfo:
-    dns_removal_time: Optional[datetime] = None
-    teardown_time: Optional[datetime] = None
     aws_account_id: Optional[str] = None
+    deprovision_state: Optional[str] = None
+    dns_removal_time: Optional[datetime] = None
     organization: Optional[str] = None
+    region: Optional[str] = None
+    teardown_attempt: Optional[str] = None
+    teardown_execution_arn: Optional[str] = None
+    teardown_time: Optional[datetime] = None
 
 
 class DeprovInfoDeployFile:

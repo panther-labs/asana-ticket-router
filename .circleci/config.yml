@@ -20,8 +20,8 @@ commands:
           name: 'Restore cache: python env'
           keys:
             # These caches are persisted for 15 days. If you need to reset the cache,
-            # just change the "l" to any other value which hasn't been used recently.
-            - &pip_cache_key venv-l-{{ checksum "requirements.txt" }}
+            # just change the letter to any other value (the next letter, for example) which hasn't been used recently.
+            - &pip_cache_key venv-m-{{ checksum "requirements.txt" }}
   save_caches:
     steps:
       - save_cache:
