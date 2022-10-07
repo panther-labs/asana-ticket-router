@@ -64,7 +64,7 @@ class NameGenerator:
 
     def main(self):
         self.validate()
-        return {"fairytale_name": self.fairytale_name, "customer_domain": self.domain_name}
+        return {"fairytale_name": self.fairytale_name, "customer_domain": self.domain_name.lower()}
 
 
 def main(params):
