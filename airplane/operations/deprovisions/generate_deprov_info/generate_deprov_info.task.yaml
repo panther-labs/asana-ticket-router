@@ -1,6 +1,6 @@
-name: Mark Deployment for Deletion
-slug: mark_deployment_for_deletion
-description: Make edits to a deployment file that automation will see for scheduled deletions
+name: Generate Deprov Info
+slug: generate_deprov_info
+description: Generates deprovisioning information for a customer to go into DDB
 parameters:
 - name: Fairytale Name
   slug: fairytale_name
@@ -28,12 +28,32 @@ parameters:
 - name: Domain
   slug: domain
   type: shorttext
-- name: API Use Only
-  slug: api_use_only
-  type: boolean
-
+- name: Region
+  slug: region
+  type: shorttext
+  options:
+  - label: ""
+    value: ap-northeast-1
+  - label: ""
+    value: ap-south-1
+  - label: ""
+    value: ap-southeast-1
+  - label: ""
+    value: ap-southeast-2
+  - label: ""
+    value: eu-central-1
+  - label: ""
+    value: eu-west-1
+  - label: ""
+    value: eu-west-2
+  - label: ""
+    value: us-east-1
+  - label: ""
+    value: us-east-2
+  - label: ""
+    value: us-west-2
 python:
-  entrypoint: mark_deployment_for_deletion.py
+  entrypoint: generate_deprov_info.py
 requireRequests: false
 allowSelfApprovals: false
 

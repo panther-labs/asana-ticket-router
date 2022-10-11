@@ -1,6 +1,0 @@
-name: Check Deployment for Deletion
-slug: check_deployment_for_deletion
-description: Check all deployments files so that automation will see which deletions are imminent
-python:
-  entrypoint: check_deployment_for_deletion.py
-timeout: 3600
