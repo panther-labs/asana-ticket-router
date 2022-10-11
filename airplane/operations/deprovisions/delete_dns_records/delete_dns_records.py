@@ -44,10 +44,8 @@ class DnsRecordRemover(AirplaneGitTask):
     def run(self, params):
         fairytale_name = params["fairytale_name"]
         aws_account_id = params["aws_account_id"]
-        deprov_slack_msg = (
-            f"Account {aws_account_id}/{fairytale_name} is being deprovisioned "
-            f"(see {AirplaneEnv.get_task_run_url()}).\n\n"
-            f"Requestor email: {AirplaneEnv.AIRPLANE_REQUESTER_EMAIL}, team ID: {AirplaneEnv.AIRPLANE_TEAM_ID}")
+        deprov_slack_msg = (f"Account {aws_account_id}/{fairytale_name} is being deprovisioned "
+                            f"(see {AirplaneEnv.get_task_run_url()})")
 
         # Send Jay Rosenthal a message for data-analytics-gathering purposes
         jrosenthal_slack_id = "U037VGD4ZFC"
