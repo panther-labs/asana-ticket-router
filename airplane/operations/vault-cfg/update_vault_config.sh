@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-if [ -z "${AIRPLANE_SESSION_ID}" ]; then
-  >&2 echo "This task must be run from within a runbook!"
+if [ -z "${AIRPLANE_SESSION_ID}" ] && [ -z "${AIRPLANE_PARENT_RUN_ID}" ]; then
+  >&2 echo "This task execution must have a parent starting it!"
   exit 1
 fi
 

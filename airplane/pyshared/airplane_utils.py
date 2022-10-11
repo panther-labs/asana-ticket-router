@@ -13,9 +13,9 @@ class AirplaneTask:
     AIRPLANE_BASE_URL = "https://app.airplane.dev"
     test_roles = {}
 
-    def __init__(self, api_use_only=False, requires_runbook=False):
+    def __init__(self, api_use_only=False, requires_parent_execution=False):
         self.validate_api_user(api_use_only)
-        self.validate_task_run_from_a_runbook(requires_runbook)
+        self.validate_execution_has_parent(requires_parent_execution)
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.task_dir = self.tmp_dir.name
         os.chdir(self.task_dir)
@@ -67,9 +67,9 @@ class AirplaneTask:
             raise RuntimeError("This task is only executable by the airplane API!")
 
     @staticmethod
-    def validate_task_run_from_a_runbook(requires_runbook: bool):
-        if requires_runbook and not AirplaneEnv.AIRPLANE_SESSION_ID:
-            raise RuntimeError("This task must be run from within a runbook!")
+    def validate_execution_has_parent(requires_parent_execution: bool):
+        if requires_parent_execution and not (AirplaneEnv.AIRPLANE_SESSION_ID or AirplaneEnv.AIRPLANE_PARENT_RUN_ID):
+            raise RuntimeError("This task execution must have a parent starting it!")
 
 
 def set_local_run():

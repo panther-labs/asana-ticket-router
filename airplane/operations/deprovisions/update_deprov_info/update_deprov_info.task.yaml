@@ -5,19 +5,15 @@ parameters:
 - name: Fairytale Name
   slug: fairytale_name
   type: shorttext
-  required: true
 - name: DNS Removal Time
   slug: dns_removal_time
   type: shorttext
-  required: false
 - name: Teardown Time
   slug: teardown_time
   type: shorttext
-  required: false
 - name: AWS Account ID
   slug: aws_account_id
   type: shorttext
-  required: false
 - name: Organization
   slug: organization
   type: shorttext
@@ -26,7 +22,6 @@ parameters:
     value: hosted
   - label: ""
     value: root
-  required: true
 - name: Region
   slug: region
   type: shorttext
@@ -51,16 +46,13 @@ parameters:
     value: us-east-2
   - label: ""
     value: us-west-2
-  required: false
 - name: Teardown Attempt
   description: Teardown attempt number. Teardowns can retry in the deprovision workflow a certain number of times.
   slug: teardown_attempt
   type: shorttext
-  required: false
 - name: Teardown Execution ARN
   slug: teardown_execution_arn
   type: shorttext
-  required: false
 - name: Deprovision State
   slug: deprovision_state
   type: shorttext
@@ -74,7 +66,7 @@ parameters:
     - label: ""
       value: in_suspended_ou
     - label: ""
-      value: in_terminate_ou
+      value: in_terminated_ou
     - label: ""
       value: sentry_disabled
     - label: ""
@@ -89,7 +81,6 @@ parameters:
       value: waiting_for_dns_time
     - label: ""
       value: waiting_for_teardown_time
-  required: false
 python:
   entrypoint: update_deprov_info.py
   envVars:

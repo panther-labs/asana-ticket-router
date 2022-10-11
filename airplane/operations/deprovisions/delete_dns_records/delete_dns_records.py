@@ -75,4 +75,4 @@ class DnsRecordRemover(AirplaneGitTask):
 
 
 def main(params):
-    DnsRecordRemover(requires_runbook=True).run(params)
+    DnsRecordRemover(requires_parent_execution=True).run(params)

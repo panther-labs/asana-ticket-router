@@ -70,4 +70,4 @@ Notify the deployment team to remove deletion info from the deployment file for 
 
 
 def main(params):
-    DeploymentDeletionMarker(api_use_only=params["api_use_only"], requires_runbook=True).main(params)
+    DeploymentDeletionMarker(api_use_only=params["api_use_only"], requires_parent_execution=True).main(params)

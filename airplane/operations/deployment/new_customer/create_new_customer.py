@@ -13,7 +13,7 @@ from v2.pyshared.yaml_utils import load_yaml_cfg
 
 class NewCustomerCreator(AirplaneGitTask):
 
-    def __init__(self, is_dry_run=False, requires_runbook=True):
+    def __init__(self, is_dry_run=False, requires_parent_execution=True):
         super().__init__(is_dry_run=is_dry_run)
         self.deploys_path = self.clone_repo_or_get_local(repo_name=GithubRepo.HOSTED_DEPLOYMENTS,
                                                          local_repo_abs_path=os.getenv(GithubRepo.HOSTED_DEPLOYMENTS))

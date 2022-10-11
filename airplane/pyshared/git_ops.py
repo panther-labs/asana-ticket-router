@@ -97,8 +97,8 @@ class AirplaneMultiCloneGitTask(AirplaneTask):
 
 class AirplaneCloneGitTask(AirplaneTask):
 
-    def __init__(self, params, git_repo, api_use_only=False, requires_runbook=False):
-        super().__init__(api_use_only=api_use_only, requires_runbook=requires_runbook)
+    def __init__(self, params, git_repo, api_use_only=False, requires_parent_execution=False):
+        super().__init__(api_use_only=api_use_only, requires_parent_execution=requires_parent_execution)
         self.git_dir = git_clone(repo=git_repo, github_setup=True, existing_dir=_get_existing_dir(git_repo))
 
     def main_within_cloned_dir(self):

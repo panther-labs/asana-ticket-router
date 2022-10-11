@@ -39,4 +39,4 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
 
 
 def main(params: dict) -> None:
-    DisableCustomerSentryAlerts(requires_runbook=True).run(params)
+    DisableCustomerSentryAlerts(requires_parent_execution=True).run(params)

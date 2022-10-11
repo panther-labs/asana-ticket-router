@@ -43,4 +43,4 @@ class AccountOuMover(AirplaneTask):
 
 
 def main(params: dict) -> None:
-    AccountOuMover(requires_runbook=True).main(params)
+    AccountOuMover(requires_parent_execution=True).main(params)

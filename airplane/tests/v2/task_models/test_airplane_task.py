@@ -26,5 +26,5 @@ def test_api_user_required_for_api_task_execution_success():
 def test_task_run_within_a_runbook_failure():
     with change_airplane_env_var("AIRPLANE_SESSION_ID", ""):
         with pytest.raises(RuntimeError):
-            mock_task = MockAirplaneTask(requires_runbook=True)
+            mock_task = MockAirplaneTask(requires_parent_execution=True)
             mock_task.run(params={})

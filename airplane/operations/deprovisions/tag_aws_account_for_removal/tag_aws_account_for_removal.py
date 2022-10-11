@@ -22,4 +22,4 @@ class AccountCloser(AirplaneTask):
 
 
 def main(params):
-    AccountCloser(requires_runbook=True).main(params)
+    AccountCloser(requires_parent_execution=True).main(params)

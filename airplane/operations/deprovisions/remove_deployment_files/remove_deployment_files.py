@@ -41,4 +41,4 @@ class DeploymentFileRemover(AirplaneTask):
 
 
 def main(params):
-    DeploymentFileRemover(requires_runbook=True).main(params)
+    DeploymentFileRemover(requires_parent_execution=True).main(params)

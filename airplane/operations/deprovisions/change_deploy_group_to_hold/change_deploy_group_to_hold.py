@@ -18,7 +18,7 @@ class DeployGroupHold(AirplaneModifyGitTask):
         self.ap_params = AirplaneParams(**params)
         super().__init__(params=params,
                          git_repo=get_github_repo_from_organization(self.ap_params.organization),
-                         requires_runbook=True)
+                         requires_parent_execution=True)
 
     def get_git_title(self):
         return f"Move {self.ap_params.fairytale_name} to hold deploy group"
