@@ -1,0 +1,22 @@
+name: Retrieve Teardown Panther Status
+slug: retrieve_teardown_panther_status
+description: Gets the status of a teardown Panther codebuild build
+parameters:
+- name: Organization
+  slug: organization
+  type: shorttext
+  options:
+  - label: ""
+    value: hosted
+  - label: ""
+    value: root
+- name: Build ID
+  slug: build_id
+  type: shorttext
+python:
+  entrypoint: retrieve_teardown_panther_status.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-CodebuildLaunchRetrieve
+requireRequests: false
+allowSelfApprovals: false

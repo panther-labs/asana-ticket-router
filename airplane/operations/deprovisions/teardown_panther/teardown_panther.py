@@ -34,7 +34,7 @@ class PantherTeardown(AirplaneTask):
         rsp = codebuild_client.start_build(projectName="teardown-deployment",
                                            environmentVariablesOverride=self._get_override_env_vars(
                                                ap_params.region, ap_params.aws_account_id))
-        return {"build_arn": rsp["build"]["arn"]}
+        return {"build_id": rsp["build"]["id"]}
 
 
 def main(params):
