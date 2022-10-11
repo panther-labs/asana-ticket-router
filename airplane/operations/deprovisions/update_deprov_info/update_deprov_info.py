@@ -11,12 +11,13 @@ from v2.task_models.airplane_task import AirplaneTask
 @dataclass(kw_only=True)
 class AirplaneParams(DeprovInfo):
     fairytale_name: str
+    is_finished: bool
 
 
 class DeprovInfoUpdater(AirplaneTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.ap_params = None
         self.lambda_func = None
         self.client_descr = None
@@ -47,12 +48,18 @@ class DeprovInfoUpdater(AirplaneTask):
             },
             "type": "deployment-metadata"
         }
-        for field in fields(self.ap_params):
-            if field.name != "fairytale_name" and getattr(self.ap_params, field.name) is not None:
-                payload["item"].setdefault("DeprovisionStatus", {})[field.name] = getattr(self.ap_params, field.name)
+        if self.ap_params.is_finished:
+            payload["item"]["DeprovisionStatus"] = {}
+            payload["item"]["DeprovisionDate"] = datetime.now().isoformat()
+        else:
+            for field in fields(self.ap_params):
+                if field.name not in ("fairytale_name", "is_finished") and getattr(self.ap_params,
+                                                                                   field.name) is not None:
+                    payload["item"].setdefault("DeprovisionStatus",
+                                               {})[field.name] = getattr(self.ap_params, field.name)
 
         return payload
 
 
 def main(params):
-    return DeprovInfoUpdater().run(params)
+    return DeprovInfoUpdater(requires_parent_execution=True).run(params)

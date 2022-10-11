@@ -50,8 +50,8 @@ parameters:
   description: Teardown attempt number. Teardowns can retry in the deprovision workflow a certain number of times.
   slug: teardown_attempt
   type: shorttext
-- name: Teardown Execution ARN
-  slug: teardown_execution_arn
+- name: Teardown Build ID
+  slug: teardown_build_id
   type: shorttext
 - name: Deprovision State
   slug: deprovision_state
@@ -81,6 +81,10 @@ parameters:
       value: waiting_for_dns_time
     - label: ""
       value: waiting_for_teardown_time
+- name: Is finished
+  slug: is_finished
+  type: boolean
+  description: Set to true if the deprovision process is complete
 python:
   entrypoint: update_deprov_info.py
   envVars:
