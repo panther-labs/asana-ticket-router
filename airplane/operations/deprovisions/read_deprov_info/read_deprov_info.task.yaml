@@ -1,0 +1,9 @@
+slug: read_deprov_info
+name: Read Deprovision Information
+description: "Retrieve all deprovisioning information for all customers in DDB"
+python:
+  entrypoint: read_deprov_info.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
+

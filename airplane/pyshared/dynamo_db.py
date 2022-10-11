@@ -52,9 +52,10 @@ class DynamoDbSearch:
         query_item = self.get_query_item(partition_key, partition_value)
         return recursive_get_from_dynamodb_result(query_item, query_result_keys)
 
-    def scan_and_organize_result(self, scan_result_keys=None):
+    def scan_and_organize_result(self, scan_result_keys=None, filter_expr=None):
         """Scan the table and create a new dict result, with the keys being the value of query_result_keys."""
-        scan_result = self.table.scan()
+        kwargs = {"FilterExpression": filter_expr} if filter_expr is not None else {}
+        scan_result = self.table.scan(**kwargs)
 
         if scan_result_keys is None:
             return scan_result
