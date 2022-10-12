@@ -1,0 +1,12 @@
+{
+  "name": "deprovisions",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "airplane": "^0.2.8",
+    "aws-sdk": "^2.1227.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.8.0"
+  }
+}
