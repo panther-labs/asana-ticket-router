@@ -28,9 +28,16 @@ if [ "${PARAM_ADD_OR_REMOVE}" = "Add" ]; then
   aws-vault-config add-customer $(echo ${args})
 else
   args="--name ${PARAM_FAIRYTALE_NAME}"
-  aws-vault-config remove-customer $(echo ${args})
+  # Don't fail if key isn't in vault config - there's nothing to remove
+  if ! result=$(aws-vault-config remove-customer $(echo ${args}) 2>&1); then
+    if ! grep -q "KeyError" "${result}"; then
+      echo "${PARAM_FAIRYTALE_NAME} is not in vault config. Doing nothing."
+    else
+      >&2 echo "${result}"
+      exit 1
+    fi
+  fi
 fi
-
 
 git add aws_vault_config/aws_config.yml
 TITLE="${PARAM_ADD_OR_REMOVE} ${PARAM_FAIRYTALE_NAME} profiles" git-commit

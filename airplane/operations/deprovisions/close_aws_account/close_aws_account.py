@@ -28,7 +28,14 @@ class AccountCloser(AirplaneTask):
         client = get_credentialed_client(service_name="organizations",
                                          arns=get_aws_const(f"{ap_params.organization.upper()}_CLOSE_ACCOUNT_ROLE_ARN"),
                                          desc=f"closing_aws_account_{ap_params.aws_account_id}")
-        client.close_account(AccountId=ap_params.aws_account_id)
+        try:
+            client.close_account(AccountId=ap_params.aws_account_id)
+        except Exception as exc:
+            if exc.response["Error"]["Code"] == "AccountAlreadyClosedException":
+                print("Account is already closed. Doing nothing.")
+            else:
+                raise exc
+
         account_status = self._wait_for_account_closure_completion(client, ap_params.aws_account_id)
         if account_status != "SUSPENDED":
             raise RuntimeError(f"Closing account failed with status {account_status}")

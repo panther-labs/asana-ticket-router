@@ -33,7 +33,7 @@ class DnsRecordRemover(AirplaneGitTask):
                 # Try to find the stack by name, raises an error if doesn't exist
                 cfn_client.describe_stacks(StackName=stack_name)
                 cfn_client.delete_stack(StackName=stack_name)
-                cfn_waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 30, "MaxAttempts": 20})
+                cfn_waiter.wait(StackName=stack_name, WaiterConfig={"Delay": 30, "MaxAttempts": 40})
                 print(f"Deleted '{stack_name}' stack.")
                 is_stack_deleted = True
             except ClientError:

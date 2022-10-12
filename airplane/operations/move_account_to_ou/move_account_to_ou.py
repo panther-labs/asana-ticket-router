@@ -25,14 +25,17 @@ class AccountOuMover(AirplaneTask):
         current_ou_id = org_client.list_parents(ChildId=aws_account_id)["Parents"][_FIRST_AND_ONLY_PARENT_INDEX]["Id"]
         current_ou = org_client.describe_organizational_unit(OrganizationalUnitId=current_ou_id)["OrganizationalUnit"]
 
-        log_msg = f"{aws_account_id} ({fairytale_name}) from {current_ou['Name']} to {target_ou_name}"
-        if test_run:
-            print(f"Testing - will not move {log_msg}")
+        if current_ou['Name'] == target_ou_name:
+            print(f"{aws_account_id} ({fairytale_name}) is already in OU {target_ou_name}. Doing nothing.")
         else:
-            print(f"Moving {log_msg}")
-            org_client.move_account(AccountId=aws_account_id,
-                                    SourceParentId=current_ou_id,
-                                    DestinationParentId=target_ou_id)
+            log_msg = f"{aws_account_id} ({fairytale_name}) from {current_ou['Name']} to {target_ou_name}"
+            if test_run:
+                print(f"Testing - will not move {log_msg}")
+            else:
+                print(f"Moving {log_msg}")
+                org_client.move_account(AccountId=aws_account_id,
+                                        SourceParentId=current_ou_id,
+                                        DestinationParentId=target_ou_id)
 
     def main(self, params):
         self.move_account_to_ou(organization=params["organization"],

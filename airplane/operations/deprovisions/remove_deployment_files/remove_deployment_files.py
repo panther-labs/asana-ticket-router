@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import glob
 import os
+from pathlib import Path
 import shutil
 
 from pyshared.airplane_utils import AirplaneTask
@@ -33,7 +34,7 @@ class DeploymentFileRemover(AirplaneTask):
         ap_params = AirplaneParams(**params)
         alter_deployment_file(deployments_repo=get_github_repo_from_organization(ap_params.organization),
                               ap_params=params,
-                              alter_callable=lambda filepath: os.remove(filepath),
+                              alter_callable=lambda filepath: Path(filepath).unlink(missing_ok=True),
                               commit_title=f"Removing deployment files for {params['fairytale_name']}",
                               apply_to_generated_file=True)
         if ap_params.organization == "hosted":
