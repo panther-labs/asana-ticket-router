@@ -1,0 +1,15 @@
+name: Get Count of Bugs Blocking Release
+slug: get_count_of_bugs_blocking_release
+parameters:
+- name: Workspace
+  slug: workspace
+  type: shorttext
+  description: The Asana workspace ID. Defaults to the Panther org's workspace ID.
+  default: "1159526352574257"
+  regex: "^\\d{16}$"
+- name: Version
+  slug: version
+  type: float
+  description: Panther version
+python:
+  entrypoint: get_count_of_bugs_blocking_release.py
