@@ -82,7 +82,9 @@ def extract_datadog_fields(
     event_datetime = datetime.fromtimestamp(
         int(datadog_event['date']) / 1000, tz=timezone.utc
     ).strftime('%Y-%m-%dT%H:%M:%SZ')
-    title = datadog_event['title']
+    title = datadog_event["title"]
+    if customer != 'Unknown':
+        title = f'{title} | Customer: {customer}'
     datadog_priority = datadog_event.get('priority', 'Unknown').lower()
     priority = get_datadog_task_priority(datadog_priority)
     environment = tags.get('env', 'Unknown').lower()

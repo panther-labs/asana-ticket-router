@@ -123,7 +123,7 @@ def test_extract_datadog_fields(investigations: EngTeam) -> None:
         display_name='axonius',
         event_datetime='2022-08-18T17:46:51Z',
         environment='dev',
-        title='[P1] [Triggered on {aws_account:681114611791,customer_name:axonius,env:dev,functionname:panther-reports-api,region:eu-central-1}] [TEST] Webhook testing alert for panther-reports-api',
+        title='[P1] [Triggered on {aws_account:681114611791,customer_name:axonius,env:dev,functionname:panther-reports-api,region:eu-central-1}] [TEST] Webhook testing alert for panther-reports-api | Customer: axonius',
         assigned_team=investigations,
         priority=PRIORITY.HIGH,
         runbook_url='https://www.notion.so/pantherlabs/Sentry-issue-handling-ee187249a9dd475aa015f521de3c8396',
