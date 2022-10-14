@@ -44,11 +44,25 @@ class Matcher(dataclass_wizard.YAMLWizard):
 
     def match(self, resource: dict) -> bool:
         """Does this matcher match resource?"""
+        # Unfortunately when users write log.error(msg, zap.Field('foo')) the resulting sentry
+        # event records field as zap_foo. To avoid users having to know this (and just making the matchers overcomplicated)
+        # we check for key and zap_key here.
+        # This will allow users to get the intended behavior of:
+        # writing log.error(msg, zap.Field('service', 'whatever'))
+        # then writing a matcher that is Matchers('service:whatever'), without needing to know that its zap_service.
+        zap_prefix = 'zap_'
+        zap_key = f'{zap_prefix}{self.Key}'
+        if self.Key in resource:
+            key = self.Key
+        elif zap_key in resource:
+            key = zap_key
+        else:
+            # no key found in resource == no match.
+            return False
+
         if self._is_regexp_value():
-            return self.Key in resource and bool(
-                re.search(self.Value, resource[self.Key])
-            )
-        return self.Key in resource and resource[self.Key] == self.Value
+            return resource[key] and bool(re.search(self.Value, resource[key]))
+        return resource[key] == self.Value
 
 
 @dataclasses.dataclass

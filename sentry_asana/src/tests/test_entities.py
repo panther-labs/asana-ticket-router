@@ -102,6 +102,12 @@ def test_ResourceMatcher(container_with_data: EntitiesContainer) -> None:
     assert team.Name == "OtherTeam"
     assert routing.Matches[0] == Matcher('url://settings/general//')
 
+    # test zap_prefix matching
+    entity = {"zap_service": "panther-lambda-func"}
+    team, routing = heuristics.get_team(teams_service, entity)
+    assert team.Name == "TestTeam"
+    assert routing.Matches[0] == Matcher('service:panther-lambda-func')
+
 
 def test_prod_config() -> None:
     teams_service = EntitiesContainer(
