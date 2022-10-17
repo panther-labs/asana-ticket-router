@@ -43,7 +43,7 @@ Resources:
                 Resource:
                   - !Sub
                     - arn:aws:secretsmanager:us-west-2:${AccountId}:secret:airplane/*
-                    - AccountId: !FindInMap [ Accounts, HostedOps, AccountId ]
+                    - AccountId: !FindInMap [Accounts, HostedOps, AccountId]
 
   DeployRCAndGALambda:
     Type: AWS::Serverless::Function
@@ -130,10 +130,10 @@ Resources:
                 Resource:
                   - !Sub
                     - arn:aws:secretsmanager:us-west-2:${AccountId}:secret:panther-deployment-metrics*
-                    - AccountId: !FindInMap [ Accounts, HostedOps, AccountId ]
+                    - AccountId: !FindInMap [Accounts, HostedOps, AccountId]
 
   DeploymentMetricsLambda:
-    Type: 'AWS::Serverless::Function'
+    Type: "AWS::Serverless::Function"
     Properties:
       Runtime: go1.x
       Description: Handle github webhooks
@@ -156,3 +156,79 @@ Resources:
         Variables:
           DATADOG_SECRET_ARN: arn:aws:secretsmanager:us-west-2:246537256134:secret:panther-deployment-metrics-datadog-lF5fVv
           GITHUB_SECRET_ARN: arn:aws:secretsmanager:us-west-2:246537256134:secret:panther-deployment-metrics-github-cKoY35
+
+  SuspendTrialAccountLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ReadHostedDeploymentsRepoSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub
+                    - arn:aws:secretsmanager:us-west-2:${AccountId}:secret:airplane/hosted-deployments-deploy-key-base64
+                    - AccountId: !FindInMap [Accounts, HostedOps, AccountId]
+
+  SuspendTrialAccountLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: A sns-triggered lambda to scale-down a trial account via hosted-deployments repo
+      CodeUri: suspend_trial_account/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      MemorySize: 256
+      Timeout: 60
+      Role: !GetAtt SuspendTrialAccountLambdaRole.Arn
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:git:14
+
+  SuspendTrialAccountLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref SuspendTrialAccountTopic
+      FunctionName: !GetAtt SuspendTrialAccountLambda.Arn
+
+  SuspendTrialAccountTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Suspend Trial Account Topic
+      TopicName: suspend-trial-account-topic
+      Subscription:
+        - Endpoint: !Ref SuspendTrialAccountLambda
+          Protocol: lambda
+
+  SuspendTrialAccountTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref SuspendTrialAccountTopic
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Resource: "*"
+            Principal: "*"
+            Action:
+              - sns:Publish
+            StringEquals:
+              aws:PrincipalOrgID: o-he117ni5su
+              ForAnyValue:StringLike:
+                aws:PrincipalArn:
+                  - arn:aws:iam::*:role/*-OrganizationAPIFunctionRole-* # CloudFormation naming
+                  - arn:aws:iam::*:role/panther-organization-api-function-* # Pulumi naming
