@@ -224,10 +224,10 @@ Resources:
           - Effect: Allow
             Resource: "*"
             Principal: "*"
-            Action:
-              - sns:Publish
-            StringEquals:
-              aws:PrincipalOrgID: o-he117ni5su
+            Action: sns:Publish
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: o-he117ni5su
               ForAnyValue:StringLike:
                 aws:PrincipalArn:
                   - arn:aws:iam::*:role/*-OrganizationAPIFunctionRole-* # CloudFormation naming
