@@ -210,7 +210,7 @@ Resources:
       DisplayName: Suspend Trial Account Topic
       TopicName: suspend-trial-account-topic
       Subscription:
-        - Endpoint: !Ref SuspendTrialAccountLambda
+        - Endpoint: !GetAtt SuspendTrialAccountLambda.Arn
           Protocol: lambda
 
   SuspendTrialAccountTopicPolicy:
