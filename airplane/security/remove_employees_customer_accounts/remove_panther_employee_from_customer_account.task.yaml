@@ -1,0 +1,35 @@
+# Used by Airplane to identify your task. Do not change.
+slug: remove_panther_employee_from_customer_account
+
+# A human-readable name for your task.
+name: Remove Panther Employee from Customer Account
+
+# A human-readable description for your task.
+description: "Can be used to remove a Panther employee's account from a customer instance. 
+Function is limited to accounts registered with Panther owned domains."
+
+# A list of inputs to your task.
+parameters:
+  - name: Panther AWS Account ID
+    slug: account_id
+    type: shorttext
+  - name: Panther Account AWS Region 
+    slug: region
+    type: shorttext
+  - name: Email address of user to remove
+    slug: user_email
+    type: shorttext
+  - name: Dry Run
+    slug: dry_run
+    type: boolean
+
+# Configuration for a Python task.
+python:
+  entrypoint: main.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-UserRemoval
+
+allowSelfApprovals: false
+
+timeout: 120
