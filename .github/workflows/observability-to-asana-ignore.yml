@@ -1,0 +1,22 @@
+# This file is needed to ignore a Github required check
+# when a CI job is triggered outside of the specified paths.
+# The name must be the same as `observability-to-asana.yml`
+name: Observability to Asana
+
+on:
+  push:
+    # Keep this the same list as `observability-to-asana.yml`!
+    paths-ignore:
+    - 'sentry-asana/**'
+    - 'Pipfile*'
+    - 'scripts/**'
+    - 'requirements.txt'
+    - '.github/workflows/observability*.yml'
+
+jobs:
+  # Keep this job name the same as in `observability-to-asana.yml`!
+  o11y-ci:
+    name: o11y test and lint
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No setup required"'

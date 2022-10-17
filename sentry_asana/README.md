@@ -156,22 +156,16 @@ You must create an AWS Secret containing the 3 credentials in the above section 
 - Enter the three keys (case-sensitive) and corresponding values
 - Name the secret `Sentry_Asana_Secrets` and create
 
-### Set up your dev environment
+## Set up your dev environment
 
-- Setup python environment
-  - Install python 3.9 using pyenv (patch version doesn't matter). It is needed to create the `venv` with a version of python that we want.
-    - `brew install pyenv`
-    - `pyenv install 3.9.9`
-    - `pyenv local 3.9.9`
-  - Install venv next to contain packages. In the future we wont need this, but it is legacy.
-    - Verify that you're on python 3.9.9
-    - `python --version` should show `Python 3.9.9`
-    - Then create the venv directory
-    - `python -m venv venv`
-    - Activate the venv. This will show `(venv)` prefixed to your terminal.
-    - `source venv/bin/activate`
-  - Install all development dependencies in the top-level requirements file
-    - `pip install -r requirements.txt`
+### Python 
+You do not need to worry about which python version is installed on your machine as this is handled by `pipenv`. 
+  -  Update `pip`: `python -m pip install --upgrade pip`
+  - `pip install pipenv`
+  - Use `python3.9` which is currently used in production: `pipenv install --python 3.9.14`
+  - Start developing: `pipenv shell`
+
+### Pulumi
 - Setup Pulumi (skip the remaining bullets if you have your dev env configured)
   - Install Pulumi
     - `brew install pulumi`
@@ -179,15 +173,15 @@ You must create an AWS Secret containing the 3 credentials in the above section 
   - Login through the Pulumi CLI
     - `pulumi login`
     - See https://www.pulumi.com/docs/reference/cli/pulumi_login/ for instructions
-- Ensure AWS Access
-  - Ensure you have aws-vault setup and can execute AWS CLI commands against your dev account
-    - See https://www.notion.so/pantherlabs/Onboarding-ba183bf1483746d2acb027c21c5a17a5 for detailed instructions
+### AWS Access
+Ensure you have aws-vault setup and can execute AWS CLI commands against your dev account.
+  - See https://www.notion.so/pantherlabs/Onboarding-ba183bf1483746d2acb027c21c5a17a5 for detailed instructions
   - Setup an alias for your aws-vault role assumption command
     - `alias dev="aws-vault exec dev-your-admin"`
 
-### Deploy to your dev account
+## Deploy to your dev account
 
-- Ensure that a `Pulumi.dev-<YOUR_STACKNAME>.yaml` Pulumi config file exists in the top level directory. If one does not exist, create the file. The config file should look identical to `Pulumi.sentry-asana.yaml` in its content, with correct values for the following:
+Ensure that a `Pulumi.dev-<YOUR_STACKNAME>.yaml` Pulumi config file exists in the top level directory. If one does not exist, create the file. The config file should look identical to `Pulumi.sentry-asana.yaml` in its content, with correct values for the following:
 
 Example for `Pulumi.dev-nick-sentry.yaml`:
 ```
@@ -196,7 +190,7 @@ config:
     # Set to true for local dev
     development: true
     alarmEmailSubscriptions:
-      - nick.angelou@panther.io
+      - nick.angelou@panther.com
 ```
 Definitions:
   - `deploymentParams`
@@ -208,11 +202,11 @@ Definitions:
 
 ## Linting & Unit Tests
 
-It is advisable to run the unit tests and lint commands periodically and prior to opening a PR, as they are required checks in CircleCI. As a convenience, the commands to run the unit tests and lint have each been added to scripts named `python_unit_test.sh` and `python_lint.sh` respectively. These scripts contain the exact commands run by CircleCI.
+It is advisable to run the unit tests and lint commands periodically and prior to opening a PR, as they are required checks in Github Actions. As a convenience, the commands to run the unit tests and lint have each been added to scripts named `python_unit_test.sh` and `python_lint.sh` respectively. These scripts contain the exact commands run by Github.
 
 To run them, do the following:
 
-- Setup your virtual environment and install top level dependencies (requirements.txt at the directory root)
+- Ensure you follow the [python](#python) setup instructions
 - Run the linting script
   - `sh scripts/python_lint.sh`
 - Run the unit testing script

@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+bandit = "==1.7.4"
+mypy = "==0.950"
+black = "==22.6.0"
+pylint = "==2.13.9"
+yapf = "*"
+pulumi = "==3.35.2"
+pulumi-aws = "==5.9.2"
+pytest = "*"
+pytest-asyncio = "==0.18.3"
+pytest-cov = "==3.0.0"
+asana = "==0.10.13"
+aiohttp = "==3.8.1"
+boto3 = "==1.24.2"
+boto3-stubs = {version = "==1.24.2", extras = ["secretsmanager", "sqs"]}
+dependency-injector = {version = "==4.39.1", extras = ["yaml"]}
+dataclass-wizard = "==0.22.1"
+datadog-api-client = "==2.2.0"
+python-dateutil = "==2.8.2"
+types-python-dateutil = "==2.8.19"
+yamllint = "==1.27.1"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
+python_full_version = "3.9.14"
