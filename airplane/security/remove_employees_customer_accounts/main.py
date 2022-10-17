@@ -78,7 +78,7 @@ def run(params):
         print(e)
         raise RuntimeError("Users could not be listed from the Panther User Pool")
 
-    remove_dict = get_panther_users(response.get('Users'), params.user_email)
+    remove_dict = get_panther_users(response.get('Users'), params.email)
 
     if remove_dict == {}:
         print("[-] No users to remove. Exiting.")
