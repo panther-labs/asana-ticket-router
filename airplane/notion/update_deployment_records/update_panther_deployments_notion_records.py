@@ -213,6 +213,9 @@ class UpdateDeploymentRecords(AirplaneMultiCloneGitTask):
             expected_attrs["Actual_Version"] = create_rtf_value(text=actual_version, color=version_color)
         if expected_version:
             expected_attrs["Expected_Version"] = create_rtf_value(text=expected_version, color=version_color)
+
+        if account_info.dynamo_info.get("DeprovisionStatus", {}):
+            expected_attrs["Service_Type"] = "Deprovision"
         return expected_attrs
 
     @staticmethod
