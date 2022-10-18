@@ -48,4 +48,6 @@ shell:
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-CustomerSupport
+requireRequests: true
+allowSelfApprovals: false
 timeout: 600
