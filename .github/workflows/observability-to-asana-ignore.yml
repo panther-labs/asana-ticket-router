@@ -7,7 +7,7 @@ on:
   push:
     # Keep this the same list as `observability-to-asana.yml`!
     paths-ignore:
-    - 'sentry-asana/**'
+    - 'sentry_asana/**'
     - 'Pipfile*'
     - 'scripts/**'
     - 'requirements.txt'

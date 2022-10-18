@@ -3,7 +3,7 @@ name: Observability to Asana
 on:
   push:
     paths:
-    - 'sentry-asana/**'
+    - 'sentry_asana/**'
     - 'Pipfile*'
     - 'scripts/**'
     - 'requirements.txt'
@@ -13,24 +13,20 @@ jobs:
   o11y-ci:
     name: o11y test and lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Keep the full semver to match local dev and CI's environment
-        python-version: ['3.9.14']
     steps:
       - uses: actions/checkout@v3
     
-      - name: Set up Pipenv for Python ${{ matrix.python-version }}
+      - name: Set up Pipenv for Python 3.9.14
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.9.14'
           cache: pipenv
       - name: Install pipenv
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
       - name: Install dependencies
-        run: pipenv install --python ${{ matrix.python-version }}    
+        run: pipenv install --python 3.9.14  
       - name: Unit Tests
         run: pipenv run bash scripts/python_unit_test.sh
       - name: Lint Python

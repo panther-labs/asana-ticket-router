@@ -10,3 +10,4 @@
 /scripts/ @panther-labs/observability-performance
 ./Pulumi.yaml @panther-labs/observability-performance
 ./Pulumi.sentry-asana.yaml @panther-labs/observability-performance
+.github/workflows/observability-*.yml @panther-labs/observability-performance
