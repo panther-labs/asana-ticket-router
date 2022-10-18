@@ -9,7 +9,7 @@ parameters:
   regex: "^\\d{16}$"
 - name: Version
   slug: version
-  type: float
+  type: shorttext
   description: Panther version
 python:
   entrypoint: get_count_of_bugs_blocking_release.py
