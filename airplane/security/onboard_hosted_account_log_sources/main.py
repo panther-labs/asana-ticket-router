@@ -9,7 +9,6 @@ an existing panther instance or migrate sources to a new panther instance.
 import argparse
 import boto3
 import json
-import os
 import re
 
 # payload for creating a S3 source integration
@@ -246,9 +245,6 @@ def run(args):
 
 
 def main(params):
-    if not os.getenv("AIRPLANE_SESSION_ID"):
-        raise RuntimeError("This task must be run from within a runbook!")
-
     aws_account_id = params["aws_account_id"]
 
     args = Namespace(
@@ -261,7 +257,7 @@ def main(params):
         source_onboarding_role_arn = "",
         kms_key = ""
     )
-    
+
     run(args)
 
 
