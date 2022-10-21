@@ -1,7 +1,8 @@
-import airplane from "airplane"
+import airplane, { RunTerminationError } from "airplane"
 
 // TODO: Change to Python when Python workflows are available
 const NUM_TEARDOWN_ATTEMPTS = 3;
+let aws_closure_error = false;
 type AirplaneArgs = { [key: string]: any };
 type DeprovInfo = {
 	aws_account_id: string;
@@ -135,12 +136,18 @@ class DeprovAirplaneTasks {
 	}
 
 	public async closeAwsAccount() {
-		await this.transitionToState(
-			"close_aws_account",
-			{organization: this.deprovInfo.organization, aws_account_id: this.deprovInfo.aws_account_id},
-			"aws_closed",
-			"Closing AWS account."
-		);
+		try {
+			await this.transitionToState(
+				"close_aws_account",
+				{organization: this.deprovInfo.organization, aws_account_id: this.deprovInfo.aws_account_id},
+				"aws_closed",
+				"Closing AWS account."
+			);
+		} catch (err) {
+			const errMsg = err instanceof RunTerminationError ? err.run.output.error : String(err);
+			console.log("Failed to close AWS account. Error: " + errMsg);
+			aws_closure_error = true;
+		}
 	}
 
 	public async removeDeploymentFiles() {
@@ -255,6 +262,10 @@ export default airplane.workflow(
 			if ("deprovision_state" in deprovTasks.deprovInfo) {
 				await performActionsBasedOnState(fairytaleName, deprovTasks)
 			}
+		}
+
+		if (aws_closure_error) {
+			throw new Error("One or more accounts failed closing the AWS account");
 		}
 	}
 )
