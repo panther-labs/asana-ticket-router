@@ -13,7 +13,14 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
 
     @staticmethod
     def is_sentry_disabled(yaml_cfg: ruamel.yaml.CommentedMap):
+    """panther-enterprise >= v1.45 uses SentryEnabled flag"""
+        return yaml_cfg.get("CloudFormationParameters", {}).get("SentryEnabled") == "false"
+
+    @staticmethod
+    def is_sentry_env_unset(yaml_cfg: ruamel.yaml.CommentedMap):
+    """panther-enterprise < v1.45 uses SentryEnvironment = '' to know if sentry is enabled"""
         return yaml_cfg.get("CloudFormationParameters", {}).get("SentryEnvironment") == ""
+
 
     def run(self, params: dict):
         fairytale_name = params['fairytale_name']
@@ -24,11 +31,14 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
 
         with change_yaml_file(cfg_filepath=get_customer_deployment_filepath(fairytale_name=fairytale_name,
                                                                             repo_path=repo_abs_path)) as yaml_cfg:
-            if self.is_sentry_disabled(yaml_cfg):
+
+            # for the time being, lets just check for both to be safe
+            if self.is_sentry_disabled(yaml_cfg) and self.is_sentry_env_unset(yaml_cfg) 
                 logger.info(f"Sentry alerts are already disabled for customer '{fairytale_name}'.")
                 return
 
             yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnvironment"] = ""
+            yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnabled"] = "false"
 
         if not AirplaneEnv.is_local_env():
             logger.info("Updating deployment targets.")
