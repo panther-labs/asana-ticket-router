@@ -44,7 +44,7 @@ parameters:
   - label: ""
     value: Managed
   - label: ""
-    value: BYOSF
+    value: Connected
 - name: Snowflake Edition
   slug: snowflake_edition
   type: shorttext
