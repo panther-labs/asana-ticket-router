@@ -208,6 +208,7 @@
   AsanaSandboxPortfolioId: '1201700591175689'
   AsanaTeamId: '1199906290951706'
   Entities: [
+    Matchers: ["metric:/aws.efs/"],
     Matchers: ["server_name:/\\.compute\\.internal/"],
     Matchers: ["server_name:/\\.ec2\\.internal/"],
     Matchers: ["server_name:/Panther-EFS/"],
