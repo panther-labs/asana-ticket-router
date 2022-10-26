@@ -139,6 +139,7 @@
     Matchers: ["queuename:panther-detections-engine-policy-queue-dlq"],
     Matchers: ["queuename:panther-detections-engine-rules-queue"],
     Matchers: ["queuename:panther-detections-engine-rules-queue-dlq"],
+    Matchers: ["deliverystreamname:panther-cloudsecurity-firehose"],
     Matchers: ["url://analysis//"],
     Matchers: ["url://bulk-uploader//"],
     Matchers: ["url://dashboard//"],
