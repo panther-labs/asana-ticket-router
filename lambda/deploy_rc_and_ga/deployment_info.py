@@ -1,6 +1,7 @@
-from dataclasses import dataclass
-from semver import VersionInfo
 import string
+from dataclasses import dataclass
+
+from semver import VersionInfo
 
 
 class RC:
@@ -99,12 +100,18 @@ class DeploymentSchedule:
             "Thursday": ("y", ),
         },
         "13": {
-            "Tuesday": ("m", ),
+            "Tuesday": ("m",),
             "Wednesday": (),
-            "Thursday": ("z", ),
+            "Thursday": ("z",),
         },
     }
 
 
 def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> bool:
     return target_version.compare(current_version) == -1
+
+
+def is_time_to_upgrade(group_name: str, hour: str, day: str) -> bool:
+    if group_name not in ("internal",):
+        return group_name in DeploymentSchedule.MAPPING.get(hour, {}).get(day, ())
+    return True

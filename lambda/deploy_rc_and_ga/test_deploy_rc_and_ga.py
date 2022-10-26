@@ -6,7 +6,7 @@ path.append("./")
 
 from app import get_target_semver
 from deployment_info import DeploymentGroup, DeploymentSchedule, GA, RC, TuesdayMorningGA, \
-    UpgradeVersions, is_downgrade
+    UpgradeVersions, is_downgrade, is_time_to_upgrade
 from semver import VersionInfo
 
 
@@ -49,3 +49,15 @@ def test_group_deployment_prod_groups_to_upgrade(hour, day, group):
                           ("1.45.11", "1.45.11", False)])
 def test_deployment_info_is_downgrade(current_version, target_version, output):
     assert is_downgrade(VersionInfo.parse(current_version), VersionInfo.parse(target_version)) == output
+
+
+@pytest.mark.parametrize("group_name, hour, day, perform_upgrade",
+                         [("a", "07", "Tuesday", True),
+                          ("a", "08", "Tuesday", False),
+                          ("z", "13", "Thursday", True),
+                          ("z", "12", "Wednesday", False),
+                          ("internal", "11", "Friday", True),
+                          ("internal", "07", "Wednesday", True),
+                          ("internal", "08", "Monday", True)])
+def test_is_time_to_upgrade(group_name, hour, day, perform_upgrade):
+    assert is_time_to_upgrade(group_name, hour, day) == perform_upgrade

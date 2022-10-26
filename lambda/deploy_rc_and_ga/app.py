@@ -3,7 +3,9 @@ Lambda function to deploy latest RC and GA versions
 """
 import os
 import tempfile
+import time
 from dataclasses import asdict
+from datetime import datetime
 from functools import cmp_to_key
 
 import boto3
@@ -11,11 +13,12 @@ import yaml
 from botocore.exceptions import ClientError
 from semver import VersionInfo
 
-from deployment_info import GA, RC, DeploymentDetails, RepoDetails, TuesdayMorningGA, UpgradeVersions, is_downgrade
+from deployment_info import GA, RC, DeploymentDetails, RepoDetails, \
+    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade
 from git_util import GitRepo
-from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module
+from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module, run_cmd
 from time_util import hours_passed_from_now
-from tuesday_morning_ga import get_tuesday_morning_version, group_deployment
+from tuesday_morning_ga import get_tuesday_morning_version
 
 os.environ['TZ'] = "America/Los_Angeles"
 
@@ -131,32 +134,39 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
         target_ga_file_path = join_paths(repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE)
         change_dir(repo.path)
         for group in repo_details.groups:
-            print(f"Checking deployment group '{group.name}'")
-            config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups", f"{group.name}.yml")
-            with open(config_file_path, "r") as config_file:
-                # YML100: Use of unsafe yaml load. Allows instantiation of arbitrary objects. Consider yaml.safe_load().
-                # Should we consider updating this?
-                config = yaml.load(config_file, Loader=yaml.FullLoader)
+            hour = time.strftime("%H")
+            day = datetime.today().strftime('%A')
+            if is_time_to_upgrade(group.name, hour, day):
+                print(f"Checking deployment group '{group.name}'")
+                config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups",
+                                              f"{group.name}.yml")
+                with open(config_file_path, "r") as config_file:
+                    # YML100: Use of unsafe yaml load. Allows instantiation of arbitrary objects.
+                    # Consider yaml.safe_load().
+                    # Should we consider updating this?
+                    config = yaml.load(config_file, Loader=yaml.FullLoader)
 
-            current_semver = VersionInfo.parse(config["Version"].removeprefix("v"))
-            target_semver = VersionInfo.parse(get_target_semver(group, versions))
+                current_semver = VersionInfo.parse(config["Version"].removeprefix("v"))
+                target_semver = get_target_semver(group, versions)
 
-            if is_downgrade(current_semver, target_semver):
-                raise Exception(
-                    f"Attempting to downgrade from 'v{current_semver}' to 'v{target_semver}'. File: {config_file_path}")
+                if is_downgrade(current_semver, target_semver):
+                    raise Exception(
+                        f"Attempting to downgrade from 'v{current_semver}' to 'v{target_semver}'. File: {config_file_path}")
 
-            group_deployment(group.name, target_ga_file_path, current_semver, target_semver, config_file_path, config)
-
-            config["Version"] = f"v{target_semver}"
-            with open(config_file_path, "w") as config_file:
-                yaml.dump(config, config_file, sort_keys=False)
+                config["Version"] = f"v{target_semver}"
+                with open(config_file_path, "w") as config_file:
+                    yaml.dump(config, config_file, sort_keys=False)
 
         generate_and_lint_configs(repo.path)
         filepaths_to_add = [
             join_paths(repo.path, "deployment-metadata", "deployment-groups"),
             join_paths(repo.path, "deployment-metadata", "generated"),
-            join_paths(repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE)
         ]
+        if os.path.exists(target_ga_file_path):
+            filepaths_to_add.append(target_ga_file_path)
+        else:
+            print(f"{target_ga_file_path} not found, check the deployment-metadata directory")
+            run_cmd(f"ls {repo.path}/deployment-metadata")
         repo.add_commit_and_push(title="Upgrade to newest RC and GA versions", filepaths=filepaths_to_add)
 
     change_dir(current_dir)
