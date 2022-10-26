@@ -177,7 +177,7 @@ def get_versions(is_demo_deployment):
             print(f"Using latest GA 'v{latest_ga}' as RC version")
             latest_rc = latest_ga
 
-    return UpgradeVersions(ga=latest_ga, rc=latest_rc, tuesday_morning_ga=tuesday_morning_ga)
+    return UpgradeVersions(latest_ga=latest_ga, latest_rc=latest_rc, tuesday_morning_ga=tuesday_morning_ga)
 
 
 def set_version_for_deployment_groups(is_demo_deployment, versions):
