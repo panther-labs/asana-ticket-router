@@ -1,11 +1,11 @@
 """
 Lambda function to deploy latest RC and GA versions
 """
-import datetime
 import os
 import string
 import tempfile
 import time
+from datetime import datetime
 from functools import cmp_to_key
 
 import boto3
