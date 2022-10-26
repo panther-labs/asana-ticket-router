@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - airplane/**
+      - lambda/**
 
 jobs:
   build-python:
@@ -25,10 +26,14 @@ jobs:
         if: github.ref != 'refs/heads/main'
         run: |
           python -m compileall .
-      - name: Run tests
+      - name: Run tests in airplane directory
         working-directory: airplane
         run: |
           pytest tests --cov-report xml --cov=pyshared/ --cov=v2/pyshared/ --cov=.
+      - name: Run tests in lambda directory
+        working-directory: lambda
+        run: |
+          pytest
       - name: Upload reports to Codecov
         working-directory: airplane
         env:
