@@ -1,13 +1,14 @@
 """
 Lambda function to deploy latest RC and GA versions
 """
-import boto3
 import os
 import tempfile
-import yaml
-from botocore.exceptions import ClientError
 from dataclasses import asdict
 from functools import cmp_to_key
+
+import boto3
+import yaml
+from botocore.exceptions import ClientError
 from semver import VersionInfo
 
 from deployment_info import GA, RC, DeploymentDetails, RepoDetails, TuesdayMorningGA, UpgradeVersions, is_downgrade
@@ -138,7 +139,7 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
                 config = yaml.load(config_file, Loader=yaml.FullLoader)
 
             current_semver = VersionInfo.parse(config["Version"].removeprefix("v"))
-            target_semver = get_target_semver(group, versions)
+            target_semver = VersionInfo.parse(get_target_semver(group, versions))
 
             if is_downgrade(current_semver, target_semver):
                 raise Exception(
