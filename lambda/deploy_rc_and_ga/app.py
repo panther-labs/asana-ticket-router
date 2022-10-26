@@ -194,6 +194,7 @@ def get_tuesday_morning_version(repo_details: RepoDetails) -> VersionInfo or Non
             with open(target_ga_file_path, "r") as target_ga_file:
                 return target_ga_file.read().strip()
         except FileNotFoundError:
+            print(f"Target GA File not found at path {target_ga_file_path}")
             return None
 
 
@@ -253,7 +254,8 @@ def group_deployment(group_name: str, target_ga_version_path: str, current_versi
             # generate_target_ga_file(path, target_version)
             print(f"Would generate file {target_ga_version_path} with version {target_version}")
         print(f"Would set config[\"version\"] to {target_version}")
-        # config["Version"] = f"v{target_version}"
+        config["Version"] = f"v{target_version}"
+        print(config["Version"])
         # with open(config_file_path, "w") as config_file:
         #    yaml.dump(config, config_file, sort_keys=False)
         print(f"Would dump config to {config_file_path}")
@@ -297,8 +299,7 @@ def upgrade_groups(repo_details: RepoDetails, rc: VersionInfo, ga: VersionInfo,
                 raise Exception(
                     f"Attempting to downgrade from 'v{current_semver}' to 'v{target_semver}'. File: {config_file_path}")
 
-            group_deployment(group.name, target_ga_file_path, current_semver, target_semver,
-                             config)
+            group_deployment(group.name, target_ga_file_path, current_semver, target_semver, config_file_path, config)
 
             config["Version"] = f"v{target_semver}"
             with open(config_file_path, "w") as config_file:
