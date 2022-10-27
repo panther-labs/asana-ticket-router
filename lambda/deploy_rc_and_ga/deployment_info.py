@@ -45,9 +45,9 @@ class RepoDetails:
 
 class DeploymentDetails:
     groups = [
-        DeploymentGroup(letter, TuesdayMorningGA.VERSION)
-        for letter in string.ascii_lowercase if letter not in ("f", "h", "i")
-    ] + [DeploymentGroup("internal", RC.VERSION)]
+                 DeploymentGroup(letter, TuesdayMorningGA.VERSION)
+                 for letter in string.ascii_lowercase if letter not in ("f", "h", "i")
+             ] + [DeploymentGroup("internal", RC.VERSION)]
 
     STAGING = RepoDetails("staging-deployments", "main",
                           [DeploymentGroup("staging", RC.VERSION),
@@ -69,34 +69,34 @@ class DeploymentSchedule:
 
     MAPPING = {
         "07": {
-            "Tuesday": ("a", ),
-            "Wednesday": ("n", ),
-            "Thursday": ("t", )
+            "Tuesday": ("a",),
+            "Wednesday": ("n",),
+            "Thursday": ("t",)
         },
         "08": {
             "Tuesday": (),
-            "Wednesday": ("o", ),
-            "Thursday": ("u", ),
+            "Wednesday": ("o",),
+            "Thursday": ("u",),
         },
         "09": {
             "Tuesday": (),
-            "Wednesday": ("p", ),
-            "Thursday": ("v", ),
+            "Wednesday": ("p",),
+            "Thursday": ("v",),
         },
         "10": {
-            "Tuesday": ("c", ),
-            "Wednesday": ("q", ),
-            "Thursday": ("w", ),
+            "Tuesday": ("c",),
+            "Wednesday": ("q",),
+            "Thursday": ("w",),
         },
         "11": {
-            "Tuesday": ("j", ),
-            "Wednesday": ("r", ),
-            "Thursday": ("x", ),
+            "Tuesday": ("j",),
+            "Wednesday": ("r",),
+            "Thursday": ("x",),
         },
         "12": {
-            "Tuesday": ("k", ),
-            "Wednesday": ("s", ),
-            "Thursday": ("y", ),
+            "Tuesday": ("k",),
+            "Wednesday": ("s",),
+            "Thursday": ("y",),
         },
         "13": {
             "Tuesday": ("m",),
@@ -106,14 +106,15 @@ class DeploymentSchedule:
     }
 
 
-def get_time() -> str:
+def get_time() -> tuple[str, str]:
     return datetime.today().strftime('%H'), datetime.today().strftime('%A')
+
 
 def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> bool:
     return target_version.compare(current_version) == -1
 
 
-def is_time_to_upgrade(group_name: str, hour: str, day: str) -> bool:
-    if group_name not in ("internal",):
-        return group_name in DeploymentSchedule.MAPPING.get(hour, {}).get(day, ())
+def is_time_to_upgrade(scheduled_groups: list[tuple[str]], group_name: str, hour: str, day: str) -> bool:
+    if any(group_name in group for group in scheduled_groups):
+        return True if group_name in DeploymentSchedule.MAPPING.get(hour, {}).get(day, ()) else False
     return True

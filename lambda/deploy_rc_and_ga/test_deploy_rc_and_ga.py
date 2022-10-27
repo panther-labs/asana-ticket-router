@@ -59,9 +59,12 @@ def test_deployment_info_is_downgrade(current_version, target_version, output):
                           ("z", "12", "Wednesday", False),
                           ("internal", "11", "Friday", True),
                           ("internal", "07", "Wednesday", True),
-                          ("internal", "08", "Monday", True)])
+                          ("internal", "08", "Monday", True),
+                          ("staging", "07", "Wednesday", True),
+                          ("demo", "11", "Thursday", True)])
 def test_is_time_to_upgrade(group_name, hour, day, perform_upgrade):
-    assert is_time_to_upgrade(group_name, hour, day) == perform_upgrade
+    scheduled_groups = [group for days in DeploymentSchedule.MAPPING.values() for group in days.values()]
+    assert is_time_to_upgrade(scheduled_groups, group_name, hour, day) == perform_upgrade
 
 
 @pytest.mark.parametrize("hour, day, generate_file", [("07", "Tuesday", True),

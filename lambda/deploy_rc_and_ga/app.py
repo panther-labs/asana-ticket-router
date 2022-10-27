@@ -12,7 +12,7 @@ from botocore.exceptions import ClientError
 from semver import VersionInfo
 
 from deployment_info import GA, RC, DeploymentDetails, RepoDetails, \
-    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade, get_time
+    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade, get_time, DeploymentSchedule
 from git_util import GitRepo
 from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module
 from time_util import hours_passed_from_now
@@ -21,6 +21,7 @@ from tuesday_morning_ga import get_tuesday_morning_version, generate_target_ga_f
 os.environ['TZ'] = "America/Los_Angeles"
 
 hour, day = get_time()
+scheduled_groups = [group for days in DeploymentSchedule.MAPPING.values() for group in days.values()]
 
 
 def get_available_versions(bucket_name: str) -> list[VersionInfo]:
@@ -118,7 +119,7 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
         repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
         change_dir(repo.path)
         for group in repo_details.groups:
-            if is_time_to_upgrade(group.name, hour, day):
+            if is_time_to_upgrade(scheduled_groups, group.name, hour, day):
                 print(f"Checking deployment group '{group.name}'")
                 config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups",
                                               f"{group.name}.yml")
