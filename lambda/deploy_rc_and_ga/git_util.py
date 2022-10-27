@@ -10,6 +10,7 @@ from os_util import join_paths, change_mode, run_cmd
 
 
 class GitRepo:
+
     def __init__(self, path: str, repo_name: str, branch_name: str):
         if not self._is_supported_repo(repo_name):
             raise AttributeError(f"Repo '{repo_name}' isn't supported.")
@@ -49,8 +50,7 @@ class GitRepo:
             url=self.repo_url,
             branch=self.branch_name,
             to_path=self.path,
-            env={"GIT_SSH_COMMAND": f"ssh -o UserKnownHostsFile={self._known_hosts_path} -i {self._ssh_key_path}"}
-        )
+            env={"GIT_SSH_COMMAND": f"ssh -o UserKnownHostsFile={self._known_hosts_path} -i {self._ssh_key_path}"})
 
     def _setup_github_user(self):
         git_config = self.repo.config_writer()
@@ -98,7 +98,7 @@ class GitRepo:
             return
 
         print(self._diff().replace("\n", "\r"))
-        added_files = self._add(filepaths)
+        added_files = self.add(filepaths)
         print(f"Added following files: {added_files}")
         self._commit(title, description)
         self._push()
