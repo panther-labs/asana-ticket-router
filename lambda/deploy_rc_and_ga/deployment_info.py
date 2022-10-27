@@ -1,5 +1,6 @@
 import string
 from dataclasses import dataclass
+from datetime import datetime
 
 from semver import VersionInfo
 
@@ -22,8 +23,6 @@ class UpgradeVersions:
 
 
 class TuesdayMorningGA:
-    # Leaving the class attribute as "ga" for now
-    # This shouldn't be used, so perhaps `None` is better?
     VERSION = "tuesday-morning-ga"
     BUCKET = "panther-enterprise-us-west-2"
     TARGET_FILE = "target-ga-version.txt"
@@ -106,6 +105,9 @@ class DeploymentSchedule:
         },
     }
 
+
+def get_time() -> str:
+    return datetime.today().strftime('%H'), datetime.today().strftime('%A')
 
 def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> bool:
     return target_version.compare(current_version) == -1

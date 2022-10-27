@@ -1,5 +1,5 @@
-import json
 import base64
+import json
 
 import boto3 as boto3
 from git import Repo
@@ -44,7 +44,7 @@ class GitRepo:
         print(f"Added github.com to known hosts at: {self._known_hosts_path}")
 
     def _clone(self) -> Repo:
-        print(f"Clonning repo to: {self.path}")
+        print(f"Cloning repo to: {self.path}")
         return Repo.clone_from(
             url=self.repo_url,
             branch=self.branch_name,
@@ -61,7 +61,7 @@ class GitRepo:
     def _diff(self) -> str:
         return self.repo.git.diff()
 
-    def _add(self, filepaths: list[str] = None) -> str:
+    def add(self, filepaths: list[str] = None) -> str:
         if not filepaths:
             filepaths = [self.path]
         return self.repo.index.add(filepaths)

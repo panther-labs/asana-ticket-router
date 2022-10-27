@@ -3,9 +3,7 @@ Lambda function to deploy latest RC and GA versions
 """
 import os
 import tempfile
-import time
 from dataclasses import asdict
-from datetime import datetime
 from functools import cmp_to_key
 
 import boto3
@@ -14,13 +12,15 @@ from botocore.exceptions import ClientError
 from semver import VersionInfo
 
 from deployment_info import GA, RC, DeploymentDetails, RepoDetails, \
-    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade
+    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade, get_time
 from git_util import GitRepo
-from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module, run_cmd
+from os_util import get_current_dir, change_dir, join_paths, append_to_system_path, load_py_file_as_module
 from time_util import hours_passed_from_now
-from tuesday_morning_ga import get_tuesday_morning_version
+from tuesday_morning_ga import get_tuesday_morning_version, generate_target_ga_file, is_time_to_generate_target_ga_file
 
 os.environ['TZ'] = "America/Los_Angeles"
+
+hour, day = get_time()
 
 
 def get_available_versions(bucket_name: str) -> list[VersionInfo]:
@@ -104,20 +104,7 @@ def generate_and_lint_configs(repo_path: str) -> None:
     module.run_checks()
 
 
-def generate_target_ga_file(path: str, target_version: VersionInfo) -> None:
-    """
-    Generate the target GA file with the specified target version using w+
-    as the mode in the event the file does not exist.
-    """
-    with open(path, "w+") as target_ga_version_file:
-        target_ga_version_file.write(target_version)
-
-
 def get_target_semver(group, versions):
-    # If the group is an instance of the TuesdayMorningGA class and the value
-    # of `tuesday_morning_ga` is not None, use that version
-    # Otherwise, default to the original logic if the group is not an instance
-    # of the TuesdayMorningGA class
     return {
         GA.VERSION: versions.latest_ga,
         RC.VERSION: versions.latest_rc,
@@ -129,13 +116,8 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
     current_dir = get_current_dir()
     with tempfile.TemporaryDirectory() as tmp_dir:
         repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
-        # Form the target_ga_file_path like the other paths in this function
-        # Leaving this assignment here since it relies on `repo.path`
-        target_ga_file_path = join_paths(repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE)
         change_dir(repo.path)
         for group in repo_details.groups:
-            hour = time.strftime("%H")
-            day = datetime.today().strftime('%A')
             if is_time_to_upgrade(group.name, hour, day):
                 print(f"Checking deployment group '{group.name}'")
                 config_file_path = join_paths(repo.path, "deployment-metadata", "deployment-groups",
@@ -162,11 +144,6 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
             join_paths(repo.path, "deployment-metadata", "deployment-groups"),
             join_paths(repo.path, "deployment-metadata", "generated"),
         ]
-        if os.path.exists(target_ga_file_path):
-            filepaths_to_add.append(target_ga_file_path)
-        else:
-            print(f"{target_ga_file_path} not found, check the deployment-metadata directory")
-            run_cmd(f"ls {repo.path}/deployment-metadata")
         repo.add_commit_and_push(title="Upgrade to newest RC and GA versions", filepaths=filepaths_to_add)
 
     change_dir(current_dir)
@@ -210,4 +187,7 @@ def lambda_handler(event, _):
     is_demo_deployment = event.get("is_demo_deployment", False)
     versions = get_versions(is_demo_deployment)
     set_version_for_deployment_groups(is_demo_deployment, versions)
+    update_target_ga_file = is_time_to_generate_target_ga_file(hour, day)
+    if update_target_ga_file:
+        generate_target_ga_file(repo_details=DeploymentDetails.HOSTED, version=versions.tuesday_morning_ga)
     return update_event(event, versions)

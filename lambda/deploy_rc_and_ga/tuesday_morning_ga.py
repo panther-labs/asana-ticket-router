@@ -3,6 +3,7 @@ import tempfile
 from semver import VersionInfo
 
 from deployment_info import RepoDetails, TuesdayMorningGA
+from deployment_info import UpgradeVersions
 from git_util import GitRepo
 from os_util import join_paths
 
@@ -21,3 +22,16 @@ def get_tuesday_morning_version(repo_details: RepoDetails) -> VersionInfo:
         target_ga_file_path = join_paths(repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE)
         with open(target_ga_file_path, "r") as target_ga_file:
             return VersionInfo.parse(target_ga_file.read().strip())
+
+
+def is_time_to_generate_target_ga_file(hour: str, day: str) -> bool:
+    return True if (hour == "07" and day == "Tuesday") else False
+
+
+def generate_target_ga_file(repo_details: RepoDetails, version: UpgradeVersions) -> None:
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
+        target_ga_file_path = join_paths(repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE)
+        with open(target_ga_file_path, "w+") as target_ga_version_file:
+            target_ga_version_file.write(str(version))
+    repo.add([target_ga_file_path])
