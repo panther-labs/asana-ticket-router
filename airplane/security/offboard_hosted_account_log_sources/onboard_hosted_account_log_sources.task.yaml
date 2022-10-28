@@ -1,0 +1,13 @@
+name: Offboard hosted-account log-sources
+slug: offboard_hosted_account_log_sources
+description: panther-offboard-hosted-account-log-sources
+parameters:
+- name: AWS Account ID
+  slug: aws_account_id
+  type: shorttext
+python:
+  entrypoint: main.py
+  envVars:
+    ECS_TASK_ROLE:
+      value: arn:aws:iam::246537256134:role/AirplaneWorkers-SecurityLogOnboarding
+timeout: 3600
