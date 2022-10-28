@@ -21,10 +21,10 @@ parameters:
 - name: Backend
   slug: backend
   type: shorttext
-- name: BYOSF Fairytale Name
-  slug: byosf_fairytale_name
+- name: Connected Fairytale Name
+  slug: connected_fairytale_name
   type: shorttext
-  description: Fairytale name for customer - only for use with BYOSF as a backend
+  description: Fairytale name for customer - only for use with Connected as a backend
   required: false
 - name: First Name
   slug: first_name

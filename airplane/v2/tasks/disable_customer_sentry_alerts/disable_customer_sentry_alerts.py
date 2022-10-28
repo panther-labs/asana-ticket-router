@@ -14,7 +14,7 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
     @staticmethod
     def is_sentry_disabled(yaml_cfg: ruamel.yaml.CommentedMap):
         """panther-enterprise >= v1.45 uses SentryEnabled flag"""
-        return yaml_cfg.get("CloudFormationParameters", {}).get("SentryEnabled") == "false"
+        return not yaml_cfg.get("CloudFormationParameters", {}).get("SentryEnabled")
 
     @staticmethod
     def is_sentry_env_unset(yaml_cfg: ruamel.yaml.CommentedMap):
@@ -38,7 +38,7 @@ class DisableCustomerSentryAlerts(AirplaneGitTask):
                 return
 
             yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnvironment"] = ""
-            yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnabled"] = "false"
+            yaml_cfg.setdefault("CloudFormationParameters", {})["SentryEnabled"] = False
 
         if not AirplaneEnv.is_local_env():
             logger.info("Updating deployment targets.")
