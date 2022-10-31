@@ -6,7 +6,7 @@ parameters:
   slug: aws_account_id
   type: shorttext
 python:
-  entrypoint: main.py
+  entrypoint: offboard_hosted_account_log_sources.py
   envVars:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-SecurityLogOnboarding

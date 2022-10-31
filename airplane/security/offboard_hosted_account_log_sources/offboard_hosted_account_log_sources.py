@@ -1,8 +1,7 @@
-# Linked to https://app.airplane.dev/t/onboard_hosted_account_log_sources [do not edit this line]
 """
 A script to automate the deletion of both S3 and Cloud Account sources in
-panther-hosted-security. This script can be used to offboard new AWS accounts to
-an existing panther instance or migrate sources to a new panther instance.
+panther-hosted-security. This script can be used to offboard AWS accounts from
+an existing panther instance.
 
 """
 
@@ -10,6 +9,14 @@ import argparse
 import boto3
 import json
 from typing import Optional
+from pyshared.aws_creds import get_credentialed_client
+
+
+# Namespace copy-pasta'ed for main from onboard_hosted_account_log_sources
+class Namespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
 
 # payload for listing log source integrations
 def list_srcintegration_input(account_id:str):
@@ -51,7 +58,7 @@ def offboard_log_integration(lambda_client, aws_account_id:str):
         print(list_req_body)
         print("[+] Response payload:")
         print(list_response)
-        return
+        raise RuntimeError("Errors returned when listing out integrations. Cannot continue.")
     else:
         print("[+] Success listing integrations.")
  
@@ -62,9 +69,11 @@ def offboard_log_integration(lambda_client, aws_account_id:str):
         print(f"[+] Queueing integrationId {integration.get('integrationId')} - {integration.get('integrationLabel')} - {integration.get('integrationType')} for deletion")
         integrations_to_delete.append(integration.get("integrationId"))
     
-
-
-        
+    if not integrations_to_delete:
+        print(f"[+] No integrations with account id {aws_account_id}")
+        # return will lead to airplane reporting success, which is ok in this scenario
+        return
+    
     for integration in integrations_to_delete:
         # Do delete here
         del_req_body = delete_integration_input(integrationId=integration)
@@ -85,10 +94,6 @@ def offboard_log_integration(lambda_client, aws_account_id:str):
             continue
         else:
             print(f"[+] Deleted integrationId {integration}")
-
-
-
-        
 
 
 def get_client(session:Optional[boto3.session.Session], role:str, boto3_client_name:str):
@@ -129,22 +134,18 @@ def run(args):
     if not args.source_offboarding_role_arn:
         args.source_offboarding_role_arn = "arn:aws:iam::964675078129:role/SecuritySourceOnboardingRole"
 
-    # Create the boto3 clients using the assumed role credentials.
-    # Apparently using boto3 resources would be easier, I didn't realize these were a thing.
-    #lambda_client = get_client( "lambda", args.source_onboarding_role_arn)
+    # lambda client for executing lambda:InvokeFunction
     lambda_client = get_client(sess, args.source_offboarding_role_arn, 'lambda')
     offboard_log_integration(lambda_client=lambda_client, aws_account_id=args.account_id)
 
 
-    #if args.aws_scan:
-    #    # add the cloud account integration
-    #    print("[+] Adding cloud account for scanning.")
-    #    payload_cloud_account = (args.account_id)
-    #    create_log_integration(payload_cloud_account, lambda_client)
 
-
-#def main(params):
-#    aws_account_id = params["aws_account_id"]
+def main(params):
+    aws_account_id = params["aws_account_id"]
+    args = Namespace(
+        account_id = aws_account_id
+    )
+    run(args)
 
 
 if __name__ == "__main__":
