@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from pyshared.airplane_utils import AirplaneTask
 from pyshared.aws_consts import get_aws_const
 from pyshared.aws_creds import get_credentialed_client
+from pyshared.aws_secrets import get_secret_value
+from pyshared.datadog.metric import DatadogMetric, Metric
 
 
 class DeploymentStatistics(AirplaneTask):
@@ -43,6 +45,22 @@ class DeploymentStatistics(AirplaneTask):
             "human_rate": f"{round(success / total * 100, 4)}%"
         }
 
+    def get_metric(self, level, field, value):
+        return {
+            "name": f"panther.DeploymentStatistics.{level}.{field}",
+            "type": "gauge",
+            "points": [{"timestamp": int(datetime.now().timestamp()), "value": value}],
+        }
+
+    def update_datadog(self, report):
+        datadog = DatadogMetric(api_key=get_secret_value("airplane/datadog-api-key"))
+
+        for level in report.keys():
+            for field in report[level].keys():
+                value = report[level][field]
+                metric = self.get_metric(level, field, value)
+                datadog.submit(Metric(**metric))
+
     def main(self, params):
         print("parameters:", params)
         time_range = params["range"]
@@ -57,7 +75,7 @@ class DeploymentStatistics(AirplaneTask):
         total_success = hosted["success"] + internal["success"]
         total_human = f"{round(total_success / total_count * 100, 4)}%"
 
-        return {
+        report = {
             "hosted": hosted,
             "internal": internal,
             "total": {
@@ -67,6 +85,10 @@ class DeploymentStatistics(AirplaneTask):
                 "human_rate": total_human,
             }
         }
+
+        self.update_datadog(report)
+
+        return report
 
     @staticmethod
     def get_date(time_range):
