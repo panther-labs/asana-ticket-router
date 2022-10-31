@@ -78,7 +78,7 @@ def get_version_age_in_hours(version: VersionInfo, bucket_name: str) -> int:
     return hours_passed_from_now(response["LastModified"])
 
 
-def get_latest_published_rc(bucket_name: str) -> VersionInfo | None:  # pylint: disable=R1710
+def get_latest_published_rc(bucket_name: str) -> VersionInfo or None:  # pylint: disable=R1710
     """
     get_latest_published_rc retrieves the latest published RC version from
     the given S3 bucket
@@ -90,7 +90,7 @@ def get_latest_published_rc(bucket_name: str) -> VersionInfo | None:  # pylint: 
             return version
 
 
-def get_latest_published_ga(bucket_name: str) -> VersionInfo | None:  # pylint: disable=R1710
+def get_latest_published_ga(bucket_name: str) -> VersionInfo or None:  # pylint: disable=R1710
     """
     get_latest_published_ga retrieves the latest published GA version from
     the given S3 bucket
@@ -102,7 +102,7 @@ def get_latest_published_ga(bucket_name: str) -> VersionInfo | None:  # pylint: 
             return version
 
 
-def get_stable_ga(bucket_name: str, min_version_age_in_hours: int) -> VersionInfo | None:  # pylint: disable=R1710
+def get_stable_ga(bucket_name: str, min_version_age_in_hours: int) -> VersionInfo or None:  # pylint: disable=R1710
     """
     get_stable_ga retrieves the stable GA version from the given S3 bucket
     """
