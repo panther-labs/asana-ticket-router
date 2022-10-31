@@ -1,8 +1,9 @@
 boto3==1.24.42
 GitPython==3.1.27
-semver==2.13.0
+pendulum==2.1.2
+pylint==2.15.5
+pytest==7.2.0
 PyYAML==6.0
+semver==2.13.0
 tenacity>=8.0.1
 yamale==4.0.4
-pendulum==2.1.2
-pytest==7.2.0

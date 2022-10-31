@@ -1,0 +1,47 @@
+---
+GroupId: test-group-like-a
+Version: v1.45.11
+TopLevelParameters:
+  EnableDeployV2: true
+GroupCloudFormationParameters:
+  DatadogAPIKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  DatadogAPIKeySecretArn: arn:aws:secretsmanager:us-west-2:123456789012:secret:DatadogAPIKeySecret-xxxxxxxxxxxx-xxxxxx
+  DatadogAppKeySecretArn: arn:aws:secretsmanager:us-west-2:123456789012:secret:DatadogAppKeySecret-xxxxxxxxxxxx-xxxxxx
+  DatadogAWSEnabled: true
+  DatadogEnabled: true
+  DynamoDBCloudtrailEnabled: true
+EnableFeatureDetectionEnginePolicyEval: true
+EnableFeatureDetectionEngineRuleEval: true
+EnableIntelligentTiering: true
+---
+GroupId: test-group-like-b
+Version: v1.45.11
+TopLevelParameters:
+  EnableDeployV2: true
+GroupCloudFormationParameters:
+  DatadogAPIKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  DatadogAPIKeySecretArn: arn:aws:secretsmanager:us-west-2:123456789012:secret:DatadogAPIKeySecret-xxxxxxxxxxxx-xxxxxx
+  DatadogAppKeySecretArn: arn:aws:secretsmanager:us-west-2:123456789012:secret:DatadogAPIKeySecret-xxxxxxxxxxxx-xxxxxx
+  DatadogAWSEnabled: true
+  DatadogEnabled: true
+  DynamoDBCloudtrailEnabled: true
+---
+GroupId: test-cpaas
+Version: v1.45.11
+TopLevelParameters:
+  EnableDeployV2: true
+GroupCloudFormationParameters:
+  SplitClientToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  DatadogEnabled: false
+---
+GroupId: test-demo
+Version: v1.45.11
+TopLevelParameters:
+  EnableDeployV2: true
+GroupCloudFormationParameters:
+  DynamoDBCloudtrailEnabled: true
+---
+GroupId: test-internal
+Version: v1.46.0-RC-9046-2022-10-30T17-30-31
+TopLevelParameters:
+  EnableDeployV2: true
