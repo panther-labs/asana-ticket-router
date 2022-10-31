@@ -89,7 +89,7 @@ class AsanaService:
 
     async def _create_asana_task(self, task_body: Dict) -> Dict:
         """Dispatch a call to create a new Asana task"""
-        self._logger.info("Creating asana task")
+        self._logger.info("Creating asana task: %s", task_body)
         return await self._loop().run_in_executor(
             None, partial(self._client.tasks.create_task, task_body)
         )

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "airplane": "^0.2.12"
+    "airplane": "^0.2.13"
   },
   "devDependencies": {
     "@types/node": "^18.8.0"
