@@ -31,3 +31,7 @@ jobs:
         working-directory: lambda/${{ matrix.paths }}
         run: |
           pytest -v
+      - name: Run pylint in lambda${{ matrix.paths }} directory
+        working-directory: lambda/${{ matrix.paths }}
+        run: |
+          find . -type f -name "*.py" | cut -c 3- | xargs -n 1 -I {} sh -c "echo {} && pylint {}"
