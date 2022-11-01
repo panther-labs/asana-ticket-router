@@ -39,7 +39,8 @@ def test_get_target_semver_from_tuesday_morning_ga(version_class, expected_versi
         ("10", "Tuesday", ("c",)), ("10", "Wednesday", ("q",)), ("10", "Thursday", ("w",)),
         ("11", "Tuesday", ("j",)), ("11", "Wednesday", ("r",)), ("11", "Thursday", ("x",)),
         ("12", "Tuesday", ("k",)), ("12", "Wednesday", ("s",)), ("12", "Thursday", ("y",)),
-        ("13", "Tuesday", ("m",)), ("13", "Wednesday", ()), ("13", "Thursday", ("z",))
+        ("13", "Tuesday", ("m",)), ("13", "Wednesday", ()), ("13", "Thursday", ("z",)),
+        ("10", "Tuesday", ("c",))
     ]
 )
 def test_group_deployment_prod_groups_to_upgrade(hour, day, group):
@@ -99,13 +100,15 @@ def test_tuesday_morning_ga_is_time_to_generate_target_ga_file(hour, day, genera
     assert is_time_to_generate_target_ga_file(hour, day) == generate_file
 
 
-def test_deployment_info_get_time():
+def test_time_util_get_time(capsys):
     """
     test_deployment_info_get_time ensures the values returned by get_time
     are strings
     """
-    for value in get_time():
-        assert isinstance(value, str)
+    with capsys.disabled():
+        for value in get_time():
+            print(value)
+            assert isinstance(value, str)
 
 
 def test_yaml_safe_load():

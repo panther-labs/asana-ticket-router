@@ -47,7 +47,7 @@ def generate_target_ga_file(repo_details: RepoDetails, version: UpgradeVersions)
         target_ga_file_path = join_paths(
             repo.path, "deployment-metadata", TuesdayMorningGA.TARGET_FILE
         )
-        title = f"Update target-ga-version.txt to {str(version)}"
+        commit_title = f"Update target-ga-version.txt to {str(version)}"
         with open(target_ga_file_path, "w", encoding="utf-8") as target_ga_version_file:
             target_ga_version_file.write(str(version))
-        repo.add_commit_and_push(title=title, filepaths=[target_ga_file_path])
+        repo.add_commit_and_push(title=commit_title, filepaths=[target_ga_file_path])

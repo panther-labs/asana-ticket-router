@@ -24,7 +24,8 @@ def get_time() -> tuple[str, str]:
     """
     get_time returns the hour and day of the week
     """
-    hour = datetime.now(pytz.timezone('US/Pacific')).strftime('%H')
-    day = datetime.now(pytz.timezone('US/Pacific')).strftime('%A')
+    now = datetime.now(pytz.timezone('US/Pacific'))
+    hour = now.strftime('%H')
+    day = now.strftime('%A')
     print(f"Hour: {hour}, Day: {day}")
     return hour, day

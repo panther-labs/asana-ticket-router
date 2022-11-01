@@ -22,6 +22,8 @@ from tuesday_morning_ga import generate_target_ga_file, get_tuesday_morning_vers
     is_time_to_generate_target_ga_file
 
 hour, day = get_time()
+print(f"Retrieved hour and day from get_time: {hour} - {day}")
+
 scheduled_groups = [
     group for days in DeploymentSchedule.MAPPING.values() for group in days.values()
 ]
