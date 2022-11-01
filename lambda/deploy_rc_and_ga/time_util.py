@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 
 import pendulum
+import pytz
 
 os.environ['TZ'] = "America/Los_Angeles"
 
@@ -23,5 +24,7 @@ def get_time() -> tuple[str, str]:
     """
     get_time returns the hour and day of the week
     """
-    print(f"Hour: {datetime.today().strftime('%H')}, Day: {datetime.today().strftime('%A')}")
-    return datetime.today().strftime('%H'), datetime.today().strftime('%A')
+    hour = datetime.now(pytz.timezone('US/Pacific')).strftime('%H')
+    day = datetime.now(pytz.timezone('US/Pacific')).strftime('%A')
+    print(f"Hour: {hour}, Day: {day}")
+    return hour, day

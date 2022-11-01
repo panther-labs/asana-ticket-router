@@ -3,7 +3,6 @@ Lambda function to deploy latest RC, GA,
 or Tuesday Morning GA versions
 """
 
-import os
 import tempfile
 from dataclasses import asdict
 from functools import cmp_to_key
@@ -13,16 +12,14 @@ import yaml
 from botocore.exceptions import ClientError
 from semver import VersionInfo
 
-from deployment_info import GA, RC, DeploymentDetails, RepoDetails, \
-    TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade, DeploymentSchedule
+from deployment_info import DeploymentDetails, DeploymentSchedule, GA, is_downgrade, \
+    is_time_to_upgrade, RC, RepoDetails, TuesdayMorningGA, UpgradeVersions
 from git_util import GitRepo
-from os_util import get_current_dir, change_dir, join_paths, \
-    append_to_system_path, load_py_file_as_module
-from time_util import hours_passed_from_now, get_time
-from tuesday_morning_ga import get_tuesday_morning_version, is_time_to_generate_target_ga_file, \
-    generate_target_ga_file
-
-os.environ['TZ'] = "America/Los_Angeles"
+from os_util import append_to_system_path, change_dir, get_current_dir, join_paths, \
+    load_py_file_as_module
+from time_util import get_time, hours_passed_from_now
+from tuesday_morning_ga import generate_target_ga_file, get_tuesday_morning_version, \
+    is_time_to_generate_target_ga_file
 
 hour, day = get_time()
 scheduled_groups = [
