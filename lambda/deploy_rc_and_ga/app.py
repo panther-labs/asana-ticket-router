@@ -21,9 +21,6 @@ from time_util import get_time, hours_passed_from_now
 from tuesday_morning_ga import generate_target_ga_file, get_tuesday_morning_version, \
     is_time_to_generate_target_ga_file
 
-hour, day = get_time()
-print(f"Retrieved hour and day from get_time: {hour} - {day}")
-
 scheduled_groups = [
     group for days in DeploymentSchedule.MAPPING.values() for group in days.values()
 ]
@@ -152,7 +149,7 @@ def get_target_semver(group, versions) -> VersionInfo:
     }[group.version]
 
 
-def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None:
+def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions, hour, day) -> None:
     """
     upgrade_groups performs an upgrade for a given group if the group is both
     a scheduled group (i.e., listed in DeploymentSchedule.MAPPING) and the current
@@ -196,7 +193,7 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions) -> None
     change_dir(current_dir)
 
 
-def get_versions(is_demo_deployment) -> UpgradeVersions:
+def get_versions(is_demo_deployment, hour, day) -> UpgradeVersions:
     """
     get_versions retrieves the latest RC, GA, and Tuesday Morning GA
     versions and updates and stores the versions in the UpgradeVersions
@@ -229,17 +226,19 @@ def get_versions(is_demo_deployment) -> UpgradeVersions:
     )
 
 
-def set_version_for_deployment_groups(is_demo_deployment, versions) -> None:
+def set_version_for_deployment_groups(is_demo_deployment, versions, hour, day) -> None:
     """
     set_version_for_deployment_groups checks if a deployment is
     a demo and upgrades groups with the corresponding repository details
     and versions
     """
     if is_demo_deployment:
-        upgrade_groups(repo_details=DeploymentDetails.DEMO, versions=versions)
+        upgrade_groups(repo_details=DeploymentDetails.DEMO, versions=versions, hour=hour, day=day)
     else:
-        upgrade_groups(repo_details=DeploymentDetails.HOSTED, versions=versions)
-        upgrade_groups(repo_details=DeploymentDetails.STAGING, versions=versions)
+        upgrade_groups(repo_details=DeploymentDetails.HOSTED, versions=versions, hour=hour, day=day)
+        upgrade_groups(
+            repo_details=DeploymentDetails.STAGING, versions=versions, hour=hour, day=day
+        )
 
 
 def update_event(event, versions):
@@ -258,7 +257,9 @@ def lambda_handler(event, _):
     """
     lambda_handler processes events
     """
+    hour, day = get_time()
+    print(f"Retrieved hour and day from get_time: {hour} - {day}")
     is_demo_deployment = event.get("is_demo_deployment", False)
-    versions = get_versions(is_demo_deployment)
-    set_version_for_deployment_groups(is_demo_deployment, versions)
+    versions = get_versions(is_demo_deployment, hour, day)
+    set_version_for_deployment_groups(is_demo_deployment, versions, hour, day)
     return update_event(event, versions)
