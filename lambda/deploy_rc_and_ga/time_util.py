@@ -2,9 +2,12 @@
 time_util contains functions related to time
 """
 
+import os
 from datetime import datetime
 
 import pendulum
+
+os.environ['TZ'] = "America/Los_Angeles"
 
 
 def hours_passed_from_now(datetime_obj: datetime) -> int:
@@ -20,4 +23,5 @@ def get_time() -> tuple[str, str]:
     """
     get_time returns the hour and day of the week
     """
+    print(f"Hour: {datetime.today().strftime('%H')}, Day: {datetime.today().strftime('%A')}")
     return datetime.today().strftime('%H'), datetime.today().strftime('%A')
