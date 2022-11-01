@@ -19,8 +19,8 @@ from git_util import GitRepo
 from os_util import get_current_dir, change_dir, join_paths, \
     append_to_system_path, load_py_file_as_module
 from time_util import hours_passed_from_now, get_time
-from tuesday_morning_ga import get_tuesday_morning_version, \
-    generate_target_ga_file, is_time_to_generate_target_ga_file
+from tuesday_morning_ga import get_tuesday_morning_version, is_time_to_generate_target_ga_file, \
+    generate_target_ga_file
 
 os.environ['TZ'] = "America/Los_Angeles"
 
@@ -204,6 +204,7 @@ def get_versions(is_demo_deployment) -> UpgradeVersions:
     dataclass
     """
     latest_rc = get_latest_published_rc(RC.BUCKET)
+    # Set the version from the file initially
     tuesday_morning_ga = get_tuesday_morning_version(repo_details=DeploymentDetails.HOSTED)
 
     if is_demo_deployment:
@@ -216,6 +217,13 @@ def get_versions(is_demo_deployment) -> UpgradeVersions:
         if latest_ga.compare(latest_rc) == 1:
             print(f"Using latest GA 'v{latest_ga}' as RC version")
             latest_rc = latest_ga
+
+        # If the latest GA is newer than the file contents, and it is time
+        # to update the file, use that version in the file and for tuesday_morning_ga
+        if latest_ga.compare(tuesday_morning_ga
+                            ) == 1 and is_time_to_generate_target_ga_file(hour, day):
+            generate_target_ga_file(repo_details=DeploymentDetails.HOSTED, version=latest_ga)
+            tuesday_morning_ga = latest_ga
 
     return UpgradeVersions(
         latest_ga=latest_ga, latest_rc=latest_rc, tuesday_morning_ga=tuesday_morning_ga
@@ -254,9 +262,4 @@ def lambda_handler(event, _):
     is_demo_deployment = event.get("is_demo_deployment", False)
     versions = get_versions(is_demo_deployment)
     set_version_for_deployment_groups(is_demo_deployment, versions)
-    update_target_ga_file = is_time_to_generate_target_ga_file(hour, day)
-    if update_target_ga_file:
-        generate_target_ga_file(
-            repo_details=DeploymentDetails.HOSTED, version=versions.tuesday_morning_ga
-        )
     return update_event(event, versions)

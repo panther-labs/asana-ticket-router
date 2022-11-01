@@ -12,8 +12,8 @@ import yaml
 from semver import VersionInfo
 
 from app import get_target_semver
-from deployment_info import DeploymentGroup, DeploymentSchedule, \
-    GA, RC, TuesdayMorningGA, UpgradeVersions, is_downgrade, is_time_to_upgrade
+from deployment_info import DeploymentGroup, DeploymentSchedule, GA, RC, TuesdayMorningGA, \
+    UpgradeVersions, is_downgrade, is_time_to_upgrade
 from time_util import get_time
 from tuesday_morning_ga import is_time_to_generate_target_ga_file
 
