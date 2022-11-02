@@ -226,7 +226,7 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
 
 
 @inject
-async def process_sentry_alert(  # pylint: disable=too-many-arguments
+async def process_sentry_alert(  # pylint: disable=too-many-arguments,too-many-locals
     record: Dict,
     logger: LoggerService = Provide[
         ApplicationContainer.logger_container.logger_service
@@ -256,6 +256,18 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments
         event: Dict = data['event']
         issue_id: str = event['issue_id']
         log.info('Processing sentry issue_id: %s', issue_id)
+
+        # Adding some logic to skip over Javascript errors due to scanning so we don't deliver
+        # another 500 tickets to Adoptions - 11/2/2022 #inc-unknown-sentry-errors
+        event_title = event['title']
+        if "ReferenceError" in event_title and "is not defined" in event_title:
+            msg = f'Skipping over processing of Sentry {issue_id}: {event_title} to reduce spam after scanning incident'
+            log.info(msg)
+            return {
+                'success': True,
+                'message': msg,
+                'message_id': message_id,
+            }
 
         # Then, fetch the sentry issue and return the linked asana task
         # This will always point to the last created task for a given sentry issue
