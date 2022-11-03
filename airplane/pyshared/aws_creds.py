@@ -5,6 +5,9 @@ from pyshared.local_aws_role_exec import aws_vault_exec, input_mfa
 
 
 def _get_creds(arns, test_role=None, desc="task"):
+    if not arns:
+        return None
+
     if is_local_run():
         if arns and (test_role is None):
             raise RuntimeError("Assuming roles with a local_run requires test roles to be set when getting "
