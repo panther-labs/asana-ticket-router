@@ -9,6 +9,8 @@ from dataclasses import dataclass
 
 from semver import VersionInfo
 
+from time_util import DeployTime
+
 
 class RC:  # pylint: disable=R0903
     """
@@ -89,14 +91,16 @@ class DeploymentDetails:  # pylint: disable=R0903
 
 class DeploymentSchedule:  # pylint: disable=R0903
     """
-    The DepoloymentSchedule class defines a mapping between times
-    (as hours in the "America/Los_Angeles" time zone) and the groups
+    DeploymentSchedule contains a mapping between times
+    (as hours in the "US/Pacific" time zone) and the groups
     to be updated during that hour
 
-    The mapping is expressed as a nested dictionary with the hours as
-    top-level keys with the days of the week as nested keys and the
-    groups for each day as the values
+    The exclusion list contains dates where deployments should not happen
+    (for both staging/internal and hosted customers)
     """
+    EXCLUSIONS = [f"11/{day}/22" for day in range(21, 26)] + \
+                 [f"12/{day}/22" for day in range(19, 31)] + \
+                 [f"01/0{day}/23" for day in range(1, 7)]
 
     MAPPING = {
         "07": {
@@ -145,12 +149,16 @@ def is_downgrade(current_version: VersionInfo, target_version: VersionInfo) -> b
 
 
 def is_time_to_upgrade(
-    scheduled_groups: list[tuple[str]], group_name: str, hour: str, day: str
+        scheduled_groups: list[tuple[str]], group_name: str, time: DeployTime
 ) -> bool:
     """
     is_time_to_upgrade checks if a group is a scheduled group and if the group
-    can be upgraded based on the current hour and day of the week
+    can be upgraded based on the current hour and day of the week and only if the
+    current date is not an excluded date where deployments should not happen
     """
+    if time.date in DeploymentSchedule.EXCLUSIONS:
+        return False
+
     if any(group_name in group for group in scheduled_groups):
-        return group_name in DeploymentSchedule.MAPPING.get(hour, {}).get(day, ())
+        return group_name in DeploymentSchedule.MAPPING.get(time.hour, {}).get(time.day, ())
     return True

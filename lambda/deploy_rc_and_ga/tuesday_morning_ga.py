@@ -11,6 +11,7 @@ from deployment_info import RepoDetails, TuesdayMorningGA
 from deployment_info import UpgradeVersions
 from git_util import GitRepo
 from os_util import join_paths
+from time_util import DeployTime
 
 
 def get_tuesday_morning_version(repo_details: RepoDetails) -> VersionInfo:
@@ -28,12 +29,12 @@ def get_tuesday_morning_version(repo_details: RepoDetails) -> VersionInfo:
             return VersionInfo.parse(target_ga_file.read().strip())
 
 
-def is_time_to_generate_target_ga_file(hour: str, day: str) -> bool:
+def is_time_to_generate_target_ga_file(time: DeployTime) -> bool:
     """
     is_time_generate_target_ga_file checks if the target-ga-version.txt
     file should be updated or not
     """
-    return hour == "07" and day == "Tuesday"
+    return time.hour == "07" and time.day == "Tuesday"
 
 
 def generate_target_ga_file(repo_details: RepoDetails, version: UpgradeVersions) -> None:

@@ -17,7 +17,7 @@ from deployment_info import DeploymentDetails, DeploymentSchedule, GA, is_downgr
 from git_util import GitRepo
 from os_util import append_to_system_path, change_dir, get_current_dir, join_paths, \
     load_py_file_as_module
-from time_util import get_time, hours_passed_from_now
+from time_util import DeployTime, hours_passed_from_now
 from tuesday_morning_ga import generate_target_ga_file, get_tuesday_morning_version, \
     is_time_to_generate_target_ga_file
 
@@ -149,7 +149,7 @@ def get_target_semver(group, versions) -> VersionInfo:
     }[group.version]
 
 
-def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions, hour, day) -> None:
+def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions, time: DeployTime) -> None:
     """
     upgrade_groups performs an upgrade for a given group if the group is both
     a scheduled group (i.e., listed in DeploymentSchedule.MAPPING) and the current
@@ -161,7 +161,7 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions, hour, d
         repo = GitRepo(path=tmp_dir, repo_name=repo_details.name, branch_name=repo_details.branch)
         change_dir(repo.path)
         for group in repo_details.groups:
-            if is_time_to_upgrade(scheduled_groups, group.name, hour, day):
+            if is_time_to_upgrade(scheduled_groups, group.name, time):
                 print(f"Checking deployment group '{group.name}'")
                 config_file_path = join_paths(
                     repo.path, "deployment-metadata", "deployment-groups", f"{group.name}.yml"
@@ -193,7 +193,7 @@ def upgrade_groups(repo_details: RepoDetails, versions: UpgradeVersions, hour, d
     change_dir(current_dir)
 
 
-def get_versions(is_demo_deployment, hour, day) -> UpgradeVersions:
+def get_versions(is_demo_deployment, time: DeployTime) -> UpgradeVersions:
     """
     get_versions retrieves the latest RC, GA, and Tuesday Morning GA
     versions and updates and stores the versions in the UpgradeVersions
@@ -216,8 +216,7 @@ def get_versions(is_demo_deployment, hour, day) -> UpgradeVersions:
 
         # If the latest GA is newer than the file contents, and it is time
         # to update the file, use that version in the file and for tuesday_morning_ga
-        if latest_ga.compare(tuesday_morning_ga
-                            ) == 1 and is_time_to_generate_target_ga_file(hour, day):
+        if latest_ga.compare(tuesday_morning_ga) == 1 and is_time_to_generate_target_ga_file(time):
             generate_target_ga_file(repo_details=DeploymentDetails.HOSTED, version=latest_ga)
             tuesday_morning_ga = latest_ga
 
@@ -226,19 +225,17 @@ def get_versions(is_demo_deployment, hour, day) -> UpgradeVersions:
     )
 
 
-def set_version_for_deployment_groups(is_demo_deployment, versions, hour, day) -> None:
+def set_version_for_deployment_groups(is_demo_deployment, versions, time: DeployTime) -> None:
     """
     set_version_for_deployment_groups checks if a deployment is
     a demo and upgrades groups with the corresponding repository details
     and versions
     """
     if is_demo_deployment:
-        upgrade_groups(repo_details=DeploymentDetails.DEMO, versions=versions, hour=hour, day=day)
+        upgrade_groups(repo_details=DeploymentDetails.DEMO, versions=versions, time=time)
     else:
-        upgrade_groups(repo_details=DeploymentDetails.HOSTED, versions=versions, hour=hour, day=day)
-        upgrade_groups(
-            repo_details=DeploymentDetails.STAGING, versions=versions, hour=hour, day=day
-        )
+        upgrade_groups(repo_details=DeploymentDetails.HOSTED, versions=versions, time=time)
+        upgrade_groups(repo_details=DeploymentDetails.STAGING, versions=versions, time=time)
 
 
 def update_event(event, versions):
@@ -257,9 +254,9 @@ def lambda_handler(event, _):
     """
     lambda_handler processes events
     """
-    hour, day = get_time()
-    print(f"Retrieved hour and day from get_time: {hour} - {day}")
+    time = DeployTime()
+    print(f"Current hour, day, and date: {time.hour} - {time.day} - {time.date}")
     is_demo_deployment = event.get("is_demo_deployment", False)
-    versions = get_versions(is_demo_deployment, hour, day)
-    set_version_for_deployment_groups(is_demo_deployment, versions, hour, day)
+    versions = get_versions(is_demo_deployment, time)
+    set_version_for_deployment_groups(is_demo_deployment, versions, time)
     return update_event(event, versions)

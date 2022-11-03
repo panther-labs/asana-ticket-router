@@ -11,6 +11,20 @@ import pytz
 os.environ['TZ'] = "America/Los_Angeles"
 
 
+class DeployTime:  # pylint: disable=R0903
+    """
+    The DeployTime class contains attributes
+    corresponding to the current hour, day of the week,
+    and date string
+    """
+
+    def __init__(self):
+        now = datetime.now(pytz.timezone('US/Pacific'))
+        self.hour = now.strftime('%H')
+        self.day = now.strftime('%A')
+        self.date = now.strftime('%x')
+
+
 def hours_passed_from_now(datetime_obj: datetime) -> int:
     """
     hours_passed_from_now returns the difference in hours from the provided
@@ -18,14 +32,3 @@ def hours_passed_from_now(datetime_obj: datetime) -> int:
     """
     pendulum_datetime = pendulum.instance(datetime_obj)
     return pendulum.now("utc").diff(pendulum_datetime).in_hours()
-
-
-def get_time() -> tuple[str, str]:
-    """
-    get_time returns the hour and day of the week
-    """
-    now = datetime.now(pytz.timezone('US/Pacific'))
-    hour = now.strftime('%H')
-    day = now.strftime('%A')
-    print(f"Hour: {hour}, Day: {day}")
-    return hour, day

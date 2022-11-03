@@ -2,7 +2,6 @@
 test_deploy_rc_and_ga tests various functionality found
 in the modules used for the Deploy RC and GA Lambda
 """
-
 from sys import path
 
 path.append("./")  # pylint: disable=C0413
@@ -14,8 +13,15 @@ from semver import VersionInfo
 from app import get_target_semver
 from deployment_info import DeploymentGroup, DeploymentSchedule, GA, RC, TuesdayMorningGA, \
     UpgradeVersions, is_downgrade, is_time_to_upgrade
-from time_util import get_time
 from tuesday_morning_ga import is_time_to_generate_target_ga_file
+from time_util import DeployTime
+
+
+def get_group_list() -> list[tuple[str]]:
+    """
+    get_group_list returns a list of scheduled groups
+    """
+    return [group for days in DeploymentSchedule.MAPPING.values() for group in days.values()]
 
 
 @pytest.mark.parametrize(
@@ -79,10 +85,22 @@ def test_is_time_to_upgrade(group_name, hour, day, perform_upgrade):
     test_is_time_to_upgrade verifies if a given group name is allowed
     to upgrade given group name, hour, and day of the week
     """
-    scheduled_groups = [
-        group for days in DeploymentSchedule.MAPPING.values() for group in days.values()
-    ]
-    assert is_time_to_upgrade(scheduled_groups, group_name, hour, day) == perform_upgrade
+    time = DeployTime()
+    time.hour = hour
+    time.day = day
+
+    # Store the normal exclusions
+    default_exclusions = DeploymentSchedule.EXCLUSIONS
+
+    # Use an empty list for this test
+    # This avoids test failures on a day we want to exclude
+    # since this tests focuses on the base behavior
+    DeploymentSchedule.EXCLUSIONS = []
+
+    assert is_time_to_upgrade(get_group_list(), group_name, time) == perform_upgrade
+
+    # Restore original exclusions
+    DeploymentSchedule.EXCLUSIONS = default_exclusions
 
 
 @pytest.mark.parametrize(
@@ -97,18 +115,20 @@ def test_tuesday_morning_ga_is_time_to_generate_target_ga_file(hour, day, genera
     test_tuesday_morning_ga_is_time_to_generate_target_ga_file tests whether the
     target-ga-version.txt file should be updated given an hour and day of the week
     """
-    assert is_time_to_generate_target_ga_file(hour, day) == generate_file
+    time = DeployTime()
+    time.hour = hour
+    time.day = day
+    assert is_time_to_generate_target_ga_file(time) == generate_file
 
 
-def test_time_util_get_time(capsys):
+def test_deploy_time_class():
     """
-    test_deployment_info_get_time ensures the values returned by get_time
-    are strings
+    test_deploy_time_class ensures the DeployTime
+    attribute values are strings
     """
-    with capsys.disabled():
-        for value in get_time():
-            print(value)
-            assert isinstance(value, str)
+    time = DeployTime()
+    for value in time.__dict__.values():
+        assert isinstance(value, str)
 
 
 def test_yaml_safe_load():
@@ -123,3 +143,30 @@ def test_yaml_safe_load():
 
     for (safe, unsafe) in zip(safe_yaml_doc, unsafe_yaml_doc):
         assert safe == unsafe
+
+
+@pytest.mark.parametrize(
+    "group_name, hour, day, perform_upgrade", [
+        ("a", "07", "Tuesday", False),
+        ("a", "08", "Tuesday", False),
+        ("z", "13", "Thursday", False),
+        ("z", "12", "Wednesday", False),
+        ("internal", "11", "Friday", False),
+        ("internal", "07", "Wednesday", False),
+        ("internal", "08", "Monday", False),
+        ("staging", "07", "Wednesday", False),
+        ("demo", "11", "Thursday", False),
+    ]
+)
+def test_deployment_exclusion_is_time_to_upgrade(group_name, hour, day, perform_upgrade):
+    """
+    test_deployment_exclusion_is_time_to_upgrade ensures that deployments will not
+    happen if the given date is an excluded date
+    """
+    time = DeployTime()
+    time.hour = hour
+    time.day = day
+
+    for date in DeploymentSchedule.EXCLUSIONS:
+        time.date = date
+        assert is_time_to_upgrade(get_group_list(), group_name, time) == perform_upgrade
