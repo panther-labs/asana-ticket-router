@@ -1,14 +1,13 @@
 import pendulum
 from ruamel.yaml import comments
-
-from v2.pyshared.date_utils import parse_datetime_str, is_within_past_hour, Timezone, get_human_readable_difference, \
-    get_now, to_time_str
-from v2.pyshared.panther_version_util import to_semver, is_valid_bump
-from v2.pyshared.yaml_utils import is_comment_in_yaml_file, add_top_level_comment
+from v2.pyshared.date_utils import get_human_readable_difference, get_now, is_within_past_hour, \
+    parse_datetime_str, Timezone, to_time_str
+from v2.pyshared.panther_version_util import is_valid_bump, to_semver
+from v2.pyshared.yaml_utils import add_top_level_comment, is_comment_in_yaml_file
 
 DEPLOYMENT_VERSION_COMMENT_PLACEHOLDER = "Version:"
 DEPLOYMENT_TIME_COMMENT_PLACEHOLDER = "Deployment Time:"
-DEPLOYMENT_TIMEZONE_PLACEHOLDER = "(PDT)"
+DEPLOYMENT_TIMEZONE_PLACEHOLDER = ("(PDT)", "(PST)")
 
 
 def generate_deployment_schedule_str(deployment_version: str, deployment_time: str):
@@ -29,7 +28,8 @@ def get_deployment_version(comment: str) -> str or None:
 
 
 def remove_timezone_placeholder(deployment_time: str) -> str:
-    return deployment_time.removesuffix(DEPLOYMENT_TIMEZONE_PLACEHOLDER).strip()
+    timezone_match = [tz for tz in DEPLOYMENT_TIMEZONE_PLACEHOLDER if tz == deployment_time[-5:]][0]
+    return deployment_time.removesuffix(timezone_match).strip()
 
 
 def parse_deployment_schedule(comments: list[str]) -> tuple[str, str]:
