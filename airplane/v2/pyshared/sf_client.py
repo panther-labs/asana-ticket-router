@@ -25,6 +25,10 @@ def get_customer_client(fairytale_name):
                                        host=secret["host"])
 
 
+def get_customer_sf_name(fairytale_name):
+    return fairytale_name.replace('-', '_')
+
+
 def exec_sql_cmds(client, sql_cmds: List[str]) -> snowflake.connector.cursor.SnowflakeCursor:
     """Execute a list of sql commands on the client and return the response of the final command."""
     cursor = client.cursor()

@@ -174,11 +174,11 @@ class DeprovAirplaneTasks {
 		);
 	}
 
-	public async notifyDeleteSnowflake() {
+	public async dropSnowflakeAccount() {
 		await DeprovAirplaneTasks.runAirplaneTask(
-			"get_snowflake_account_locator",
-			{fairytale_name: this.fairytaleName, send_slack_msg: true},
-			"Sending Slack message to delete Snowflake."
+			"drop_snowflake_account",
+			{fairytale_name: this.fairytaleName},
+			"Dropping Snowflake account."
 		);
 
 		await this.updateDeprovInfo(true)
@@ -250,7 +250,7 @@ async function processState(deprovTasks) {
 		case "in_suspended_ou": return await deprovTasks.tagForClosing();
 		case "tagged_for_closing": return await deprovTasks.closeAwsAccount();
 		case "aws_closed": return await deprovTasks.removeDeploymentFiles();
-		case "deployment_files_removed": return await deprovTasks.notifyDeleteSnowflake();
+		case "deployment_files_removed": return await deprovTasks.dropSnowflakeAccount();
 		default: throw RangeError("Invalid state: " + deprovTasks.deprovInfo.deprovision_state);
 	}
 }
