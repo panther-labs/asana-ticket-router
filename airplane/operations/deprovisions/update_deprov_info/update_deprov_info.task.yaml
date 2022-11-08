@@ -68,6 +68,8 @@ parameters:
     - label: ""
       value: in_terminated_ou
     - label: ""
+      value: log_sources_offboarded
+    - label: ""
       value: sentry_disabled
     - label: ""
       value: tagged_for_closing

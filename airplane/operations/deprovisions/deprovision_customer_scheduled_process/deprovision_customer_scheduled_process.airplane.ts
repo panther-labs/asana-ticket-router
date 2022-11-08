@@ -47,6 +47,15 @@ class DeprovAirplaneTasks {
 		);
 	}
 
+	public async offboardLogSources() {
+		await this.transitionToState(
+			"offboard_hosted_account_log_sources",
+			{aws_account_id: this.deprovInfo.aws_account_id},
+			"log_sources_offboarded",
+			"Offboarding hosted-root log sources."
+		);
+	}
+
 	public async deleteDns() {
 		await this.transitionToState(
 			"delete_dns_records",
@@ -229,7 +238,8 @@ async function processState(deprovTasks) {
 	switch(deprovTasks.deprovInfo.deprovision_state) {
 		case "waiting_for_dns_time": return await deprovTasks.disableSentryIfReady();
 		case "sentry_disabled": return await deprovTasks.putInHoldGroup();
-		case "hold_group": return await deprovTasks.deleteDns();
+		case "hold_group": return await deprovTasks.offboardLogSources();
+		case "log_sources_offboarded": return await deprovTasks.deleteDns();
 		case "waiting_for_teardown_time": return await deprovTasks.moveToTerminatedIfReady();
 		// Terminated OU and teardown failed should both teardown Panther. Same function for both cases is intentional.
 		case "in_terminated_ou":

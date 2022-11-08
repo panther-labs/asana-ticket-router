@@ -19,8 +19,8 @@ def _import_local_env():
         repos_parent_dir = os.path.abspath("../..")
         with open("local_env.py", "w") as local_env_file:
             local_env_file.write(f"""# Common location for all Git repos
-        repos_parent_dir = "{repos_parent_dir}"
-        """)
+repos_parent_dir = "{repos_parent_dir}"
+""")
         print(f"Created local environment file, setting all git repos living under the {repos_parent_dir} path.")
         print("If this is wrong, please edit local_env.py and fix that file.")
         import local_env
