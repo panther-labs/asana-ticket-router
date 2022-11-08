@@ -30,6 +30,7 @@ SECURITY_LOG_ONBOARDING_ECS_ROLE=arn:aws:iam::246537256134:role/AirplaneWorkers-
 SNOWFLAKE_ACCOUNT_ADMIN_SECRET_ARN=arn:aws:secretsmanager:us-west-2:255674391660:secret:SnowflakeOrganizationCreden-WDsxzuF96ghZ-jhv6ds
 SNOWFLAKE_ACCOUNT_ADMIN_SECRET_READ_ROLE=arn:aws:iam::255674391660:role/AirplaneReadSnowflakeMasterCredentials
 SNOWFLAKE_CUSTOMER_SECRET_READ_ROLE=arn:aws:iam::255674391660:role/AirplaneReadSnowflakeCustomerCredentials
+SNOWFLAKE_READ_MASTER_CREDENTIALS=arn:aws:iam::246537256134:role/AirplaneWorkers-ReadSnowflakeMasterCredentials
 STAGING_DEPLOYMENTS_METADATA=hosted-deployments-DeploymentMetadataTable-PXJR2DWAF84N
 STAGING_METADATA_UPDATE_LAMBDA=hosted-deployments-MetadataUpdateFunction-QP41AM1Q4ZK0
 STAGING_METADATA_UPDATE_ROLE=arn:aws:iam::292442345278:role/AirplaneMetadataUpdate
