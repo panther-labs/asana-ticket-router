@@ -1,6 +1,13 @@
+import airplane
+
 from pyshared.aws_secrets import get_secret_value
 from pyshared.aws_consts import get_aws_const
 from pyshared.git_ops import AirplaneMultiCloneGitTask
+
+ENV_VARS = [
+    airplane.EnvVar(name="ECS_TASK_ROLE", value="arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly")
+]
+SCHEDULES = [airplane.Schedule(slug="every_five_min", cron="*/5 0 * * *", description="Runs every 5 min")]
 
 
 class PythonTest(AirplaneMultiCloneGitTask):
@@ -10,6 +17,7 @@ class PythonTest(AirplaneMultiCloneGitTask):
                                     "staging-deployments"))
 
     def main(self):
+        asdfasdf
         print(f"Hosted DDB ARN: {get_aws_const(const_name='HOSTED_DYNAMO_RO_ROLE_ARN')}")
         return {
             "value_from_airplane_test_secret": get_secret_value("airplane/testsecret"),
@@ -18,5 +26,6 @@ class PythonTest(AirplaneMultiCloneGitTask):
         }
 
 
-def main(_):
+@airplane.task(name=f"python-test", constraints={"ecs": "true"}, env_vars=ENV_VARS, schedules=SCHEDULES)
+def main():
     return PythonTest().main()
