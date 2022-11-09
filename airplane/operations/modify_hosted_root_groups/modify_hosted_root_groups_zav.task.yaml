@@ -65,6 +65,8 @@ parameters:
     value: DataAccess
   - label: ""
     value: SSOAdmins
+  - label: ""
+    value: CostAndUsage
 - name: Reason
   slug: reason
   type: shorttext
