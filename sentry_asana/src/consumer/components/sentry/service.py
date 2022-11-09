@@ -103,8 +103,8 @@ def extract_sentry_fields(
     issue_id = sentry_event['issue_id']
     url = f'https://sentry.io/organizations/panther-labs/issues/{issue_id}'
     tags = dict(sentry_event['tags'])
-    aws_region = tags['aws_region']
-    aws_account_id = tags['aws_account_id']
+    aws_region = tags.get('aws_region', 'Unknown')
+    aws_account_id = tags.get('aws_account_id', 'Unknown')
     customer = tags.get('customer_name', 'Unknown')
     display_name = parse.quote(customer)
     event_datetime = sentry_event['datetime'].lower()
