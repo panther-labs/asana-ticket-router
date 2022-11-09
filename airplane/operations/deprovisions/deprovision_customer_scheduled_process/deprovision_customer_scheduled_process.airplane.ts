@@ -31,10 +31,10 @@ class DeprovAirplaneTasks {
 		}
 
 		await this.transitionToState(
-			"disable_customer_sentry_alerts",
+			"disable_oncall_alerts",
 			{fairytale_name: this.fairytaleName, organization: this.deprovInfo.organization},
-			"sentry_disabled",
-			"Disabling sentry."
+			"oncall_alerts_disabled",
+			"Disabling sentry and datadog alerts."
 		);
 	}
 
@@ -237,7 +237,7 @@ async function performActionsBasedOnState(fairytaleName: string, deprovTasks: De
 async function processState(deprovTasks) {
 	switch(deprovTasks.deprovInfo.deprovision_state) {
 		case "waiting_for_dns_time": return await deprovTasks.disableSentryIfReady();
-		case "sentry_disabled": return await deprovTasks.putInHoldGroup();
+		case "oncall_alerts_disabled": return await deprovTasks.putInHoldGroup();
 		case "hold_group": return await deprovTasks.offboardLogSources();
 		case "log_sources_offboarded": return await deprovTasks.deleteDns();
 		case "waiting_for_teardown_time": return await deprovTasks.moveToTerminatedIfReady();

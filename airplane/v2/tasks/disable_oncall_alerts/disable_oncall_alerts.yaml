@@ -1,5 +1,5 @@
-name: Disable Customer Sentry Alerts
-slug: disable_customer_sentry_alerts
+name: Disable Oncall Alerts
+slug: disable_oncall_alerts
 parameters:
   - name: Fairytale Name
     slug: fairytale_name
@@ -13,7 +13,7 @@ parameters:
     - label: ""
       value: root
 python:
-  entrypoint: disable_customer_sentry_alerts.py
+  entrypoint: disable_oncall_alerts.py
 requireRequests: false
 allowSelfApprovals: false
 timeout: 3600
