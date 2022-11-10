@@ -59,9 +59,10 @@ class DeploymentStatistics(AirplaneTask):
 
         for level in report.keys():
             for field in report[level].keys():
-                value = report[level][field]
-                metric = self.get_metric(level, field, float(value))
-                datadog.submit(Metric(**metric))
+                if field != "human_rate":
+                    value = report[level][field]
+                    metric = self.get_metric(level, field, value)
+                    datadog.submit(Metric(**metric))
 
     def main(self, params):
         print("parameters:", params)
