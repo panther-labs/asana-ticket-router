@@ -6,8 +6,8 @@ python:
     ECS_TASK_ROLE:
       value: arn:aws:iam::246537256134:role/AirplaneWorkers-DynamodbReadOnly
 schedules:
-  five_min:
-    cron: "*/5 * * * *"
+  python_test_four_min:
+    cron: "*/4 * * * *"
     description: "Runs every 5 min."
 constraints:
   ecs: "true"
