@@ -26,6 +26,6 @@ class PythonTest(AirplaneMultiCloneGitTask):
         }
 
 
-@airplane.task(name=f"python-test", constraints={"ecs": "true"}, env_vars=ENV_VARS, schedules=SCHEDULES)
+#@airplane.task(name=f"python-test", constraints={"ecs": "true"}, env_vars=ENV_VARS, schedules=SCHEDULES)
 def main():
     return PythonTest().main()
