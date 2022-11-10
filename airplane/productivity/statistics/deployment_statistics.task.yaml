@@ -1,5 +1,5 @@
 name: Deployment statistics
-slug: deployment_statisitics
+slug: deployment_statistics
 parameters:
 - name: Range
   slug: range

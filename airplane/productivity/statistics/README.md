@@ -1,5 +1,5 @@
 # Local dev
 
 ```
-aws-vault exec hosted -- airplane dev main.py
+aws-vault exec hosted -- airplane dev deployment_statistics.task.yaml
 ```

@@ -10,7 +10,8 @@ from pyshared.datadog.metric import DatadogMetric, Metric
 
 class DeploymentStatistics(AirplaneTask):
 
-    def statistics(self, ro_arn, state_machine_arn, date):
+    @staticmethod
+    def statistics(ro_arn, state_machine_arn, date):
         client = get_credentialed_client(service_name="stepfunctions",
                                          arns=get_aws_const(ro_arn),
                                          desc="deployment_statistics",
@@ -45,7 +46,8 @@ class DeploymentStatistics(AirplaneTask):
             "human_rate": f"{round(success / total * 100, 4)}%"
         }
 
-    def get_metric(self, level, field, value):
+    @staticmethod
+    def get_metric(level, field, value):
         return {
             "name": f"panther.DeploymentStatistics.{level}.{field}",
             "type": "gauge",
@@ -58,7 +60,7 @@ class DeploymentStatistics(AirplaneTask):
         for level in report.keys():
             for field in report[level].keys():
                 value = report[level][field]
-                metric = self.get_metric(level, field, value)
+                metric = self.get_metric(level, field, float(value))
                 datadog.submit(Metric(**metric))
 
     def main(self, params):
@@ -67,8 +69,10 @@ class DeploymentStatistics(AirplaneTask):
         date = self.get_date(time_range)
         print(f"Filtering from {date}")
 
-        hosted = self.statistics("STEP_FUNCTION_HOSTED_RO_ROLE_ARN", "STATE_MACHINE_HOSTED_ARN", date)
-        internal = self.statistics("STEP_FUNCTION_INTERNAL_RO_ROLE_ARN", "STATE_MACHINE_INTERNAL_ARN", date)
+        hosted = self.statistics("STEP_FUNCTION_HOSTED_RO_ROLE_ARN",
+                                 "STATE_MACHINE_HOSTED_ARN", date)
+        internal = self.statistics("STEP_FUNCTION_INTERNAL_RO_ROLE_ARN",
+                                   "STATE_MACHINE_INTERNAL_ARN", date)
 
         total_count = hosted["total"] + internal["total"]
         total_failed = hosted["failed"] + internal["failed"]

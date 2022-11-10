@@ -16,6 +16,7 @@ class Metric:
     points: list
     tags: list = None
 
+
 class DatadogMetric(Datadog):
     def __init__(self, api_key):
         super().__init__(api_key=api_key)
@@ -40,7 +41,8 @@ class DatadogMetric(Datadog):
 
         return self.api.submit_metrics(body=body)
 
-    def _metric_intake_type(self, metric_type):
+    @staticmethod
+    def _metric_intake_type(metric_type):
         metric_types = {
             "unspecified": 0,
             "count": 1,
