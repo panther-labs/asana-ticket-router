@@ -125,8 +125,6 @@
     Matchers: ["functionname:panther-replay-api"],
     Matchers: ["functionname:panther-replay-detections-engine"],
     Matchers: ["functionname:panther-replay-log-pusher"],
-    Matchers: ["functionname:panther-replay-results-api"],
-    Matchers: ["functionname:panther-replay-results-processor"],
     Matchers: ["functionname:panther-reports-api"],
     Matchers: ["functionname:panther-reports-processor"],
     Matchers: ["functionname:panther-resources-api"],
@@ -146,7 +144,6 @@
     Matchers: ["url://bulk-uploader//"],
     Matchers: ["url://dashboard//"],
     Matchers: ["url://data-models//"],
-    Matchers: ["url://destinations//"],
     Matchers: ["url://detections//"],
     Matchers: ["url://helpers//"],
     Matchers: ["url://mitre-attack/"],
@@ -155,6 +152,32 @@
     Matchers: ["url://resources//"],
 
 
+  ]
+-
+  name: "Alerting"
+  AsanaBacklogId: '1203315354372184'
+  AsanaSprintPortfolioId: '1203058122005939'
+  AsanaSandboxPortfolioId: '1203315706931479'
+  AsanaTeamId: '1203108723347293'
+  Entities: [
+    Matchers: ["server_name:panther-alerts-api"],
+    Matchers: ["server_name:panther-alerts-migration"],
+    Matchers: ["server_name:panther-alert-delivery-api"],
+    Matchers: ["server_name:panther-alert-delivery-updater"],
+    Matchers: ["server_name:panther-alert-info-watcher"],
+    Matchers: ["server_name:panther-webhooks-api"],
+    Matchers: ["functionname:panther-alerts-api"],
+    Matchers: ["functionname:panther-alerts-migration"],
+    Matchers: ["functionname:panther-alert-delivery-api"],
+    Matchers: ["functionname:panther-alert-delivery-updater"],
+    Matchers: ["functionname:panther-alert-info-watcher"],
+    Matchers: ["functionname:panther-webhooks-api"],
+    Matchers: ["queuename:panther-alerts-queue"],
+    Matchers: ["queuename:panther-alerts-queue-dlq"],
+    Matchers: ["url://alerts-and-errors//"],
+    Matchers: ["url://destinations//"],
+    Matchers: ["functionname:panther-replay-results-api"],
+    Matchers: ["functionname:panther-replay-results-processor"],
   ]
 -
   name: "Ingestion"
@@ -215,11 +238,6 @@
     Matchers: ["server_name:/\\.compute\\.internal/"],
     Matchers: ["server_name:/\\.ec2\\.internal/"],
     Matchers: ["server_name:/Panther-EFS/"],
-    Matchers: ["server_name:panther-alerts-api"],
-    Matchers: ["server_name:panther-alerts-migration"],
-    Matchers: ["server_name:panther-alert-delivery-api"],
-    Matchers: ["server_name:panther-alert-delivery-updater"],
-    Matchers: ["server_name:panther-alert-info-watcher"],
     Matchers: ["server_name:panther-athena-admin-api"],
     Matchers: ["server_name:panther-athena-api"],
     Matchers: ["server_name:panther-database-workflow"],
@@ -235,11 +253,6 @@
     Matchers: ["server_name:panther-snowflake-admin-api"],
     Matchers: ["server_name:panther-snowflake-api"],
     Matchers: ["server_name:panther-webhooks-api"],
-    Matchers: ["functionname:panther-alerts-api"],
-    Matchers: ["functionname:panther-alerts-migration"],
-    Matchers: ["functionname:panther-alert-delivery-api"],
-    Matchers: ["functionname:panther-alert-delivery-updater"],
-    Matchers: ["functionname:panther-alert-info-watcher"],
     Matchers: ["functionname:panther-athena-admin-api"],
     Matchers: ["functionname:panther-athena-api"],
     Matchers: ["functionname:panther-database-workflow"],
@@ -255,15 +268,12 @@
     Matchers: ["functionname:panther-snowflake-admin-api"],
     Matchers: ["functionname:panther-snowflake-api"],
     Matchers: ["functionname:panther-webhooks-api"],
-    Matchers: ["queuename:panther-alerts-queue"],
-    Matchers: ["queuename:panther-alerts-queue-dlq"],
     Matchers: ["queuename:panther-datacatalog-updater-queue"],
     Matchers: ["queuename:panther-datacatalog-updater-queue-dlq"],
     Matchers: ["queuename:panther-datacatalog-compactor-queue.fifo"],
     Matchers: ["queuename:panther-datacatalog-compactor-queue-dlq.fifo"],
     Matchers: ["queuename:panther-datacatalog-compactor-reaper-queue"],
     Matchers: ["queuename:panther-datacatalog-compactor-reaper-dlq"],
-    Matchers: ["url://alerts-and-errors//"],
     Matchers: ["url://data-explorer//"],
     Matchers: ["url://enrichment//"],
     Matchers: ["url://enrichment-providers//"],
