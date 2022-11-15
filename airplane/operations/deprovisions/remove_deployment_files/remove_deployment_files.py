@@ -19,6 +19,16 @@ class AirplaneParams:
 
 
 class DeploymentFileRemover(AirplaneTask):
+    @staticmethod
+    def remove_fairytale_from_management_files(ap_params):
+        for file_to_modify in ["Makefile", "account-mapping.yml"]:
+            with open(file_to_modify, 'r') as file:
+                lines = file.readlines()
+
+            with open(file_to_modify, 'w') as file:
+                for line in lines:
+                    if ap_params.fairytale_name not in line:
+                        file.write(line)
 
     def remove_management_files(self, ap_params):
         repo_name = GithubRepo.HOSTED_AWS_MANAGEMENT
@@ -26,6 +36,7 @@ class DeploymentFileRemover(AirplaneTask):
         with tmp_change_dir(change_dir=git_dir):
             dirs_to_delete = glob.glob(f"*{ap_params.fairytale_name}*")
             [shutil.rmtree(dir_to_delete) for dir_to_delete in dirs_to_delete]
+            self.remove_fairytale_from_management_files(ap_params)
             git_add_commit_push(files=dirs_to_delete,
                                 title=f"Removing dirs for {ap_params.fairytale_name}",
                                 test_run=self.is_test_run())
