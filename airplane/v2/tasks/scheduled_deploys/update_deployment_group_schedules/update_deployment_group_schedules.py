@@ -53,6 +53,9 @@ class UpdateDeploymentGroupSchedules(AirplaneGitTask):
     def run(self, params: dict):
         deployment_version = params["deployment_version"]
 
+        if not deployment_version.startswith('v'):
+            deployment_version = f"v{deployment_version}"
+
         group_names = get_deployment_group_names(params)
         if not group_names:
             raise ValueError("No deployment group schedules found.")

@@ -41,6 +41,8 @@ class UpdateDeploymentGroupScheduledVersion(AirplaneGitTask):
                 top_level_comments = get_top_level_comments(cfg_yaml)
                 if top_level_comments:
                     new_version = params["deployment_version"]
+                    if not new_version.startswith('v'):
+                        new_version = f"v{new_version}"
                     deployment_time, old_version = parse_deployment_schedule(top_level_comments)
                     validate_deployment_version(group, old_version=old_version, new_version=new_version)
                     logger.info(f"Group '{group}': updating deployment version from '{old_version}' to '{new_version}'")
