@@ -8,6 +8,7 @@ import asyncio
 from typing import Dict, Any
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
+from common.components.metrics.service import MetricSink
 from common.constants import AlertType
 from producer.components.queue.service import QueueService
 from producer.components.validator.service import ValidatorService
@@ -38,6 +39,9 @@ async def main(
     validator: ValidatorService = Provide[
         ApplicationContainer.validator_container.validator_service  # pylint: disable=no-member
     ],
+    metrics: MetricSink = Provide[
+        ApplicationContainer.metrics_container.metrics_sink  # pylint: disable=no-member
+    ],
 ) -> Dict[str, int]:
     """Main async program"""
     log = logger.get()
@@ -62,6 +66,8 @@ async def main(
         alert_type = AlertType.DATADOG
         valid = await validator.validate_datadog(datadog_signature)
 
+    # Emit our metric before crashing.
+    metrics.increment_event_count(alert_type, 'producer', valid)
     if alert_type is AlertType.UNKNOWN_ALERT:
         raise ValueError(
             'Request missing sentry-hook-signature or datadog-secret-token headers.'

@@ -11,6 +11,7 @@ from common.components.logger.containers import LoggerContainer
 from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
 from common.components.entities.containers import EntitiesContainer
+from common.components.metrics.containers import MetricsContainer
 from .asana.containers import AsanaContainer
 from .sentry.containers import SentryContainer
 from .datadog.containers import DatadogContainer
@@ -68,6 +69,9 @@ class ApplicationContainer(containers.DeclarativeContainer):
         EntitiesContainer,
         config=config,
     )
+
+    # metrics
+    metrics_container = providers.Container(MetricsContainer)
 
     # Asana
     asana_container = providers.Container(

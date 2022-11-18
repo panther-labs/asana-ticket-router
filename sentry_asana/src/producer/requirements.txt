@@ -1,2 +1,3 @@
 boto3-stubs[sqs,secretsmanager]==1.24.2
 dependency-injector[yaml]==4.39.1
+datadog-lambda==4.64.0

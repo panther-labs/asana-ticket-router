@@ -11,10 +11,12 @@ import traceback
 from typing import Dict, Any, List, Union, Callable, Optional, Tuple
 from dependency_injector.wiring import Provide, inject
 from common.components.logger.service import LoggerService
+from common.components.metrics.service import MetricSink
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import TeamService, EngTeam
 from common.components.entities import heuristics
 from common.constants import AlertType
+
 from consumer.components.datadog.service import (
     DatadogService,
     make_datadog_asana_event,
@@ -106,6 +108,7 @@ async def process(
     logger: LoggerService = Provide[
         ApplicationContainer.logger_container.logger_service
     ],
+    metrics: MetricSink = Provide[ApplicationContainer.metrics_container.metrics_sink],
 ) -> Dict[str, Union[bool, str]]:
 
     """Inspect the payload and process as Sentry or Datadog Alert Event"""
@@ -114,25 +117,27 @@ async def process(
     try:
         message_attributes: Dict = record['messageAttributes']
         alert_type: str = message_attributes.get('AlertType', {}).get('stringValue', '')
-        if alert_type not in [AlertType.SENTRY.name, AlertType.DATADOG.name]:
-            raise ValueError(
-                f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.'
-            )
+        try:
+            alert = AlertType[alert_type]
+        except KeyError:
+            alert = AlertType.UNKNOWN_ALERT
 
-        if alert_type == AlertType.SENTRY.name:
+        metrics.increment_event_count(
+            alert, 'consumer', alert != AlertType.UNKNOWN_ALERT
+        )
+
+        if alert == AlertType.SENTRY.name:
             return await process_sentry_alert(record)
 
-        if alert_type == AlertType.DATADOG.name:
+        if alert == AlertType.DATADOG.name:
             return await process_datadog_alert(record)
 
         log.error(
             f'Failed to identify alert type and link alert ({message_id}) with asana task.'
         )
-        return {
-            'success': False,
-            'message': f'Failed to identify alert type and link alert ({message_id}) with asana task.',
-            'message_id': message_id,
-        }
+        raise ValueError(
+            f'AlertType not SENTRY or DATADOG, found "{alert_type}" instead.'
+        )
 
     # Catch all other exceptions and return a bad status to retry the record.
     # pylint: disable=broad-except
@@ -164,6 +169,9 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
     ],
     datadog: DatadogService = Provide[
         ApplicationContainer.datadog_container.container.datadog_service
+    ],
+    metrics: MetricSink = Provide[
+        ApplicationContainer.metrics_container.container.metrics_sink
     ],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Datadog event and create an Asana Task"""
@@ -205,6 +213,8 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
         )
 
         new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
+        # We expect create_asana_task to raise on error, so failed ticket filings will not be counted.
+        metrics.increment_ticket_count(team.Name, AlertType.DATADOG.name)
 
         # And link it in the event stream for this monitor.
         asana_url = f'https://app.asana.com/0/0/{new_task_gid}'
@@ -241,6 +251,9 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments,too-many-l
         ApplicationContainer.sentry_container.sentry_service
     ],
     asana: AsanaService = Provide[ApplicationContainer.asana_container.asana_service],
+    metrics: MetricSink = Provide[
+        ApplicationContainer.metrics_container.container.metrics_sink
+    ],
 ) -> Dict[str, Union[bool, str]]:
     """Process a Sentry event and create an Asana Task"""
 
@@ -296,8 +309,8 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments,too-many-l
         )
 
         new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
-
-        # Asana create note to add reason.
+        # We expect create_asana_task to raise on error, so failed ticket filings will not be counted.
+        metrics.increment_ticket_count(team.Name, AlertType.SENTRY.name)
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)

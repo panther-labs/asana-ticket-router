@@ -8,6 +8,7 @@
 # mypy: ignore-errors
 from dependency_injector import containers, providers
 from common.components.logger.containers import LoggerContainer
+from common.components.metrics.containers import MetricsContainer
 from common.components.secrets.containers import SecretsManagerContainer
 from common.components.serializer.containers import SerializerContainer
 from .queue.containers import QueueContainer
@@ -39,6 +40,9 @@ class ApplicationContainer(containers.DeclarativeContainer):
         serializer=serializer_container.serializer_service,
         config=config.services.secrets,
     )
+
+    # metrics
+    metrics_container = providers.Container(MetricsContainer)
 
     # Payload Validator
     validator_container = providers.Container(

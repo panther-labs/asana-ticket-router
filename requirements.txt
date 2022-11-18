@@ -15,6 +15,7 @@ boto3-stubs[sqs,secretsmanager]==1.24.2
 dependency-injector[yaml]==4.39.1
 dataclass-wizard==0.22.1
 datadog-api-client==2.2.0
+datadog-lambda==4.64.0
 python-dateutil==2.8.2
 types-python-dateutil==2.8.19
 yamllint==1.27.1

@@ -9,13 +9,13 @@ from typing import Dict
 from logging import Logger
 from urllib import parse
 from datetime import datetime, timezone
+from datadog_api_client import ApiClient, Configuration
+from datadog_api_client.v1.api.events_api import EventsApi
+from datadog_api_client.v1.model.event_create_request import EventCreateRequest
 from common.constants import DATADOG_SOURCE_TYPE
 from common.components.serializer.service import SerializerService
 from common.components.entities.service import EngTeam
 from consumer.components.asana.entities import AsanaFields, PRIORITY, RUNBOOK_URL
-from datadog_api_client import ApiClient, Configuration
-from datadog_api_client.v1.api.events_api import EventsApi
-from datadog_api_client.v1.model.event_create_request import EventCreateRequest
 
 
 class DatadogService:
