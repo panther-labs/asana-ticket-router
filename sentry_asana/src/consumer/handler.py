@@ -214,7 +214,7 @@ async def process_datadog_alert(  # pylint: disable=too-many-arguments
 
         new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
         # We expect create_asana_task to raise on error, so failed ticket filings will not be counted.
-        metrics.increment_ticket_count(team.Name, AlertType.DATADOG.name)
+        metrics.increment_ticket_count(team.Name, AlertType.DATADOG)
 
         # And link it in the event stream for this monitor.
         asana_url = f'https://app.asana.com/0/0/{new_task_gid}'
@@ -310,7 +310,7 @@ async def process_sentry_alert(  # pylint: disable=too-many-arguments,too-many-l
 
         new_task_gid, task_body = await create_asana_task(asana_fields, None, None)
         # We expect create_asana_task to raise on error, so failed ticket filings will not be counted.
-        metrics.increment_ticket_count(team.Name, AlertType.SENTRY.name)
+        metrics.increment_ticket_count(team.Name, AlertType.SENTRY)
 
         # Finally, link the newly created asana task back to the sentry issue
         response = await sentry.add_link(issue_id, new_task_gid)
