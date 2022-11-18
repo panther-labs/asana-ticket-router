@@ -336,8 +336,6 @@ async def test_create_task_body(
         'custom_fields': {
             CUSTOMFIELD.PRIORITY.value: asana_fields.priority.value,
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
-            CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
-            CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.AsanaTeamId,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
@@ -358,8 +356,6 @@ async def test_create_asana_task(
         'custom_fields': {
             CUSTOMFIELD.PRIORITY.value: asana_fields.priority.value,
             CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
-            CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
-            CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
             CUSTOMFIELD.TEAM.value: asana_fields.assigned_team.AsanaTeamId,
             CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
         },
