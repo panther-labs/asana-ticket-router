@@ -126,10 +126,10 @@ async def process(
             alert, 'consumer', alert != AlertType.UNKNOWN_ALERT
         )
 
-        if alert == AlertType.SENTRY.name:
+        if alert == AlertType.SENTRY:
             return await process_sentry_alert(record)
 
-        if alert == AlertType.DATADOG.name:
+        if alert == AlertType.DATADOG:
             return await process_datadog_alert(record)
 
         log.error(
