@@ -5,17 +5,24 @@ description: |-
   This task will monitor all accounts in the group until every one is finished.
   If all pass, the task will pass. If one or more have a non-successful status, it will fail.
 parameters:
-- name: Deployment Groups
-  slug: deployment_groups
-  type: shorttext
-  description: |-
-    A comma-separated list of groups to upgrade.
-    e.g. a, c, e
-    Available groups (excluding auto deploys): a, c, cpaas, e, g, j, l, n, p, z
-- name: Version
-  slug: version
-  type: shorttext
-  description: Panther upgrade version
+  - name: All Groups
+    slug: all_groups
+    type: boolean
+    default: false
+    required: false
+  - name: Deployment Groups
+    slug: deployment_groups
+    type: shorttext
+    description: |-
+      A comma-separated list of groups to upgrade.
+      e.g. a, c, e
+      Available groups (excluding auto deploys): 
+      a, b, c, cpaas, d, e, g, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+    required: false
+  - name: Version
+    slug: version
+    type: shorttext
+    description: Panther upgrade version
 python:
   entrypoint: upgrade_deployment_groups.py
 requireRequests: true

@@ -25,6 +25,14 @@ parameters:
     slug: group_d
     type: boolean
     default: false
+  - name: Group E
+    slug: group_e
+    type: boolean
+    default: false
+  - name: Group G
+    slug: group_g
+    type: boolean
+    default: false
   - name: Group J
     slug: group_j
     type: boolean

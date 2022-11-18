@@ -14,6 +14,10 @@ class SalesIdNotFoundException(Exception):
     pass
 
 
+class ConflictingParameterException(Exception):
+    pass
+
+
 class DuplicateNotionFairytaleNameException(Exception):
 
     def __init__(self, fairytale_name, *args, **kwargs):
