@@ -226,9 +226,7 @@ class AsanaService:
             'name': fields.title,
             'projects': project_gids,
             'custom_fields': {
-                CUSTOMFIELD.ESTIMATE.value: 0.1,  # Days
                 CUSTOMFIELD.PRIORITY.value: fields.priority.value,
-                CUSTOMFIELD.REPORTER.value: CUSTOMFIELD.SENTRY_IO.value,
                 CUSTOMFIELD.EPD_TASK_TYPE.value: CUSTOMFIELD.ON_CALL.value,
                 CUSTOMFIELD.TEAM.value: fields.assigned_team.AsanaTeamId,
                 CUSTOMFIELD.OUTCOME_FIELD.value: CUSTOMFIELD.OUTCOME_TYPE_KTLO.value,
